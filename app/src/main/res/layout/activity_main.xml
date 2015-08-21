@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.pratilipi.android.pratilipi_android.SlidingTabLayout
+    <com.pratilipi.android.pratilipi_and.SlidingTabLayout
         android:id="@+id/tabs_main_activity"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
