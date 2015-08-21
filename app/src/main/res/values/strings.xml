@@ -1,6 +1,11 @@
 <resources>
-    <string name="app_name">Pratilipi-and</string>
+    <string name="app_name">Pratilipi</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+    <string name="action_search">Search</string>
+    <string name="action_search_queryHint">Search Pratilipi</string>
+
+<!-- TODO: Remove or change this placeholder text -->
 </resources>

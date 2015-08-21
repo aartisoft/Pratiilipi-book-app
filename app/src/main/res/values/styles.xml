@@ -1,8 +1,22 @@
 <resources>
-
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light">
         <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/primaryColor</item>
+        <item name="colorPrimaryDark">@color/primaryDarkColor</item>
     </style>
 
+    <!-- Main activity theme -->
+    <style name="PratilipiTheme" parent="@style/AppTheme">
+        <item name="actionBarStyle">@style/PratilipiTheme.ActionBar</item>
+
+        <!-- Support library compatibility -->
+        <item name="android:actionBarStyle">@style/PratilipiTheme.ActionBar</item>
+    </style>
+
+    <!-- main activity action bar styles -->
+    <style name="PratilipiTheme.ActionBar" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
+        <item name="displayOptions">useLogo|showHome</item>
+        <item name="logo">@drawable/ic_logo</item>
+    </style>
 </resources>
