@@ -1,5 +1,6 @@
 package com.pratilipi.android.pratilipi_and;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
@@ -9,8 +10,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.pratilipi.android.pratilipi_and.adapter.ViewPagerAdapter;
+import com.pratilipi.android.pratilipi_and.service.PratilipiService;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 
     private ViewPager mViewPager;
     private ViewPagerAdapter mViewPageradapter;
@@ -39,6 +41,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         mTabs.setViewPager(mViewPager);
+        mViewPager.setCurrentItem(getIntent().getFlags());
+
+        Intent serviceIntent = new Intent(this, PratilipiService.class);
+        startService(serviceIntent);
     }
 
     @Override
