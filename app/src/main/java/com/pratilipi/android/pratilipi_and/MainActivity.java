@@ -1,5 +1,6 @@
 package com.pratilipi.android.pratilipi_and;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
@@ -75,5 +76,21 @@ public class MainActivity extends AppCompatActivity{
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        String lan = getSharedPreferences("PREFERENCE", Context.MODE_PRIVATE).getString("selectedLanguage", "");
+
+        if (lan.length() < 1) {
+            startActivity(new Intent(this, LanguageSelectionActivity.class));
+            finish();
+        }
+
+        //TODO : CLEAR SAERCH BOX IF ITS NOT EMPTY
+//        if(null!= searchViewButton)
+//            searchViewButton.clearFocus();
     }
 }

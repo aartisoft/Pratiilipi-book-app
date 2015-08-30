@@ -7,6 +7,9 @@
     <string name="action_search">Search</string>
     <string name="action_search_queryHint">Search Pratilipi</string>
 
+    <!-- Choose Language String -->
+    <string name="choose_language">Choose Language</string>
+
     <!-- Account type (for sync-adapter authenticator) -->
     <!-- SyncAdapter related -->
     <string name="sync_account_type">com.pratilipi.android</string>
@@ -14,5 +17,7 @@
 
     <!-- Home fragment String -->
     <string name="view_all">View All</string>
+    <string name="title_activity_splash_screen">SplashScreen</string>
+    <string name="title_activity_language_selection">LanguageSelectionActivity</string>
 
 </resources>

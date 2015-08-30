@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center_horizontal"
+    android:layout_margin="30dp">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/choose_language"
+        android:id="@+id/textView"
+        android:layout_margin="15dp"/>
+
+    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="10dp">
+        <RadioButton android:id="@+id/radio_tamil"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/radio_button"
+            android:button="@android:color/transparent"
+            android:text="தமிழ்"
+            android:textColor="#fff"
+            android:onClick="onRadioButtonClicked"
+            android:textAlignment="center"
+            android:gravity="center"
+            android:layout_margin="10dp"
+            android:elevation="3dp"/>
+        <RadioButton android:id="@+id/radio_hindi"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/radio_button"
+            android:button="@android:color/transparent"
+            android:text="हिन्दी"
+            android:textColor="#fff"
+            android:onClick="onRadioButtonClicked"
+            android:gravity="center"
+            android:layout_margin="10dp"
+            android:elevation="3dp"/>
+        <RadioButton android:id="@+id/radio_gujrati"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/radio_button"
+            android:button="@android:color/transparent"
+            android:text="ગુજરાતી"
+            android:textColor="#fff"
+            android:onClick="onRadioButtonClicked"
+            android:gravity="center"
+            android:layout_margin="10dp"
+            android:elevation="3dp"/>
+    </RadioGroup>
+
+    <Button
+
+        android:onClick="goSelected"
+        android:id="@+id/goButton"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="#006600"
+        android:layout_margin="10dp"
+        android:text="GO"
+        android:textColor="#fff"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:visibility="gone"/>
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Don't worry, you can change it later."
+        android:gravity="center_horizontal"
+        android:id="@+id/worryTextView"
+        android:layout_margin="15dp"/>
+</LinearLayout>
