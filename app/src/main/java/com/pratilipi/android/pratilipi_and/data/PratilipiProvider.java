@@ -68,9 +68,15 @@ public class PratilipiProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         Cursor retCursor;
+        Log.e(LOG_TAG, "URI : " + uri);
+        Log.e(LOG_TAG, "URI MATCHED WITH : " + sUriMatcher.match(uri));
         switch (sUriMatcher.match(uri)){
             case HOMESCREEN_CONTENT_BY_CATEGORY: {
                 retCursor = getContentByLanguageAndCategory(uri, projection, sortOrder);
+                break;
+            }
+            case HOMESCREEN:{
+                retCursor = getDistinctCategory(projection);
                 break;
             }
             default:
@@ -139,6 +145,21 @@ public class PratilipiProvider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         return 0;
+    }
+
+    public Cursor getDistinctCategory(String[] projection){
+        SQLiteQueryBuilder contentByCategoryAndLanguage = new SQLiteQueryBuilder();
+        contentByCategoryAndLanguage.setTables(PratilipiContract.HomeScreenEntity.TABLE_NAME);
+
+        return contentByCategoryAndLanguage.query(
+                mOpenHelper.getReadableDatabase(),
+                projection,
+                null,
+                null,
+                PratilipiContract.HomeScreenEntity.COLUMN_CATEGORY_ID,
+                null,
+                null);
+
     }
 
 }

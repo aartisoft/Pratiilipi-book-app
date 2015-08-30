@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class PratilipiDbHelper extends SQLiteOpenHelper {
 
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     static final String DATABASE_NAME = "pratilipi.db";
 
@@ -30,6 +30,7 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
                 PratilipiContract.HomeScreenEntity.COLUMN_CONTENT_TYPE + " TEXT NOT NULL, " +
                 PratilipiContract.HomeScreenEntity.COLUMN_COVER_URL + " TEXT NOT NULL, " +
                 PratilipiContract.HomeScreenEntity.COLUMN_PRICE + " TEXT NOT NULL, " +
+                PratilipiContract.HomeScreenEntity.COLUMN_DISCOUNTED_PRICE + " TEXT NOT NULL, " +
 
                 PratilipiContract.HomeScreenEntity.COLUMN_LANGUAGE_ID + " INTEGER NOT NULL, " +
 

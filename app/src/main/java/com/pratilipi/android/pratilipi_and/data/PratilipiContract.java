@@ -75,6 +75,7 @@ public class PratilipiContract {
         public static final String COLUMN_CONTENT_TYPE = "content_type";
         public static final String COLUMN_COVER_URL = "cover_url";
         public static final String COLUMN_PRICE = "price";
+        public static final String COLUMN_DISCOUNTED_PRICE = "discounted_price";
 
         public static final String COLUMN_LANGUAGE_ID = "language_id";
 
@@ -84,7 +85,7 @@ public class PratilipiContract {
         public static final String COLUMN_DATE = "date";
 
 
-        public static Uri getCategoryWiseContentForHomeScreen(String languageId, String categoryId) {
+        public static Uri getCategoryWiseContentForHomeScreenUri(String languageId, String categoryId) {
             return CONTENT_URI.buildUpon().appendPath(languageId)
                     .appendPath(categoryId).build();
         }
