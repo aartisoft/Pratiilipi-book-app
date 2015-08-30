@@ -1,51 +1,64 @@
 package com.pratilipi.android.pratilipi_and;
 
-import android.app.Activity;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
+
+import com.pratilipi.android.pratilipi_and.adapter.CardViewAdapter;
+import com.pratilipi.android.pratilipi_and.adapter.HomeFragmentAdapter;
+import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
+import com.pratilipi.android.pratilipi_and.datafiles.Homescreen;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link HomeFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link HomeFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class HomeFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+public class HomeFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private static final int CATEGORY_LOADER = 0;
+    private static final String LOG_TAG = HomeFragment.class.getSimpleName();
 
-//    private OnFragmentInteractionListener mListener;
+    private HomeFragmentAdapter mHomeFragmentAdapter;
+    private ListView mHomeListView;
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment HomeFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static HomeFragment newInstance(String param1, String param2) {
-        HomeFragment fragment = new HomeFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private CardViewAdapter mCardViewAdapter;
+    private RecyclerView mcardListView;
+    private List<Homescreen> mHomescreenList = new ArrayList<Homescreen>();
+
+    private static final String[] CATEGORY_COLUMNS = {
+            PratilipiContract.HomeScreenEntity._ID,
+            PratilipiContract.HomeScreenEntity.COLUMN_CATEGORY_ID,
+            PratilipiContract.HomeScreenEntity.COLUMN_CATEGORY_NAME};
+
+    public static final int COL_CATEGORY_ID = 1;
+    public static final int COL_CATEGORY_NAME = 2;
+
+
+    private static final String[] CONTENT_COLUMNS = {
+            PratilipiContract.HomeScreenEntity._ID,
+            PratilipiContract.HomeScreenEntity.COLUMN_PRATILIPI_ID,
+            PratilipiContract.HomeScreenEntity.COLUMN_PRATILIPI_TITLE,
+            PratilipiContract.HomeScreenEntity.COLUMN_COVER_URL,
+            PratilipiContract.HomeScreenEntity.COLUMN_PRICE,
+            PratilipiContract.HomeScreenEntity.COLUMN_DISCOUNTED_PRICE
+    };
+
+    public static final int COL_PRATILIPI_ID = 1;
+    public static final int COL_PRATILIPI_TITLE = 2;
+    public static final int COL_COVER_URL = 3;
+    public static final int COL_PRICE = 4;
+    public static final int COL_DISCOUNTED_PRICE = 5;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -54,56 +67,99 @@ public class HomeFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        if (getArguments() != null) {
-//            mParam1 = getArguments().getString(ARG_PARAM1);
-//            mParam2 = getArguments().getString(ARG_PARAM2);
-//        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false);
-    }
+        Log.e(LOG_TAG, "HomeFragment onCreateView function called");
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-//        if (mListener != null) {
-//            mListener.onFragmentInteraction(uri);
-//        }
+        mHomeFragmentAdapter = new HomeFragmentAdapter( getActivity(), null, 0 );
+        mCardViewAdapter = new CardViewAdapter(mHomescreenList);
+
+        View rootView = inflater.inflate(R.layout.fragment_home, container, false);
+
+        mHomeListView = (ListView) rootView.findViewById(R.id.homescreen_fragment_listview);
+        mHomeListView.setAdapter(mHomeFragmentAdapter);
+
+        View cardView = inflater.inflate(R.layout.homescreen_list_item, (ViewGroup) mHomeListView, false);
+        mcardListView = (RecyclerView) cardView.findViewById(R.id.homescreen_card_list_view);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+
+        mcardListView.setHasFixedSize(true);
+        mcardListView.setLayoutManager(layoutManager);
+        mcardListView.setAdapter(mCardViewAdapter);
+
+        return rootView;
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-//        try {
-//            mListener = (OnFragmentInteractionListener) activity;
-//        } catch (ClassCastException e) {
-//            throw new ClassCastException(activity.toString()
-//                    + " must implement OnFragmentInteractionListener");
-//        }
+    public void onActivityCreated(Bundle savedInstanceState) {
+        Log.e(LOG_TAG, "onActivityCreated function called");
+        fetchData();
+        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
-//        mListener = null;
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        CursorLoader cursorLoader;
+        Log.e(LOG_TAG, "HomeFragment onCreateLoader function :: CATEGORY_LOADER");
+        Uri distinctCategoryUri = PratilipiContract.HomeScreenEntity.CONTENT_URI;
+        cursorLoader = new CursorLoader(getActivity(), distinctCategoryUri, CATEGORY_COLUMNS, null, null, null);
+        Log.e(LOG_TAG, "Selection : " + cursorLoader.getProjection());
+
+        return cursorLoader;
     }
-//
-//    /**
-//     * This interface must be implemented by activities that contain this
-//     * fragment to allow an interaction in this fragment to be communicated
-//     * to the activity and potentially other fragments contained in that
-//     * activity.
-//     * <p/>
-//     * See the Android Training lesson <a href=
-//     * "http://developer.android.com/training/basics/fragments/communicating.html"
-//     * >Communicating with Other Fragments</a> for more information.
-//     */
-//    public interface OnFragmentInteractionListener {
-//        // TODO: Update argument type and name
-////        public void onFragmentInteraction(Uri uri);
-//    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        int loaderId = loader.getId();
+        Log.e(LOG_TAG, "HomeFragment onLoaderFinished function. Loader Id : " + loaderId);
+        mHomeFragmentAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mHomeFragmentAdapter.swapCursor(null);
+    }
+
+    public void fetchData() {
+        Uri baseUri = PratilipiContract.HomeScreenEntity.CONTENT_URI;
+        Cursor cursor = getActivity().getContentResolver().query(baseUri, CATEGORY_COLUMNS, null, null, null);
+
+
+        if (!cursor.moveToFirst()) {
+            getLoaderManager().initLoader(CATEGORY_LOADER, null, this);
+//            if(isOnline())
+//                makeJsonArryReq();
+//            else
+//                showNoConnectionDialog(getActivity());
+        }
+        else{
+            mHomeFragmentAdapter.swapCursor(cursor);
+        }
+    }
+
+    public void getDataFromDb(String languageId, String categoryId){
+
+        Uri uri = PratilipiContract.HomeScreenEntity.getCategoryWiseContentForHomeScreenUri(languageId, categoryId);
+        Cursor cursor = getActivity().getContentResolver().query(uri, CONTENT_COLUMNS, null, null, null);
+        int contentSize = 0;
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            Homescreen homescreen = new Homescreen();
+            homescreen.setmPratilipiId(cursor.getString(COL_PRATILIPI_ID));
+            homescreen.setmTitle(cursor.getString(COL_PRATILIPI_TITLE));
+            homescreen.setmCoverImageUrl(cursor.getString(COL_COVER_URL));
+            homescreen.setmPrice(cursor.getFloat(COL_PRICE));
+            homescreen.setmDiscountedPrice(COL_DISCOUNTED_PRICE);
+            contentSize++;
+            mHomescreenList.add(homescreen);
+            mCardViewAdapter.notifyDataSetChanged();
+        }
+        Log.e(LOG_TAG, "Count of Content Objects : " + contentSize);
+
+        return;
+    }
 
 }

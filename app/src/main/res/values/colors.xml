@@ -4,4 +4,7 @@
     <color name="primaryDarkColor">#80999999</color>
     <color name="tabsScrollColor">#8a140e</color>
 
+    <color name="pratilipi_white">#FFFFFF</color>
+    <color name="pratilipi_homescreen_title_color">#C1272D</color>
+
 </resources>

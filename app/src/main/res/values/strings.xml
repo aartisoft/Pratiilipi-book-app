@@ -7,5 +7,12 @@
     <string name="action_search">Search</string>
     <string name="action_search_queryHint">Search Pratilipi</string>
 
-<!-- TODO: Remove or change this placeholder text -->
+    <!-- Account type (for sync-adapter authenticator) -->
+    <!-- SyncAdapter related -->
+    <string name="sync_account_type">com.pratilipi.android</string>
+    <string name="content_authority">com.pratilipi.android.pratilipi_and.app</string>
+
+    <!-- Home fragment String -->
+    <string name="view_all">View All</string>
+
 </resources>
