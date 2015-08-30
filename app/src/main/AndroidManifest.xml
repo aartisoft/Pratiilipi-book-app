@@ -2,21 +2,77 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.pratilipi.android.pratilipi_and" >
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" /> <!-- To retrieve the account name (email) as part of sign-in: -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" /> <!-- To auto-complete the email text field in the login form with the user's emails -->
+
+
+    <!-- Permissions for sync adapters -->
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+
     <application
+        android:name=".AppController"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+
         <activity
-            android:name=".MainActivity"
+            android:name=".SplashScreen"
             android:label="@string/app_name"
-            android:theme="@style/PratilipiTheme">
+            android:screenOrientation="portrait"
+            android:theme="@style/splashScreenTheme" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:theme="@style/PratilipiTheme" >
+        </activity>
+
+        <provider
+            android:name=".data.PratilipiProvider"
+            android:authorities="@string/content_authority"
+            android:exported="false"
+            android:syncable="true" >
+        </provider>
+
+        <service android:name=".service.PratilipiService" />
+
+        <!-- SyncAdapter's dummy authentication service -->
+        <!-- <service -->
+        <!-- android:name=".sync.PratilipiAuthenticatorService" -->
+        <!-- > -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="android.accounts.AccountAuthenticator" /> -->
+        <!-- </intent-filter> -->
+        <!-- <meta-data -->
+        <!-- android:name="android.accounts.AccountAuthenticator" -->
+        <!-- android:resource="@xml/authenticator" /> -->
+        <!-- </service> -->
+
+
+        <!-- &lt;!&ndash; The SyncAdapter service &ndash;&gt; -->
+        <!-- <service -->
+        <!-- android:name=".sync.PratilipiSyncService" -->
+        <!-- android:exported="true" -->
+        <!-- > -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="android.content.SyncAdapter" /> -->
+        <!-- </intent-filter> -->
+        <!-- <meta-data -->
+        <!-- android:name="android.content.SyncAdapter" -->
+        <!-- android:resource="@xml/syncadapter" /> -->
+        <!-- </service> -->
+
+
     </application>
 
 </manifest>
