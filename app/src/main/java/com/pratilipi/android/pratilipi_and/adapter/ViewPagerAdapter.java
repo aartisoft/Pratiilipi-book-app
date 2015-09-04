@@ -18,6 +18,8 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
     CharSequence Titles[];
     int NumOfTabs;
 
+    private static final String LOG_TAG = ViewPagerAdapter.class.getSimpleName();
+
     public ViewPagerAdapter(FragmentManager fm, CharSequence mTitles[], int mNumOfTabsSumB) {
         super(fm);
         this.Titles = mTitles;
@@ -26,7 +28,6 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-
         if (position == 0) {
             HomeFragment homeActivityObj = new HomeFragment();
             return homeActivityObj;
