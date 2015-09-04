@@ -24,6 +24,7 @@ public class PratilipiContract {
     // At least, let's hope not.  Don't be that dev, reader.  Don't be that dev.
     public static final String PATH_CATEGORIES = "categories";
     public static final String PATH_HOMESCREEN = "homescreen";
+    public static final String PATH_USER = "user";
     public static final String PATH_CONTENT = "content";
 
     // To make it easy to query for the exact date, we normalize all dates that go into
@@ -103,6 +104,26 @@ public class PratilipiContract {
 
     }
 
+    public static final class UserEntity implements BaseColumns {
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_USER).build();
 
+        public static final String TABLE_NAME = "user";
+
+        public static final String COLUMN_DISPLAY_NAME = "display_name";
+        public static final String COLUMN_EMAIL = "email";
+        public static final String COLUMN_CONTENTS_IN_SHELF = "contents_in_shelf";
+        public static final String COLUMN_IS_LOGGED_IN = "is_logged_in";
+        public static final String COLUMN_PROFILE_IMAGE = "profile_image";
+
+        public static Uri getUserUri(String string) {
+            return CONTENT_URI.buildUpon().appendPath(string)
+                    .build();
+        }
+
+        public static String getEmailFromUri(Uri uri){
+            return uri.getPathSegments().get(1);
+        }
+    }
 
 }

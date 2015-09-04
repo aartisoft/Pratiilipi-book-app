@@ -22,9 +22,13 @@ public class PratilipiProvider extends ContentProvider {
 
     static final int HOMESCREEN = 100;
     static final int HOMESCREEN_CONTENT_BY_CATEGORY = 101;
+    static final int USER = 200;
+    static final int USER_BY_EMAIL = 201;
+
     private static final String sLanguageAndCategorySelection =
             PratilipiContract.HomeScreenEntity.COLUMN_CATEGORY_ID + "=?" +
                     PratilipiContract.HomeScreenEntity.COLUMN_LANGUAGE_ID + "=?";
+    private static final String sUserByEmailSelection = PratilipiContract.UserEntity.COLUMN_EMAIL + "=?";
 
     static UriMatcher buildUriMatcher(){
         final UriMatcher uriMatcher = new UriMatcher( UriMatcher.NO_MATCH );
@@ -32,25 +36,10 @@ public class PratilipiProvider extends ContentProvider {
 
         uriMatcher.addURI(pratilipiAuthority, PratilipiContract.PATH_HOMESCREEN, HOMESCREEN);
         uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_HOMESCREEN + "/*/#", HOMESCREEN_CONTENT_BY_CATEGORY );
+        uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_USER, USER );
+        uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_USER + "/*", USER_BY_EMAIL );
 
         return uriMatcher;
-    }
-
-    private Cursor getContentByLanguageAndCategory( Uri uri, String[] projection, String sortOrder){
-
-        String languageId = PratilipiContract.HomeScreenEntity.getLanguageIdFromUri(uri);
-        String categoryId = PratilipiContract.HomeScreenEntity.getCategoryIdFromUri(uri);
-
-        SQLiteQueryBuilder contentByCategoryAndLanguage = new SQLiteQueryBuilder();
-        contentByCategoryAndLanguage.setTables(PratilipiContract.HomeScreenEntity.TABLE_NAME);
-
-        return contentByCategoryAndLanguage.query( mOpenHelper.getReadableDatabase(),
-                projection,
-                sLanguageAndCategorySelection,
-                new String[]{categoryId, languageId},
-                null,
-                null,
-                null );
     }
 
 
@@ -79,6 +68,14 @@ public class PratilipiProvider extends ContentProvider {
                 retCursor = getDistinctCategory(projection);
                 break;
             }
+            case USER: {
+                retCursor =  getUser(uri, projection, selection, selectionArgs);
+                break;
+            }
+            case USER_BY_EMAIL :{
+                retCursor = getUserByEmail(uri, projection);
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -102,6 +99,7 @@ public class PratilipiProvider extends ContentProvider {
     public Uri insert(Uri uri, ContentValues values) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
+        Uri returnUri = null;
         switch (match){
             case HOMESCREEN:{
                 normalizeDate(values);
@@ -110,10 +108,18 @@ public class PratilipiProvider extends ContentProvider {
                     Log.d(LOG_TAG, "Inserted Row Id : " + id);
                 break;
             }
+            case USER :{
+                long id = db.insert(PratilipiContract.UserEntity.TABLE_NAME, null, values);
+                if( id > 0 ){
+                    returnUri = PratilipiContract.UserEntity.getUserUri(String.valueOf(id));
+                    break;
+                } else
+                    Log.e(LOG_TAG, "User Insert Failed");
+            }
             default:
                 throw  new UnsupportedOperationException("Unknown uri: " + uri);
         }
-        return null;
+        return returnUri;
     }
 
     @Override
@@ -144,7 +150,18 @@ public class PratilipiProvider extends ContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        return 0;
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        final int match = sUriMatcher.match(uri);
+        int rowsUpdated = 0;
+        switch (match){
+            case USER:{
+                rowsUpdated = db.update(PratilipiContract.UserEntity.TABLE_NAME, values, selection, selectionArgs);
+                Log.e(LOG_TAG, "Updated Id : " + rowsUpdated);
+                break;
+            }
+            default: throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+        return rowsUpdated;
     }
 
     public Cursor getDistinctCategory(String[] projection){
@@ -160,6 +177,51 @@ public class PratilipiProvider extends ContentProvider {
                 null,
                 null);
 
+    }
+
+    private Cursor getContentByLanguageAndCategory( Uri uri, String[] projection, String sortOrder){
+
+        String languageId = PratilipiContract.HomeScreenEntity.getLanguageIdFromUri(uri);
+        String categoryId = PratilipiContract.HomeScreenEntity.getCategoryIdFromUri(uri);
+
+        SQLiteQueryBuilder contentByCategoryAndLanguage = new SQLiteQueryBuilder();
+        contentByCategoryAndLanguage.setTables(PratilipiContract.HomeScreenEntity.TABLE_NAME);
+
+        return contentByCategoryAndLanguage.query( mOpenHelper.getReadableDatabase(),
+                projection,
+                sLanguageAndCategorySelection,
+                new String[]{categoryId, languageId},
+                null,
+                null,
+                null );
+    }
+
+    private Cursor getUser( Uri uri, String[] projection, String selection, String[] selectionArgs ){
+        SQLiteQueryBuilder userQuery = new SQLiteQueryBuilder();
+        userQuery.setTables(PratilipiContract.UserEntity.TABLE_NAME);
+
+        return userQuery.query(mOpenHelper.getReadableDatabase(),
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null );
+    }
+
+    private Cursor getUserByEmail(Uri uri, String[] projection){
+
+        String email = PratilipiContract.UserEntity.getEmailFromUri(uri);
+        SQLiteQueryBuilder userQuery = new SQLiteQueryBuilder();
+        userQuery.setTables(PratilipiContract.UserEntity.TABLE_NAME);
+
+        return userQuery.query(mOpenHelper.getReadableDatabase(),
+                projection,
+                sUserByEmailSelection,
+                new String[]{email},
+                null,
+                null,
+                null );
     }
 
 }
