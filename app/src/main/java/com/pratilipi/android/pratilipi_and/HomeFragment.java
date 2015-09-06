@@ -9,7 +9,6 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -72,7 +71,6 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.e(LOG_TAG, "HomeFragment onCreateView function called");
 
         mHomeFragmentAdapter = new HomeFragmentAdapter( getActivity(), null, 0 );
         mCardViewAdapter = new CardViewAdapter(mHomescreenList);
@@ -96,7 +94,6 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        Log.e(LOG_TAG, "onActivityCreated function called");
         fetchData();
         super.onActivityCreated(savedInstanceState);
     }
@@ -104,10 +101,8 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         CursorLoader cursorLoader;
-        Log.e(LOG_TAG, "HomeFragment onCreateLoader function :: CATEGORY_LOADER");
         Uri distinctCategoryUri = PratilipiContract.HomeScreenEntity.CONTENT_URI;
         cursorLoader = new CursorLoader(getActivity(), distinctCategoryUri, CATEGORY_COLUMNS, null, null, null);
-        Log.e(LOG_TAG, "Selection : " + cursorLoader.getProjection());
 
         return cursorLoader;
     }
@@ -115,7 +110,6 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         int loaderId = loader.getId();
-        Log.e(LOG_TAG, "HomeFragment onLoaderFinished function. Loader Id : " + loaderId);
         mHomeFragmentAdapter.swapCursor(data);
     }
 
@@ -157,7 +151,6 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
             mHomescreenList.add(homescreen);
             mCardViewAdapter.notifyDataSetChanged();
         }
-        Log.e(LOG_TAG, "Count of Content Objects : " + contentSize);
 
         return;
     }

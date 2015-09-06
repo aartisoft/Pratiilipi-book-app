@@ -58,7 +58,6 @@ public class ProfileFragment extends Fragment {
             loginLink.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.e(LOG_TAG, "Login button clicked");
                     Intent loginIntent = new Intent(getActivity(), UserLoginActivity.class);
                     startActivity(loginIntent);
                 }
@@ -67,7 +66,6 @@ public class ProfileFragment extends Fragment {
             registerButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.e(LOG_TAG, "Register button clicked");
                     startActivity(new Intent(getActivity(), UserRegisterActivity.class));
                 }
             });
@@ -81,7 +79,6 @@ public class ProfileFragment extends Fragment {
             logoutButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.e(LOG_TAG, "Logout button clicked");
                     Intent intent = getActivity().getIntent();
                     int userLoggedOutCount = logoutUser(mUser.getEmail());
                     if( userLoggedOutCount == 1 )
@@ -121,8 +118,6 @@ public class ProfileFragment extends Fragment {
         if( cursor.getCount() > 0 ) {
             cursor.moveToFirst();
             User user = new User();
-            Log.e(LOG_TAG, "Display Name Position : " + cursor.getColumnIndex(PratilipiContract.UserEntity.COLUMN_DISPLAY_NAME));
-            Log.e(LOG_TAG, "Display Name : " + cursor.getString(cursor.getColumnIndex(PratilipiContract.UserEntity.COLUMN_DISPLAY_NAME)));
             user.setDisplayName(cursor.getString(COL_DISPLAY_NAME));
             user.setContentsInShelf(cursor.getInt(COL_CONTENT_IN_SHELF));
             user.setProfileImageUrl(cursor.getString(COL_PROFILE_IMAGE));
