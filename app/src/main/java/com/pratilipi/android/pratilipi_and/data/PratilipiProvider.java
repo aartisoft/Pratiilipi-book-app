@@ -24,6 +24,8 @@ public class PratilipiProvider extends ContentProvider {
     static final int HOMESCREEN_CONTENT_BY_CATEGORY = 101;
     static final int USER = 200;
     static final int USER_BY_EMAIL = 201;
+    static final int CATEGORY = 300;
+    static final int CATEGORY_LIST = 301;
 
     private static final String sLanguageAndCategorySelection =
             PratilipiContract.HomeScreenEntity.COLUMN_CATEGORY_ID + "=?" +
@@ -38,6 +40,8 @@ public class PratilipiProvider extends ContentProvider {
         uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_HOMESCREEN + "/*/#", HOMESCREEN_CONTENT_BY_CATEGORY );
         uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_USER, USER );
         uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_USER + "/*", USER_BY_EMAIL );
+        uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_CATEGORIES, CATEGORY_LIST);
+        uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_CATEGORIES + "/*", CATEGORY);
 
         return uriMatcher;
     }
@@ -69,11 +73,17 @@ public class PratilipiProvider extends ContentProvider {
                 break;
             }
             case USER: {
+                //TODO : add filter condition as query parameter in uri
                 retCursor =  getUser(uri, projection, selection, selectionArgs);
                 break;
             }
             case USER_BY_EMAIL :{
+                //NOT REQUIRED ACTUALLY AS WE ARE PLANNING TO USE IS_LOGGED_IN = TRUE FILTER IN FUTURE
                 retCursor = getUserByEmail(uri, projection);
+                break;
+            }
+            case CATEGORY_LIST:{
+                retCursor = getCategoryList(uri, projection);
                 break;
             }
             default:
@@ -112,9 +122,17 @@ public class PratilipiProvider extends ContentProvider {
                 long id = db.insert(PratilipiContract.UserEntity.TABLE_NAME, null, values);
                 if( id > 0 ){
                     returnUri = PratilipiContract.UserEntity.getUserUri(String.valueOf(id));
-                    break;
                 } else
                     Log.e(LOG_TAG, "User Insert Failed");
+                break;
+            }
+            case CATEGORY_LIST:{
+                long id = db.insert(PratilipiContract.CategoriesEntity.TABLE_NAME, null, values);
+                if( id > 0 ){
+                    returnUri = PratilipiContract.CategoriesEntity.getCategoryUri(String.valueOf(id));
+                } else
+                    Log.e(LOG_TAG, "Category Insert Failed");
+                break;
             }
             default:
                 throw  new UnsupportedOperationException("Unknown uri: " + uri);
@@ -140,6 +158,23 @@ public class PratilipiProvider extends ContentProvider {
                     db.setTransactionSuccessful();
                 } finally {
                   db.endTransaction();
+                }
+                return rowsInserted;
+            }
+            case CATEGORY_LIST:{
+                db.beginTransaction();
+                int rowsInserted = 0;
+                try{
+                    for( ContentValues value : values ){
+                        normalizeDate(value);
+                        long _id = db.insert(PratilipiContract.CategoriesEntity.TABLE_NAME, null, value);
+                        if (_id != -1) {
+                            rowsInserted++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
                 }
                 return rowsInserted;
             }
@@ -224,4 +259,22 @@ public class PratilipiProvider extends ContentProvider {
                 null );
     }
 
+    private Cursor getCategoryList(Uri uri, String[] projection){
+        SQLiteQueryBuilder categoryList = new SQLiteQueryBuilder();
+        categoryList.setTables(PratilipiContract.CategoriesEntity.TABLE_NAME);
+
+        String languageId = PratilipiContract.CategoriesEntity.getLanguageFromUri(uri);
+        String selection = PratilipiContract.CategoriesEntity.COLUMN_LANGUAGE + "=?";
+        String[] selectionArgs = {languageId};
+        String sortOrder = PratilipiContract.CategoriesEntity.COLUMN_SORT_ORDER;
+
+        return categoryList.query(
+                mOpenHelper.getReadableDatabase(),
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder);
+    }
 }

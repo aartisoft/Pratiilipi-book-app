@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class PratilipiDbHelper extends SQLiteOpenHelper {
 
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
 
     static final String DATABASE_NAME = "pratilipi.db";
 
@@ -53,8 +53,21 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
                 PratilipiContract.UserEntity.COLUMN_PROFILE_IMAGE + " TEXT" +
                 ")";
 
+        final String SQL_CREATE_CATEGORIES_TABLE = "CREATE TABLE " + PratilipiContract.CategoriesEntity.TABLE_NAME + " (" +
+
+                PratilipiContract.CategoriesEntity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+
+                // the ID of the location entry associated with this weather data
+                PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_ID + " INTEGER NOT NULL, " +
+                PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_NAME + " TEXT NOT NULL, " +
+                PratilipiContract.CategoriesEntity.COLUMN_LANGUAGE + " TEXT NOT NULL, " +
+                PratilipiContract.CategoriesEntity.COLUMN_SORT_ORDER + " INTEGER NOT NULL, " +
+                PratilipiContract.CategoriesEntity.COLUMN_CREATION_DATE + " INTEGER NOT NULL " +
+                ")";
+
         sqLiteDatabase.execSQL(SQL_CREATE_HOMESCREEN_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_USER_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_CATEGORIES_TABLE);
     }
 
     @Override
@@ -67,6 +80,7 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
         // should be your top priority before modifying this method.
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.HomeScreenEntity.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.UserEntity.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.CategoriesEntity.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
 }

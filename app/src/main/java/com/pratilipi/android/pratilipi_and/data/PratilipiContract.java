@@ -1,6 +1,5 @@
 package com.pratilipi.android.pratilipi_and.data;
 
-import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.text.format.Time;
@@ -50,12 +49,25 @@ public class PratilipiContract {
 
         public static final String COLUMN_CATEGORY_ID = "category_id";
         public static final String COLUMN_CATEGORY_NAME = "category_name";
-        public static final String COLUMN_CREATION_DATE = "creation_date";
         public static final String COLUMN_LANGUAGE = "language";
+        public static final String COLUMN_SORT_ORDER = "sort_order";
+        public static final String COLUMN_CREATION_DATE = "creation_date";
 
+        public static Uri getCategoryUri(String string) {
+            return CONTENT_URI.buildUpon().appendPath(string)
+                    .build();
+        }
 
-        public static Uri buildLocationUri(long id) {
-            return ContentUris.withAppendedId(CONTENT_URI, id);
+        public static Uri getCategoryListUri(long language){
+            Uri uri = CONTENT_URI
+                            .buildUpon()
+                            .appendQueryParameter(COLUMN_LANGUAGE, String.valueOf(language))
+                            .build();
+            return uri;
+        }
+
+        public static String getLanguageFromUri(Uri uri){
+            return uri.getQueryParameter(COLUMN_LANGUAGE);
         }
 
     }
