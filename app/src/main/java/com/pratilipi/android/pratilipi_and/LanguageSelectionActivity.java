@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
@@ -17,8 +18,14 @@ import java.util.Locale;
 
 public class LanguageSelectionActivity extends Activity {
 
+    private static final String LOG_TAG = LanguageSelectionActivity.class.getSimpleName();
+
     private String mSelectedLanguage ;
-    private final String SELECTED_LANGUAGE = "selected_language";
+    public static final String SELECTED_LANGUAGE = "selected_language";
+
+    public static final String SELECTED_LANGUAGE_GUJARATI = "gu";
+    public static final String SELECTED_LANGUAGE_HINDI = "hi";
+    public static final String SELECTED_LANGUAGE_TAMIL = "ta";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +37,7 @@ public class LanguageSelectionActivity extends Activity {
     }
 
     public void goSelected(View view) {
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(SELECTED_LANGUAGE, mSelectedLanguage);
         editor.commit();
@@ -45,27 +52,30 @@ public class LanguageSelectionActivity extends Activity {
 
         // Check which radio button was clicked
         switch(view.getId()) {
-            case R.id.radio_tamil:
+            case R.id.radio_tamil: {
                 if (checked)
-                    Locale.setDefault(new Locale("ta"));
-                updateLanguage(this,"ta");
+                    Locale.setDefault(new Locale(SELECTED_LANGUAGE_HINDI));
+                updateLanguage(this, SELECTED_LANGUAGE_TAMIL);
                 getSharedPreferences("PREFERENCE", MODE_PRIVATE).edit()
                         .putString("selectedLanguage", "ta").commit();
                 break;
-            case R.id.radio_hindi:
+            }
+            case R.id.radio_hindi: {
                 if (checked)
-                    Locale.setDefault(new Locale("hi"));
-                updateLanguage(this, "hi");
+                    Locale.setDefault(new Locale(SELECTED_LANGUAGE_HINDI));
+                updateLanguage(this, SELECTED_LANGUAGE_HINDI);
                 getSharedPreferences("PREFERENCE", MODE_PRIVATE).edit()
                         .putString("selectedLanguage", "hi").commit();
                 break;
-            case R.id.radio_gujrati:
+            }
+            case R.id.radio_gujrati: {
                 if (checked)
-                    Locale.setDefault(new Locale("gu"));
-                updateLanguage(this, "gu");
+                    Locale.setDefault(new Locale(SELECTED_LANGUAGE_GUJARATI));
+                updateLanguage(this, SELECTED_LANGUAGE_GUJARATI);
                 getSharedPreferences("PREFERENCE", MODE_PRIVATE).edit()
                         .putString("selectedLanguage", "gu").commit();
                 break;
+            }
         }
     }
 
