@@ -36,23 +36,23 @@ public class HttpUtil {
         boolean isSuccessful;
 
         try {
-            Uri builtUri = Uri.parse(apiEndpoint).buildUpon()
-                    .build();
 
-            URL url = new URL(builtUri.toString());
+            StringBuilder query;
+            if (apiEndpoint.contains("?")) {
+                query = new StringBuilder("&");
+            } else {
+                query = new StringBuilder("?");
+            }
+            for (Map.Entry<String, String> entry : requestParams.entrySet()) {
+                query.append(entry.getKey() + "=" + entry.getValue() + "&");
+            }
+
+            Log.e(LOG_TAG, "URL : " + apiEndpoint + query);
+
+            URL url = new URL( apiEndpoint + query );
 
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
-            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            connection.setDoOutput(true);
-
-            if (requestParams != null) {
-                for (Map.Entry<String, String> entry : requestParams.entrySet()) {
-                    connection.addRequestProperty(entry.getKey(),
-                            entry.getValue());
-                }
-            }
-
 
             int status = connection.getResponseCode();
             Log.e(LOG_TAG, "Response Code : " + status);
@@ -82,7 +82,7 @@ public class HttpUtil {
             if( buffer.length() == 0 )
                 return null;
 
-            Log.w(LOG_TAG, "Api response : " + buffer.toString());
+            Log.e(LOG_TAG, "Api response : " + buffer.toString());
             HashMap<String, String> returnMap = new HashMap<>(2);
             returnMap.put(IS_SUCCESSFUL, String.valueOf(isSuccessful));
             returnMap.put(RESPONSE_STRING, buffer.toString());
