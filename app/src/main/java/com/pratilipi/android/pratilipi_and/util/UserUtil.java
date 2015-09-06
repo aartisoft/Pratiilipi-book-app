@@ -32,11 +32,9 @@ public class UserUtil {
     private static final String LOG_TAG = UserUtil.class.getSimpleName();
 
     private final String LOGIN_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/oauth";
-    private final String REGISTER_ENDPOINT = "http://mark-4p41.www.prod-pratilipi.appspot.com/api.pratilipi/register";
+    private final String REGISTER_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/register";
     private final String USER_PROFILE_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/userprofile";
 
-    private final String HTTP_POST = "POST";
-    private final String HTTP_PUT = "PUT";
 
     private static final String USER_NAME = "userName";
     private static final String ACCESS_TOKEN_EXPIRY = "expiry";
