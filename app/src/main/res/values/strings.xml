@@ -17,7 +17,18 @@
 
     <!-- Home fragment String -->
     <string name="view_all">View All</string>
-    <string name="title_activity_splash_screen">SplashScreen</string>
-    <string name="title_activity_language_selection">LanguageSelectionActivity</string>
+    <string name="title_activity_login">Log In</string>
+    <string name="title_activity_user_register">Register</string>
+
+    <!-- User Authentication Form Labels -->
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="register_button">Create Account</string>
+    <string name="login_button">Log In</string>
+    <string name="title_activity_card_list">CardListActivity</string>
+
+    <string name="no_result_string">No results!</string>
 
 </resources>

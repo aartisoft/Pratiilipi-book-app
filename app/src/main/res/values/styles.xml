@@ -23,4 +23,19 @@
         <item name="logo">@drawable/ic_logo</item>
         <item name="icon">@drawable/ic_dot_logo</item>
     </style>
+
+    <!-- Pratilipi Textbox styling -->
+    <style name="PratilipiTheme.EditText">
+        <item name="android:paddingLeft">3dp</item>
+        <item name="android:layout_marginBottom">20dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="background">@color/pratilipi_textbox_background</item>
+    </style>
+
+    <!-- Rating Bar Style-->
+    <style name="CustomRatingBar" parent="@android:style/Widget.RatingBar">
+        <item name="android:progressDrawable">@drawable/custom_rating_bar_full</item>
+        <item name="android:minHeight">23dip</item>
+        <item name="android:maxHeight">23dip</item>
+    </style>
 </resources>

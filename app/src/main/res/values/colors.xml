@@ -7,4 +7,7 @@
     <color name="pratilipi_white">#FFFFFF</color>
     <color name="pratilipi_homescreen_title_color">#C1272D</color>
 
+    <color name="pratilipi_textbox_background">#F5F599</color>
+    <color name="pratilipi_button_background">#009933</color>
+
 </resources>
