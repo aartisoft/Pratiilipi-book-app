@@ -26,6 +26,9 @@ public class PratilipiProvider extends ContentProvider {
     static final int USER_BY_EMAIL = 201;
     static final int CATEGORY = 300;
     static final int CATEGORY_LIST = 301;
+    static final int PRATILIPI = 400;
+    static final int PRATILIPI_BY_ID = 401;
+    static final int CATEGORY_PRATILIPI = 500;
 
     private static final String sLanguageAndCategorySelection =
             PratilipiContract.HomeScreenEntity.COLUMN_CATEGORY_ID + "=?" +
@@ -40,8 +43,11 @@ public class PratilipiProvider extends ContentProvider {
         uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_HOMESCREEN + "/*/#", HOMESCREEN_CONTENT_BY_CATEGORY );
         uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_USER, USER );
         uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_USER + "/*", USER_BY_EMAIL );
-        uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_CATEGORIES, CATEGORY_LIST);
-        uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_CATEGORIES + "/*", CATEGORY);
+        uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_CATEGORY, CATEGORY_LIST);
+        uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_CATEGORY + "/*", CATEGORY);
+        uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_PRATILIPI, PRATILIPI);
+        uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_PRATILIPI + "/*", PRATILIPI_BY_ID);
+        uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_CATEGORY_PRATILIPI, CATEGORY_PRATILIPI);
 
         return uriMatcher;
     }
@@ -64,15 +70,15 @@ public class PratilipiProvider extends ContentProvider {
         Log.e(LOG_TAG, "URI : " + uri);
         Log.e(LOG_TAG, "URI MATCHED WITH : " + sUriMatcher.match(uri));
         switch (sUriMatcher.match(uri)){
-            case HOMESCREEN_CONTENT_BY_CATEGORY: {
+            case HOMESCREEN_CONTENT_BY_CATEGORY :{
                 retCursor = getContentByLanguageAndCategory(uri, projection, sortOrder);
                 break;
             }
-            case HOMESCREEN:{
+            case HOMESCREEN :{
                 retCursor = getDistinctCategory(projection);
                 break;
             }
-            case USER: {
+            case USER :{
                 //TODO : add filter condition as query parameter in uri
                 retCursor =  getUser(uri, projection, selection, selectionArgs);
                 break;
@@ -82,8 +88,16 @@ public class PratilipiProvider extends ContentProvider {
                 retCursor = getUserByEmail(uri, projection);
                 break;
             }
-            case CATEGORY_LIST:{
+            case CATEGORY_LIST :{
                 retCursor = getCategoryList(uri, projection);
+                break;
+            }
+            case PRATILIPI :{
+                retCursor = getPratilipiListByCategory(uri);
+                break;
+            }
+            case PRATILIPI_BY_ID :{
+                retCursor = null;
                 break;
             }
             default:
@@ -134,6 +148,14 @@ public class PratilipiProvider extends ContentProvider {
                     Log.e(LOG_TAG, "Category Insert Failed");
                 break;
             }
+            case CATEGORY_PRATILIPI :{
+                long id = db.insert(PratilipiContract.CategoriesPratilipiEntity.TABLE_NAME, null, values);
+                if( id > 0 ){
+                    returnUri = PratilipiContract.CategoriesPratilipiEntity.getCategoryPratilipiUri(String.valueOf(id));
+                } else
+                    Log.e(LOG_TAG, "Category Insert Failed");
+                break;
+            }
             default:
                 throw  new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -166,8 +188,39 @@ public class PratilipiProvider extends ContentProvider {
                 int rowsInserted = 0;
                 try{
                     for( ContentValues value : values ){
-                        normalizeDate(value);
                         long _id = db.insert(PratilipiContract.CategoriesEntity.TABLE_NAME, null, value);
+                        if (_id != -1) {
+                            rowsInserted++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                return rowsInserted;
+            }
+            case PRATILIPI :{
+                db.beginTransaction();
+                int rowsInserted = 0;
+                try{
+                    for( ContentValues value : values ){
+                        long _id = db.insert(PratilipiContract.PratilipiEntity.TABLE_NAME, null, value);
+                        if (_id != -1) {
+                            rowsInserted++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                return rowsInserted;
+            }
+            case CATEGORY_PRATILIPI :{
+                db.beginTransaction();
+                int rowsInserted = 0;
+                try{
+                    for( ContentValues value : values ){
+                        long _id = db.insert(PratilipiContract.CategoriesPratilipiEntity.TABLE_NAME, null, value);
                         if (_id != -1) {
                             rowsInserted++;
                         }
@@ -276,5 +329,40 @@ public class PratilipiProvider extends ContentProvider {
                 null,
                 null,
                 sortOrder);
+    }
+
+    private Cursor  getPratilipi(Uri uri, String[] projection){
+        SQLiteQueryBuilder pratilipiQuery = new SQLiteQueryBuilder();
+        pratilipiQuery.setTables(PratilipiContract.PratilipiEntity.TABLE_NAME);
+
+        String pratilipiId = PratilipiContract.PratilipiEntity.getPratilipiIdFromUri(uri);
+        String selection = PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID + "=?";
+        String[] selectionArgs = {pratilipiId};
+
+        return pratilipiQuery.query(
+                mOpenHelper.getReadableDatabase(),
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null);
+    }
+
+    private Cursor getPratilipiListByCategory(Uri uri){
+        String categoryId = PratilipiContract.PratilipiEntity.getCategoryIdFromUri(uri);
+
+        String subQuery = "select " + PratilipiContract.CategoriesPratilipiEntity.COLUMN_PRATILIPI_ID
+                            + " from " + PratilipiContract.CategoriesPratilipiEntity.TABLE_NAME
+                            + " where " + PratilipiContract.CategoriesPratilipiEntity.COLUMN_CATEGORY_ID + " = ?";
+        String rawQuery = "SELECT * FROM "
+                            + PratilipiContract.PratilipiEntity.TABLE_NAME + " WHERE "
+                            + PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID + " IN ( "
+                            + subQuery
+                            + ")";
+
+        Log.e(LOG_TAG, "Raw query : " + rawQuery);
+        return mOpenHelper.getReadableDatabase()
+                .rawQuery(rawQuery, new String[]{categoryId});
     }
 }

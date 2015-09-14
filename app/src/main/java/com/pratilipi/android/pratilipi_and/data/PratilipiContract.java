@@ -21,10 +21,11 @@ public class PratilipiContract {
     // looking at weather data. content://com.pratilipi.android.pratilipi_and.app/givemeroot/ will fail,
     // as the ContentProvider hasn't been given any information on what to do with "givemeroot".
     // At least, let's hope not.  Don't be that dev, reader.  Don't be that dev.
-    public static final String PATH_CATEGORIES = "categories";
+    public static final String PATH_CATEGORY = "category";
+    public static final String PATH_CATEGORY_PRATILIPI = "category_pratilipi";
     public static final String PATH_HOMESCREEN = "homescreen";
     public static final String PATH_USER = "user";
-    public static final String PATH_CONTENT = "content";
+    public static final String PATH_PRATILIPI = "pratilipi";
 
     // To make it easy to query for the exact date, we normalize all dates that go into
     // the database to the start of the the Julian day at UTC.
@@ -43,9 +44,9 @@ public class PratilipiContract {
     public static final class CategoriesEntity implements BaseColumns {
 
         public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_CATEGORIES).build();
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_CATEGORY).build();
 
-        public static final String TABLE_NAME = "categories";
+        public static final String TABLE_NAME = "category";
 
         public static final String COLUMN_CATEGORY_ID = "category_id";
         public static final String COLUMN_CATEGORY_NAME = "category_name";
@@ -68,6 +69,31 @@ public class PratilipiContract {
 
         public static String getLanguageFromUri(Uri uri){
             return uri.getQueryParameter(COLUMN_LANGUAGE);
+        }
+
+    }
+
+    public static final class CategoriesPratilipiEntity implements BaseColumns {
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_CATEGORY_PRATILIPI).build();
+
+        public static final String TABLE_NAME = "category_pratilipi";
+
+        public static final String COLUMN_CATEGORY_ID = "category_id";
+        public static final String COLUMN_PRATILIPI_ID = "pratilipi_id";
+        public static final String COLUMN_CREATION_DATE = "creation_date";
+
+        public static Uri getCategoryPratilipiUri(String categoryPratilipiId){
+            return CONTENT_URI.buildUpon().appendPath(categoryPratilipiId).build();
+        }
+
+        public static Uri getPratilipiIdListByCategoryUri(String categoryId){
+            return CONTENT_URI.buildUpon().appendQueryParameter(COLUMN_CATEGORY_ID, categoryId).build();
+        }
+
+        public static String getCategoryIdFromUri(Uri uri){
+            return uri.getQueryParameter(COLUMN_CATEGORY_ID);
         }
 
     }
@@ -112,7 +138,59 @@ public class PratilipiContract {
         }
     }
 
-    public static final class ContentEntity implements BaseColumns {
+    public static final class PratilipiEntity implements BaseColumns {
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_PRATILIPI).build();
+
+        public static final String TABLE_NAME = "pratilipi";
+
+        public static final String COLUMN_PRATILIPI_ID = "pratilipi_id";
+        public static final String COLUMN_TITLE = "title";
+        public static final String COLUMN_TITLE_EN = "title_en";
+        public static final String COLUMN_TYPE = "type";
+        public static final String COLUMN_COVER_IMAGE_URL = "cover_image_url";
+        public static final String COLUMN_LANGUAGE_ID = "language_id";
+        public static final String COLUMN_LANGUAGE_NAME = "language_name";
+        public static final String COLUMN_AUTHOR_ID = "author_id";
+        public static final String COLUMN_AUTHOR_NAME = "author_name";
+        public static final String COLUMN_PRICE = "price";
+        public static final String COLUMN_DISCOUNTED_PRICE = "discounted_price";
+        public static final String COLUMN_SUMMARY = "summary";
+        public static final String COLUMN_INDEX = "content_index";
+        public static final String COLUMN_CONTENT_TYPE = "content_type";
+        public static final String COLUMN_STATE = "state";
+        public static final String COLUMN_GENRE_NAME_LIST = "genre_name_list";
+        public static final String COLUMN_PAGE_COUNT = "page_count";
+        public static final String COLUMN_READ_COUNT = "read_count";
+        public static final String COLUMN_RATING_COUNT = "rating_count";
+        public static final String COLUMN_AVERAGE_RATING = "average_rating";
+        public static final String COLUMN_CURRENT_CHAPTER = "current_chapter";
+        public static final String COLUMN_CURRENT_PAGE = "current_page";
+        public static final String COLUMN_FONT_SIZE = "font_size";
+        public static final String COLUMN_LISTING_DATE = "listing_date";
+        public static final String COLUMN_LAST_UPDATED_DATE = "last_updated_date";
+        public static final String COLUMN_CREATION_DATE = "creation_date";
+        public static final String COLUMN_LAST_ACCESSED_ON = "last_accessed_on";
+
+        public static Uri getPratilipiByIdUri(String pratilipiId){
+            return CONTENT_URI.buildUpon()
+                    .appendPath(pratilipiId)
+                    .build();
+        }
+
+        public static Uri getPratilipiListByCategoryUri(String categoryId){
+            return CONTENT_URI.buildUpon()
+                    .appendQueryParameter(CategoriesEntity.COLUMN_CATEGORY_ID, categoryId)
+                    .build();
+        }
+
+        public static String getCategoryIdFromUri(Uri uri){
+            return uri.getQueryParameter(CategoriesEntity.COLUMN_CATEGORY_ID);
+        }
+
+        public static String getPratilipiIdFromUri(Uri uri){
+            return uri.getPathSegments().get(1);
+        }
 
     }
 
