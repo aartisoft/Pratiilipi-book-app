@@ -29,6 +29,7 @@
     <string name="login_button">Log In</string>
     <string name="title_activity_card_list">CardListActivity</string>
 
-    <string name="no_result_string">No results!</string>
+    <string name="string_no_result">No results!</string>
+    <string name="string_free">FREE</string>
 
 </resources>
