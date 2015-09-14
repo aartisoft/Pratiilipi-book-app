@@ -26,6 +26,7 @@ public class HttpUtil {
     public static final String RESPONSE_STRING = "responseString";
 
     private static int sResponseCode = -1;
+    private static String sResponseString;
 
     private static final String LOG_TAG = HttpUtil.class.getSimpleName();
 
@@ -68,7 +69,7 @@ public class HttpUtil {
 
             StringBuffer buffer = new StringBuffer();
             if( inputStream == null ){
-                return null;
+                sResponseString = null;
             }
 
             bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
@@ -80,12 +81,13 @@ public class HttpUtil {
             bufferedReader.close();
 
             if( buffer.length() == 0 )
-                return null;
+                sResponseString = null;
 
             Log.e(LOG_TAG, "Api response : " + buffer.toString());
+            sResponseString = buffer.toString();
             HashMap<String, String> returnMap = new HashMap<>(2);
             returnMap.put(IS_SUCCESSFUL, String.valueOf(isSuccessful));
-            returnMap.put(RESPONSE_STRING, buffer.toString());
+            returnMap.put(RESPONSE_STRING, sResponseString);
             return returnMap;
 
         } catch (IOException e){
