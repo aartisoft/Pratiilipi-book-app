@@ -20,9 +20,9 @@ import java.util.Vector;
 /**
  * Created by Rahul Ranjan on 9/6/2015.
  */
-public class CategoriesUtil {
+public class CategoryUtil {
 
-    private static final String LOG_TAG = CategoriesUtil.class.getSimpleName();
+    private static final String LOG_TAG = CategoryUtil.class.getSimpleName();
     private static final String CATEGORIES_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/category";
 
     private static final String CATEGORY_DATA_LIST = "categoryDataList";
@@ -33,7 +33,7 @@ public class CategoriesUtil {
     private boolean mIsSuccessful;
     private ProgressDialog mProgressDialog;
 
-    public CategoriesUtil(Context context, String processMessage){
+    public CategoryUtil(Context context, String processMessage){
         mProgressDialog = new ProgressDialog(context);
         mProgressDialog.setCancelable(false);
         mProgressDialog.setMessage(processMessage);
@@ -68,7 +68,7 @@ public class CategoriesUtil {
         }
     }
 
-    public int updateCategoriesEntity(Context context, String apiResponseString)
+    public int bulkInsert(Context context, String apiResponseString)
             throws JSONException {
         int rowsInserted = 0;
         Vector<ContentValues> cVVector = new Vector<ContentValues>();
@@ -86,8 +86,8 @@ public class CategoriesUtil {
             values.put(PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_ID, categoryData.getString(CATEGORY_ID));
             values.put(PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_NAME, categoryData.getString(CATEGORY_NAME));
             values.put(PratilipiContract.CategoriesEntity.COLUMN_SORT_ORDER, categoryData.getString(SORT_ORDER));
-            values.put(PratilipiContract.CategoriesEntity.COLUMN_LANGUAGE, PratilipiUtil.getPreferredLanguage(context));
-            values.put(PratilipiContract.CategoriesEntity.COLUMN_CREATION_DATE, PratilipiUtil.getCurrentJulianDay());
+            values.put(PratilipiContract.CategoriesEntity.COLUMN_LANGUAGE, AppUtil.getPreferredLanguage(context));
+            values.put(PratilipiContract.CategoriesEntity.COLUMN_CREATION_DATE, AppUtil.getCurrentJulianDay());
 
             cVVector.add(values);
         }
@@ -102,7 +102,7 @@ public class CategoriesUtil {
         if( rowsInserted > 0 ) {
             int rowsDeleted = context.getContentResolver().delete(PratilipiContract.HomeScreenEntity.CONTENT_URI,
                     PratilipiContract.HomeScreenEntity.COLUMN_DATE + "<?",
-                    new String[]{String.valueOf(dateInMillis)});
+                    new String[]{String.valueOf(AppUtil.getCurrentJulianDay())});
             Log.e(LOG_TAG, "Number of Rows Deleted : " + rowsDeleted);
         }
 
