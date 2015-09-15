@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:tools="http://schemas.android.com/tools"
+android:orientation="vertical"
+android:layout_width="fill_parent"
+android:layout_height="wrap_content"
+xmlns:android="http://schemas.android.com/apk/res/android"
+tools:context="com.pratilipi.android.pratilipi_and.DetailActivity">
+    <!-- if required custom actionbar will be used -->
+    <ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:fillViewport="true"
+        android:scrollbars="none">
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:weightSum="1">
+
+            <LinearLayout
+                android:id="@+id/detail_pratilipi_detail_linear_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="fill_horizontal">
+
+                <com.android.volley.toolbox.NetworkImageView
+                    android:id="@+id/detail_cover_image"
+                    android:layout_width="100dp"
+                    android:layout_height="match_parent"
+                    android:paddingLeft="5dp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginLeft="6dp">
+
+                    <TextView
+                        android:id="@+id/detail_title_textview"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:paddingTop="20dp"
+                        android:paddingLeft="5dp"/>
+                    <TextView
+                        android:id="@+id/detail_author_name_textview"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:padding="5dp"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="left"
+                        android:orientation="horizontal">
+                        <RatingBar
+                            android:id="@+id/detail_ratingBar"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/CustomRatingBar"
+                            android:numStars="5"
+                            android:stepSize="0.1"
+                            android:isIndicator="true"
+                            android:layout_marginLeft="5dp"
+                            android:gravity="center"
+                            android:paddingTop="10dp"/>
+                        <TextView
+                            android:id="@+id/detail_rating_count_textview"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_toLeftOf="@+id/detail_ratingBar"
+                            android:layout_gravity="center" />
+                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/detail_price_textview"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:layout_margin="5dp"
+                        android:textStyle="bold"
+                        android:textColor="#009245"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_margin="5dp">
+                        <Button
+                            android:id="@+id/detail_read_button"
+                            android:layout_height="40sp"
+                            android:layout_width="0dp"
+                            android:layout_weight="0.5"
+                            android:text="READ"
+                            android:onClick="launchReader"
+                            android:background="@color/pratilipi_teal"
+                            android:textColor="@color/pratilipi_white"
+                            android:layout_marginRight="2dp" />
+                        <Button
+                            android:id="@+id/detail_add_to_shelf_button"
+                            android:layout_height="40sp"
+                            android:layout_width="0dp"
+                            android:layout_weight="0.5"
+                            android:text="ADD TO SHELF"
+                            android:background="@color/pratilipi_red"
+                            android:textColor="@color/pratilipi_white"
+                            android:layout_marginLeft="2dp"/>
+                        <!--<Button-->
+                        <!--android:id="@+id/reviewButton"-->
+                        <!--android:layout_height="40sp"-->
+                        <!--android:layout_width="0dp"-->
+                        <!--android:layout_weight="1"-->
+                        <!--android:text="REVIEW"/>-->
+                    </LinearLayout>
+
+                </LinearLayout>
+            </LinearLayout>
+            <TextView
+                android:id="@+id/detail_summary_textview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_marginTop="10dp"
+                android:padding="5dp"
+                android:layout_below="@+id/detail_pratilipi_detail_linear_layout"/>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+
+
+</LinearLayout>

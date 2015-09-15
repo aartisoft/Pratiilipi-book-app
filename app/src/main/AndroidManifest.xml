@@ -42,12 +42,22 @@
         <activity
             android:name=".UserLoginActivity"
             android:label="@string/title_activity_login"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".MainActivity" >
         </activity>
         <activity
             android:name=".UserRegisterActivity"
             android:label="@string/title_activity_user_register"
             android:parentActivityName=".MainActivity" >
+        </activity>
+        <activity
+            android:name=".CardListActivity"
+            android:label="@string/title_activity_card_list"
+            android:parentActivityName=".MainActivity" >
+        </activity>
+        <activity
+            android:name=".DetailActivity"
+            android:theme="@style/PratilipiTheme"
+            android:parentActivityName=".CardListActivity" >
         </activity>
 
         <provider
@@ -85,11 +95,7 @@
         <!-- android:resource="@xml/syncadapter" /> -->
         <!-- </service> -->
 
-        <activity
-            android:name=".CardListActivity"
-            android:label="@string/title_activity_card_list"
-            android:parentActivityName=".MainActivity" >
-        </activity>
+
     </application>
 
 </manifest>

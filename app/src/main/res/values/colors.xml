@@ -10,4 +10,7 @@
     <color name="pratilipi_textbox_background">#F5F599</color>
     <color name="pratilipi_button_background">#009933</color>
 
+    <color name="pratilipi_teal">#009688</color>
+    <color name="pratilipi_red">#E53935</color>
+
 </resources>
