@@ -1,6 +1,7 @@
 package com.pratilipi.android.pratilipi_and.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Typeface;
 import android.support.v7.widget.CardView;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.pratilipi.android.pratilipi_and.AppController;
+import com.pratilipi.android.pratilipi_and.DetailActivity;
 import com.pratilipi.android.pratilipi_and.R;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
 import com.pratilipi.android.pratilipi_and.datafiles.Pratilipi;
@@ -41,7 +43,6 @@ public class CardListViewAdapter extends RecyclerView.Adapter<CardListViewAdapte
 
     @Override
     public CardListViewAdapter.DataViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Log.e(LOG_TAG, "ONCREATEVIEWHOLDER CALLED");
         this.mViewGroup = parent;
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_list_cardview, parent, false);
         DataViewHolder dataViewHolder = new DataViewHolder(v);
@@ -76,9 +77,10 @@ public class CardListViewAdapter extends RecyclerView.Adapter<CardListViewAdapte
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Intent i = new Intent(context, DetailPageActivity.class);
-//                i.putExtra(DetailPageActivity.METADATA, (Serializable) metadataObj);
-//                context.startActivity(i);
+                Intent i = new Intent(context, DetailActivity.class);
+                i.putExtra(DetailActivity.PRATILIPI, pratilipi);
+                i.putExtra(DetailActivity.PARENT_ACTIVITY_CLASS_NAME, context.getClass().getSimpleName());
+                context.startActivity(i);
                 Log.e(LOG_TAG, "Item clicked. Title : " + pratilipi.getTitle());
             }
         });
@@ -159,10 +161,9 @@ public class CardListViewAdapter extends RecyclerView.Adapter<CardListViewAdapte
             pratilipi.setCreationDate(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_CREATION_DATE)));
 
             mPratilipiList.add(pratilipi);
-            this.notifyDataSetChanged();
+//            this.notifyDataSetChanged();
         }
         Log.e(LOG_TAG, "Array Length : " + mPratilipiList.size());
-        Log.e(LOG_TAG, "SWAP CURSOR FUNCTION CALLED. RETURN CONTROL");
         return;
     }
 }
