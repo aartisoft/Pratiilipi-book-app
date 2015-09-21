@@ -1,6 +1,8 @@
 package com.pratilipi.android.pratilipi_and.util;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.app.Service;
 import android.content.ContentValues;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -8,6 +10,7 @@ import android.util.Log;
 
 import com.pratilipi.android.pratilipi_and.GetCallback;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
+import com.pratilipi.android.pratilipi_and.datafiles.Pratilipi;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,7 +28,8 @@ public class PratilipiUtil {
 
     private static final String PRATILIPI_LIST_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/pratilipi/list";
 
-    private static final String PRATILIPI_LIST = "pratilipiList";
+    public static final String PRATILIPI_LIST = "pratilipiList";
+
     private static final String PRATILIPI_ID = "id";
     private static final String PRATILIPI_TITLE = "title";
     private static final String PRATILIPI_TITLE_EN = "titleEn";
@@ -91,10 +95,9 @@ public class PratilipiUtil {
         }
     }
 
-    public static int bulkInsert(Context context, JSONObject pratilipiListObject, String categoryId){
+    public static int bulkInsert(Context context, JSONArray pratilipiListArray, String categoryId){
         int rowsInserted = 0;
         try{
-            JSONArray pratilipiListArray = pratilipiListObject.getJSONArray(PRATILIPI_LIST);
             int length = pratilipiListArray.length();
             Log.e(LOG_TAG, "JSON Array Length : " + length);
             Vector<ContentValues> pratilipiVector = new Vector<ContentValues>();
@@ -104,19 +107,25 @@ public class PratilipiUtil {
                 ContentValues values = new ContentValues();
                 values.put(PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID, pratilipiObject.getString(PRATILIPI_ID));
                 values.put(PratilipiContract.PratilipiEntity.COLUMN_TITLE, pratilipiObject.getString(PRATILIPI_TITLE));
-                values.put(PratilipiContract.PratilipiEntity.COLUMN_TITLE_EN, pratilipiObject.getString(PRATILIPI_TITLE_EN));
+                if( pratilipiObject.has(PRATILIPI_TITLE_EN )) {
+                    values.put(PratilipiContract.PratilipiEntity.COLUMN_TITLE_EN, pratilipiObject.getString(PRATILIPI_TITLE_EN));
+                }
                 values.put(PratilipiContract.PratilipiEntity.COLUMN_TYPE, pratilipiObject.getString(PRATILIPI_TYPE));
                 values.put(PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_ID, pratilipiObject.getString(PRATILIPI_AUTHOR_ID));
 
-                JSONObject author = pratilipiObject.getJSONObject(PRATILIPI_AUTHOR_OBJECT);
-                if( author.getString(PRATILIPI_AUTHOR_NAME) == null || author.getString(PRATILIPI_AUTHOR_NAME).isEmpty() )
-                    values.put(PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_NAME, author.getString(PRATILIPI_AUTHOR_NAME_EN));
-                else
-                    values.put(PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_NAME, author.getString(PRATILIPI_AUTHOR_NAME));
+                if( pratilipiObject.has(PRATILIPI_AUTHOR_OBJECT)) {
+                    JSONObject author = pratilipiObject.getJSONObject(PRATILIPI_AUTHOR_OBJECT);
+                    if ( !author.has(PRATILIPI_AUTHOR_NAME) || author.getString(PRATILIPI_AUTHOR_NAME).isEmpty())
+                        values.put(PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_NAME, author.getString(PRATILIPI_AUTHOR_NAME_EN));
+                    else
+                        values.put(PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_NAME, author.getString(PRATILIPI_AUTHOR_NAME));
+                }
 
                 values.put(PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_ID, pratilipiObject.getString(PRATILIPI_LANGUAGE_ID));
-                JSONObject language = pratilipiObject.getJSONObject(PRATILIPI_LANGUAGE_OBJECT);
-                values.put(PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_NAME, language.getString(PRATILIPI_LANGUAGE_NAME));
+                if( pratilipiObject.has(PRATILIPI_LANGUAGE_OBJECT)) {
+                    JSONObject language = pratilipiObject.getJSONObject(PRATILIPI_LANGUAGE_OBJECT);
+                    values.put(PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_NAME, language.getString(PRATILIPI_LANGUAGE_NAME));
+                }
 
                 values.put(PratilipiContract.PratilipiEntity.COLUMN_STATE, pratilipiObject.getString(PRATILIPI_STATE));
                 if(pratilipiObject.has(PRATILIPI_SUMMARY))
@@ -151,7 +160,6 @@ public class PratilipiUtil {
                 categoryPratilipiVector.add(categoryPratilipiValue);
             }
 
-            Log.e(LOG_TAG, "PRATILIPI VECTOR SIZE : " + pratilipiVector.size());
             if ( pratilipiVector.size() > 0 ) {
                 ContentValues[] cvArray = new ContentValues[pratilipiVector.size()];
                 pratilipiVector.toArray(cvArray);
@@ -159,12 +167,15 @@ public class PratilipiUtil {
                 Log.e(LOG_TAG, "Number of Rows Inserted : " + rowsInserted);
             }
 
-            Log.e(LOG_TAG, "CATEGORY PRATILIPI VECTOR SIZE : " + categoryPratilipiVector.size());
             if( rowsInserted > 0 ){
                 ContentValues[] cvArray = new ContentValues[categoryPratilipiVector.size()];
                 categoryPratilipiVector.toArray(cvArray);
-                rowsInserted = context.getContentResolver().bulkInsert(PratilipiContract.CategoriesPratilipiEntity.CONTENT_URI, cvArray);
-                Log.e(LOG_TAG, "Number of Rows Inserted : " + rowsInserted);
+                if( context instanceof Activity ) {
+                    rowsInserted = context.getContentResolver().bulkInsert(PratilipiContract.HomeScreenBridgeEntity.CONTENT_URI, cvArray);
+                }
+                else if( context instanceof Service ) {
+                    rowsInserted = context.getContentResolver().bulkInsert(PratilipiContract.CategoriesPratilipiEntity.CONTENT_URI, cvArray);
+                }
             }
 
 
@@ -175,4 +186,55 @@ public class PratilipiUtil {
 
         return rowsInserted;
     }
+
+    public static Pratilipi createPratilipiFromJsonObject( JSONObject pratilipiObject ){
+        Pratilipi pratilipi = new Pratilipi();
+        try {
+            pratilipi.setPratilipiId(pratilipiObject.getString(PRATILIPI_ID));
+            if( pratilipiObject.has( PRATILIPI_TITLE )) {
+                pratilipi.setTitle( pratilipiObject.getString( PRATILIPI_TITLE ) );
+            } else if( pratilipiObject.has( PRATILIPI_TITLE_EN ) )
+                pratilipi.setTitle(pratilipiObject.getString(PRATILIPI_TITLE_EN));
+            pratilipi.setType(pratilipiObject.getString(PRATILIPI_TYPE));
+            pratilipi.setAuthorId(pratilipiObject.getString(PRATILIPI_AUTHOR_ID));
+
+            if( pratilipiObject.has( PRATILIPI_AUTHOR_OBJECT )){
+                JSONObject author = pratilipiObject.getJSONObject( PRATILIPI_AUTHOR_OBJECT );
+                if( author.has( PRATILIPI_AUTHOR_NAME ))
+                    pratilipi.setAuthorName( author.getString( PRATILIPI_AUTHOR_NAME ));
+                else if( author.has( PRATILIPI_AUTHOR_NAME_EN ))
+                    pratilipi.setAuthorName( author.getString( PRATILIPI_AUTHOR_NAME_EN ));
+            }
+
+            pratilipi.setLanguageId(pratilipiObject.getString(PRATILIPI_LANGUAGE_ID));
+            if( pratilipiObject.has(PRATILIPI_LANGUAGE_OBJECT)) {
+                JSONObject language = pratilipiObject.getJSONObject(PRATILIPI_LANGUAGE_OBJECT);
+                pratilipi.setLanguageName( language.getString(PRATILIPI_LANGUAGE_NAME) );
+            }
+
+            pratilipi.setState( pratilipiObject.getString(PRATILIPI_STATE) );
+            if( pratilipiObject.has(PRATILIPI_SUMMARY) )
+                pratilipi.setSummary( pratilipiObject.getString(PRATILIPI_SUMMARY) );
+            if( pratilipiObject.has( PRATILIPI_INDEX ))
+                pratilipi.setIndex( pratilipiObject.getString( PRATILIPI_INDEX ));
+            pratilipi.setContentType( pratilipiObject.getString( PRATILIPI_CONTENT_TYPE ));
+            pratilipi.setRatingCount( pratilipiObject.getLong( PRATILIPI_RATING_COUNT ));
+
+            double averageRating = 0;
+            if( pratilipiObject.getDouble(PRATILIPI_RATING_COUNT) > 0 )
+                averageRating = pratilipiObject.getDouble(PRATILIPI_STAR_COUNT) / pratilipiObject.getDouble(PRATILIPI_RATING_COUNT);
+            pratilipi.setAverageRating((float) averageRating);
+
+            pratilipi.setPrice(pratilipiObject.getDouble(PRATILIPI_PRICE));
+            pratilipi.setDiscountedPrice(pratilipiObject.getDouble(PRATILIPI_DISCOUNTED_PRICE));
+            pratilipi.setPageCount(pratilipiObject.getInt(PRATILIPI_PAGE_COUNT));
+            pratilipi.setCoverImageUrl(pratilipiObject.getString(PRATILIPI_COVER_IMAGE_URL));
+            pratilipi.setGenreList(pratilipiObject.getString(PRATILIPI_GENRE_LIST));
+        } catch ( JSONException e ){
+            e.printStackTrace();
+        }
+
+        return pratilipi;
+    }
+
 }

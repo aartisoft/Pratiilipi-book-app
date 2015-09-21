@@ -8,80 +8,80 @@ import java.io.Serializable;
 public class Homescreen implements Serializable {
 
     // private variables
-    private String mPratilipiId; // Pratilipi id
-    private String mTitle; // content title
-    private String mContentType; // PRATILIPI,IMAGE
-    private String mAuthorId;
-    private String mAuthorFullName;
-    private String mCoverImageUrl;
+    private String pratilipiId; // Pratilipi id
+    private String title; // content title
+    private String contentType; // PRATILIPI,IMAGE
+    private String authorId;
+    private String authorFullName;
+    private String coverImageUrl;
 //    private long _ratingCount;
 //    private long _starCount;
-    private float mPrice;
-    private float mDiscountedPrice;
+    private float price;
+    private float discountedPrice;
 
     public Homescreen(){}
 
-    public String getmPratilipiId() {
-        return mPratilipiId;
+    public String getPratilipiId() {
+        return pratilipiId;
     }
 
-    public String getmAuthorFullName() {
-        return mAuthorFullName;
+    public String getAuthorFullName() {
+        return authorFullName;
     }
 
-    public String getmAuthorId() {
-        return mAuthorId;
+    public String getAuthorId() {
+        return authorId;
     }
 
-    public String getmContentType() {
-        return mContentType;
+    public String getContentType() {
+        return contentType;
     }
 
-    public String getmCoverImageUrl() {
-        return mCoverImageUrl;
+    public String getCoverImageUrl() {
+        return coverImageUrl;
     }
 
-    public float getmDiscountedPrice() {
-        return mDiscountedPrice;
+    public float getDiscountedPrice() {
+        return discountedPrice;
     }
 
-    public float getmPrice() {
-        return mPrice;
+    public float getPrice() {
+        return price;
     }
 
-    public String getmTitle() {
-        return mTitle;
+    public String getTitle() {
+        return title;
     }
 
-    public void setmPratilipiId(String mPratilipiId) {
-        this.mPratilipiId = mPratilipiId;
+    public void setPratilipiId(String pratilipiId) {
+        this.pratilipiId = pratilipiId;
     }
 
-    public void setmAuthorFullName(String mAuthorFullName) {
-        this.mAuthorFullName = mAuthorFullName;
+    public void setAuthorFullName(String authorFullName) {
+        this.authorFullName = authorFullName;
     }
 
-    public void setmAuthorId(String mAuthorId) {
-        this.mAuthorId = mAuthorId;
+    public void setAuthorId(String authorId) {
+        this.authorId = authorId;
     }
 
-    public void setmContentType(String mContentType) {
-        this.mContentType = mContentType;
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 
-    public void setmCoverImageUrl(String mCoverImageUrl) {
-        this.mCoverImageUrl = mCoverImageUrl;
+    public void setCoverImageUrl(String coverImageUrl) {
+        this.coverImageUrl = coverImageUrl;
     }
 
-    public void setmDiscountedPrice(float mDiscountedPrice) {
-        this.mDiscountedPrice = mDiscountedPrice;
+    public void setDiscountedPrice(float discountedPrice) {
+        this.discountedPrice = discountedPrice;
     }
 
-    public void setmPrice(float mPrice) {
-        this.mPrice = mPrice;
+    public void setPrice(float price) {
+        this.price = price;
     }
 
-    public void setmTitle(String mTitle) {
-        this.mTitle = mTitle;
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

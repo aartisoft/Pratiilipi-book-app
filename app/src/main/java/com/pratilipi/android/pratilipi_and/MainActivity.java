@@ -1,5 +1,6 @@
 package com.pratilipi.android.pratilipi_and;
 
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,13 +8,15 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.pratilipi.android.pratilipi_and.adapter.ViewPagerAdapter;
-import com.pratilipi.android.pratilipi_and.service.PratilipiService;
 
 public class MainActivity extends AppCompatActivity{
+
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     private ViewPager mViewPager;
     private ViewPagerAdapter mViewPageradapter;
@@ -21,6 +24,7 @@ public class MainActivity extends AppCompatActivity{
     private CharSequence mTitles[] = {"HOME","CATEGORIES","SHELF","PROFILE"};
     private int mNumbOfTabs = 4;
     private int mTabPosition;
+    private SearchView  mSearchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +48,9 @@ public class MainActivity extends AppCompatActivity{
         mTabs.setViewPager(mViewPager);
         mViewPager.setCurrentItem(getIntent().getFlags());
 
-        Intent serviceIntent = new Intent(this, PratilipiService.class);
-        startService(serviceIntent);
+        //TODO : SCHEDULE SERVICE. RIGHT NOW THIS IS CALLED EVERY TIME MAIN ACTIVITY IS STARTED OR RESUMED
+//        Intent serviceIntent = new Intent(this, PratilipiService.class);
+//        startService(serviceIntent);
     }
 
     @Override
@@ -60,6 +65,39 @@ public class MainActivity extends AppCompatActivity{
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setQueryHint(getString(R.string.action_search_queryHint));
 
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        if (null != searchView) {
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+            searchView.setIconifiedByDefault(false);
+        }
+
+        SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
+            public boolean onQueryTextChange(String newText) {
+                // this is your adapter that will be filtered
+                Log.e(LOG_TAG, "Search query : " + newText );
+                return true;
+            }
+
+            public boolean onQueryTextSubmit(String query) {
+                //Here u can get the value "query" which is entered in the search box.
+                Log.e(LOG_TAG, "Search query : " + query);
+                Intent intent = new Intent(getApplicationContext(), CardListActivity.class);
+                intent.putExtra(CardListActivity.INTENT_EXTRA_LAUNCHER, CardListActivity.LAUNCHER_SEARCH );
+                intent.putExtra( CardListActivity.INTENT_EXTRA_SEARCH_QUERY, query );
+                startActivity(intent);
+                return true;
+            }
+        };
+        searchView.setOnQueryTextListener(queryTextListener);
+
+        return true;
+    }
+
+    @Override
+    public boolean onSearchRequested() {
+        Log.e(LOG_TAG, "Search Button Clicked");
+        String searchQuery = (String) mSearchView.getQuery();
+        Log.e(LOG_TAG, "Search Query : " + searchQuery);
         return true;
     }
 
@@ -93,4 +131,5 @@ public class MainActivity extends AppCompatActivity{
 //        if(null!= searchViewButton)
 //            searchViewButton.clearFocus();
     }
+
 }

@@ -1,5 +1,6 @@
 package com.pratilipi.android.pratilipi_and;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,17 +10,27 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.pratilipi.android.pratilipi_and.adapter.CardViewAdapter;
 import com.pratilipi.android.pratilipi_and.adapter.HomeFragmentAdapter;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
 import com.pratilipi.android.pratilipi_and.datafiles.Homescreen;
+import com.pratilipi.android.pratilipi_and.service.PratilipiService;
+import com.pratilipi.android.pratilipi_and.util.AppUtil;
+import com.pratilipi.android.pratilipi_and.util.CategoryUtil;
+import com.pratilipi.android.pratilipi_and.util.HomeFragmentUtil;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -27,37 +38,16 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
 
     private static final int CATEGORY_LOADER = 0;
     private static final String LOG_TAG = HomeFragment.class.getSimpleName();
+    private static final String LOADING_MESSAGE = "Loading...";
+    private static final String LANGUAGE_ID = "languageId";
 
     private HomeFragmentAdapter mHomeFragmentAdapter;
     private ListView mHomeListView;
-
+    private RecyclerView mCardListView;
     private CardViewAdapter mCardViewAdapter;
-    private RecyclerView mcardListView;
-    private List<Homescreen> mHomescreenList = new ArrayList<Homescreen>();
+    private List<Homescreen> mHomescreenList;
+    private HomeFragmentUtil mHomeFragmentUtil;
 
-    private static final String[] CATEGORY_COLUMNS = {
-            PratilipiContract.HomeScreenEntity._ID,
-            PratilipiContract.HomeScreenEntity.COLUMN_CATEGORY_ID,
-            PratilipiContract.HomeScreenEntity.COLUMN_CATEGORY_NAME};
-
-    public static final int COL_CATEGORY_ID = 1;
-    public static final int COL_CATEGORY_NAME = 2;
-
-
-    private static final String[] CONTENT_COLUMNS = {
-            PratilipiContract.HomeScreenEntity._ID,
-            PratilipiContract.HomeScreenEntity.COLUMN_PRATILIPI_ID,
-            PratilipiContract.HomeScreenEntity.COLUMN_PRATILIPI_TITLE,
-            PratilipiContract.HomeScreenEntity.COLUMN_COVER_URL,
-            PratilipiContract.HomeScreenEntity.COLUMN_PRICE,
-            PratilipiContract.HomeScreenEntity.COLUMN_DISCOUNTED_PRICE
-    };
-
-    public static final int COL_PRATILIPI_ID = 1;
-    public static final int COL_PRATILIPI_TITLE = 2;
-    public static final int COL_COVER_URL = 3;
-    public static final int COL_PRICE = 4;
-    public static final int COL_DISCOUNTED_PRICE = 5;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -66,50 +56,55 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mHomescreenList = new ArrayList<>();
+        mCardViewAdapter = new CardViewAdapter(mHomescreenList);
+        mHomeFragmentAdapter = new HomeFragmentAdapter( getActivity(), null, 0, mCardViewAdapter );
+        fetchData();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        mHomeFragmentAdapter = new HomeFragmentAdapter( getActivity(), null, 0 );
-        mCardViewAdapter = new CardViewAdapter(mHomescreenList);
+        Log.e(LOG_TAG, "onCreateView() function called");
+
+        View cardView = inflater.inflate(R.layout.homescreen_list_item, (ViewGroup) mHomeListView, false);
+        mCardListView = (RecyclerView) cardView.findViewById(R.id.homescreen_card_list_view);
+        mCardListView.setAdapter(mCardViewAdapter);
+        mCardListView.setHasFixedSize(true);
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        mCardListView.setLayoutManager(layoutManager);
 
         View rootView = inflater.inflate(R.layout.fragment_home, container, false);
 
         mHomeListView = (ListView) rootView.findViewById(R.id.homescreen_fragment_listview);
         mHomeListView.setAdapter(mHomeFragmentAdapter);
 
-        View cardView = inflater.inflate(R.layout.homescreen_list_item, (ViewGroup) mHomeListView, false);
-        mcardListView = (RecyclerView) cardView.findViewById(R.id.homescreen_card_list_view);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-        layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-
-        mcardListView.setHasFixedSize(true);
-        mcardListView.setLayoutManager(layoutManager);
-        mcardListView.setAdapter(mCardViewAdapter);
 
         return rootView;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        fetchData();
         super.onActivityCreated(savedInstanceState);
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         CursorLoader cursorLoader;
-        Uri distinctCategoryUri = PratilipiContract.HomeScreenEntity.CONTENT_URI;
-        cursorLoader = new CursorLoader(getActivity(), distinctCategoryUri, CATEGORY_COLUMNS, null, null, null);
+        Uri categoryUri = PratilipiContract.HomeScreenBridgeEntity.CONTENT_URI
+                .buildUpon()
+                .appendQueryParameter(PratilipiContract.CategoriesEntity.COLUMN_IS_ON_HOME_SCREEN, String.valueOf(1))
+                .build();
+        cursorLoader = new CursorLoader(getActivity(), categoryUri, CategoryUtil.CATEGORY_COLUMNS, null, null, null);
 
         return cursorLoader;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        int loaderId = loader.getId();
         mHomeFragmentAdapter.swapCursor(data);
     }
 
@@ -118,13 +113,12 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
         mHomeFragmentAdapter.swapCursor(null);
     }
 
-    public void fetchData() {
-        Uri baseUri = PratilipiContract.HomeScreenEntity.CONTENT_URI;
-        Cursor cursor = getActivity().getContentResolver().query(baseUri, CATEGORY_COLUMNS, null, null, null);
 
+    private void fetchData() {
+        Cursor cursor = CategoryUtil.getCategoryList(getActivity(), 1);
 
         if (!cursor.moveToFirst()) {
-            getLoaderManager().initLoader(CATEGORY_LOADER, null, this);
+            fetchDataFromServer();
 //            if(isOnline())
 //                makeJsonArryReq();
 //            else
@@ -132,27 +126,55 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
         }
         else{
             mHomeFragmentAdapter.swapCursor(cursor);
+
+            int currentJulianDay = AppUtil.getCurrentJulianDay();
+            int lastDbUpdateJulianDay = cursor.getInt(CategoryUtil.COL_CREATION_DATE);
+            if( currentJulianDay > lastDbUpdateJulianDay )
+                startPratilipiService();
         }
     }
 
-    public void getDataFromDb(String languageId, String categoryId){
+    private void fetchDataFromServer(){
+        mHomeFragmentUtil = new HomeFragmentUtil(getActivity(), LOADING_MESSAGE);
+        HashMap<String, String> params = new HashMap<>();
+        params.put( LANGUAGE_ID, String.valueOf(AppUtil.getPreferredLanguage(getActivity())) );
+        mHomeFragmentUtil.fetchHomeFragmentContent(params, new GetCallback() {
+            @Override
+            public void done(boolean isSuccessful, String data) {
+                if (isSuccessful) {
+                    onSuccess(data);
+                } else
+                    onFailed(data);
+            }
+        });
+    }
 
-        Uri uri = PratilipiContract.HomeScreenEntity.getCategoryWiseContentForHomeScreenUri(languageId, categoryId);
-        Cursor cursor = getActivity().getContentResolver().query(uri, CONTENT_COLUMNS, null, null, null);
-        int contentSize = 0;
-        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-            Homescreen homescreen = new Homescreen();
-            homescreen.setmPratilipiId(cursor.getString(COL_PRATILIPI_ID));
-            homescreen.setmTitle(cursor.getString(COL_PRATILIPI_TITLE));
-            homescreen.setmCoverImageUrl(cursor.getString(COL_COVER_URL));
-            homescreen.setmPrice(cursor.getFloat(COL_PRICE));
-            homescreen.setmDiscountedPrice(COL_DISCOUNTED_PRICE);
-            contentSize++;
-            mHomescreenList.add(homescreen);
-            mCardViewAdapter.notifyDataSetChanged();
+
+    private void onSuccess(String data){
+        int rowsInserted = 0;
+        //TODO : INSERT BEFORE DELETING DATA.
+        HomeFragmentUtil.cleanHomeScreenEntity( getActivity() );
+        HomeFragmentUtil.cleanCategoryEntity( getActivity() );
+        rowsInserted = mHomeFragmentUtil.bulkInsert( getActivity(), data );
+        if( rowsInserted > 0 ){
+            getLoaderManager().initLoader(CATEGORY_LOADER, null, this);
+        } else {
+            Log.e(LOG_TAG, "HomeScreen Entity update failed");
         }
+    }
 
-        return;
+    private void onFailed(String data){
+        try {
+            JSONObject jsonObject = new JSONObject(data);
+            Toast.makeText(getActivity(), jsonObject.getString("message"), Toast.LENGTH_LONG);
+        } catch ( JSONException e){
+            e.printStackTrace();
+        }
+    }
+
+    private void startPratilipiService(){
+        Intent serviceIntent = new Intent(getActivity(), PratilipiService.class);
+        getActivity().startService(serviceIntent);
     }
 
 }

@@ -50,8 +50,7 @@ public class CategoryFragment extends Fragment implements LoaderManager.LoaderCa
     public static final int COL_CATEGORY_NAME = 2;
     public static final int COL_CREATION_DATE = 3;
 
-    public static final String INTENT_EXTRA_ID = "categoryId";
-    public static final String INTENT_EXTRA_TITLE = "categoryName";
+
 
     public CategoryFragment() {
         // Required empty public constructor
@@ -79,8 +78,8 @@ public class CategoryFragment extends Fragment implements LoaderManager.LoaderCa
                 String categoryName = cursor.getString(COL_CATEGORY_NAME);
 
                 Intent intent = new Intent(getActivity(), CardListActivity.class);
-                intent.putExtra(INTENT_EXTRA_ID, categoryId);
-                intent.putExtra(INTENT_EXTRA_TITLE, categoryName);
+                intent.putExtra(CardListActivity.INTENT_EXTRA_ID, categoryId);
+                intent.putExtra(CardListActivity.INTENT_EXTRA_TITLE, categoryName);
 
                 startActivity(intent);
             }
@@ -105,7 +104,7 @@ public class CategoryFragment extends Fragment implements LoaderManager.LoaderCa
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Uri categoryListUri =
                 PratilipiContract.CategoriesEntity
-                        .getCategoryListUri(AppUtil.getPreferredLanguage(getActivity()));
+                        .getCategoryListUri(AppUtil.getPreferredLanguage(getActivity()), 0);
         return new CursorLoader( getActivity(), categoryListUri, CATEGORY_COLUMNS, null, null, null );
     }
 
@@ -120,11 +119,10 @@ public class CategoryFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     public void fetchData() {
-        Uri uri = PratilipiContract.CategoriesEntity.getCategoryListUri(AppUtil.getPreferredLanguage(getActivity()));
+        Uri uri = PratilipiContract.CategoriesEntity.getCategoryListUri(AppUtil.getPreferredLanguage(getActivity()), 0);
         Cursor cursor = getActivity().getContentResolver().query(uri, CATEGORY_COLUMNS, null, null, null);
 
         if (!cursor.moveToFirst()) {
-            Log.e(LOG_TAG, "Server call for categories");
             fetchDataFromServer();
         }
         else{
