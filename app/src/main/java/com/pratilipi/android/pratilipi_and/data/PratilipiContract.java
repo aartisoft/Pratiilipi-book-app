@@ -23,7 +23,7 @@ public class PratilipiContract {
     // At least, let's hope not.  Don't be that dev, reader.  Don't be that dev.
     public static final String PATH_CATEGORY = "category";
     public static final String PATH_CATEGORY_PRATILIPI = "category_pratilipi";
-    public static final String PATH_HOMESCREEN = "homescreen";
+    public static final String PATH_HOMESCREEN_BRIDGE = "home_screen_bridge";
     public static final String PATH_USER = "user";
     public static final String PATH_PRATILIPI = "pratilipi";
 
@@ -52,6 +52,8 @@ public class PratilipiContract {
         public static final String COLUMN_CATEGORY_NAME = "category_name";
         public static final String COLUMN_LANGUAGE = "language";
         public static final String COLUMN_SORT_ORDER = "sort_order";
+        // 1 for categories on home screen and 0 for categories in category_list
+        public static final String COLUMN_IS_ON_HOME_SCREEN = "is_on_home_screen";
         public static final String COLUMN_CREATION_DATE = "creation_date";
 
         public static Uri getCategoryUri(String string) {
@@ -59,16 +61,21 @@ public class PratilipiContract {
                     .build();
         }
 
-        public static Uri getCategoryListUri(long language){
+        public static Uri getCategoryListUri(long language, int isOnHomeScreen){
             Uri uri = CONTENT_URI
                             .buildUpon()
                             .appendQueryParameter(COLUMN_LANGUAGE, String.valueOf(language))
+                            .appendQueryParameter(COLUMN_IS_ON_HOME_SCREEN, String.valueOf(isOnHomeScreen))
                             .build();
             return uri;
         }
 
         public static String getLanguageFromUri(Uri uri){
             return uri.getQueryParameter(COLUMN_LANGUAGE);
+        }
+
+        public static String getColumnIsOnHomeScreenFromUri(Uri uri){
+            return uri.getQueryParameter(COLUMN_IS_ON_HOME_SCREEN);
         }
 
     }
@@ -98,45 +105,72 @@ public class PratilipiContract {
 
     }
 
-    public static final class HomeScreenEntity implements BaseColumns {
+    public static final class HomeScreenBridgeEntity implements BaseColumns {
 
         public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_HOMESCREEN).build();
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_HOMESCREEN_BRIDGE).build();
 
-        public static final String TABLE_NAME = "homescreen";
+        public static final String TABLE_NAME = "home_screen_bridge";
 
-        // fields for the database
-        public static final String COLUMN_CATEGORY_NAME = "category_name";
         public static final String COLUMN_CATEGORY_ID = "category_id";
-
         public static final String COLUMN_PRATILIPI_ID = "pratilipi_id";
-        public static final String COLUMN_PRATILIPI_TITLE = "pratilipi_title";
-        public static final String COLUMN_CONTENT_TYPE = "content_type";
-        public static final String COLUMN_COVER_URL = "cover_url";
-        public static final String COLUMN_PRICE = "price";
-        public static final String COLUMN_DISCOUNTED_PRICE = "discounted_price";
+        public static final String COLUMN_CREATION_DATE = "creation_date";
 
-        public static final String COLUMN_LANGUAGE_ID = "language_id";
-
-        public static final String COLUMN_AUTHOR_ID = "author_id";
-        public static final String COLUMN_AUTHOR_NAME = "author_name";
-
-        public static final String COLUMN_DATE = "date";
-
-
-        public static Uri getCategoryWiseContentForHomeScreenUri(String languageId, String categoryId) {
-            return CONTENT_URI.buildUpon().appendPath(languageId)
-                    .appendPath(categoryId).build();
+        public static Uri getHomeScreenBridgeUri(String categoryPratilipiId){
+            return CONTENT_URI.buildUpon().appendPath(categoryPratilipiId).build();
         }
 
-        public static String getLanguageIdFromUri(Uri uri){
-            return uri.getPathSegments().get(1);
+        public static Uri getPratilipiIdListByCategoryUri(String categoryId){
+            return CONTENT_URI.buildUpon()
+                    .appendQueryParameter(COLUMN_CATEGORY_ID, categoryId)
+                    .build();
         }
 
         public static String getCategoryIdFromUri(Uri uri){
-            return uri.getPathSegments().get(2);
+            return uri.getQueryParameter(COLUMN_CATEGORY_ID);
         }
+
     }
+
+//    public static final class HomeScreenEntity implements BaseColumns {
+//
+//        public static final Uri CONTENT_URI =
+//                BASE_CONTENT_URI.buildUpon().appendPath(PATH_HOMESCREEN).build();
+//
+//        public static final String TABLE_NAME = "homescreen";
+//
+//        // fields for the database
+//        public static final String COLUMN_CATEGORY_NAME = "category_name";
+//        public static final String COLUMN_CATEGORY_ID = "category_id";
+//
+//        public static final String COLUMN_PRATILIPI_ID = "pratilipi_id";
+//        public static final String COLUMN_PRATILIPI_TITLE = "pratilipi_title";
+//        public static final String COLUMN_CONTENT_TYPE = "content_type";
+//        public static final String COLUMN_COVER_URL = "cover_url";
+//        public static final String COLUMN_PRICE = "price";
+//        public static final String COLUMN_DISCOUNTED_PRICE = "discounted_price";
+//
+//        public static final String COLUMN_LANGUAGE_ID = "language_id";
+//
+//        public static final String COLUMN_AUTHOR_ID = "author_id";
+//        public static final String COLUMN_AUTHOR_NAME = "author_name";
+//
+//        public static final String COLUMN_DATE = "date";
+//
+//
+//        public static Uri getCategoryWiseContentForHomeScreenUri(String languageId, String categoryId) {
+//            return CONTENT_URI.buildUpon().appendPath(languageId)
+//                    .appendPath(categoryId).build();
+//        }
+//
+//        public static String getLanguageIdFromUri(Uri uri){
+//            return uri.getPathSegments().get(1);
+//        }
+//
+//        public static String getCategoryIdFromUri(Uri uri){
+//            return uri.getPathSegments().get(2);
+//        }
+//    }
 
     public static final class PratilipiEntity implements BaseColumns {
         public static final Uri CONTENT_URI =

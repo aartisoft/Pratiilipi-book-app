@@ -20,8 +20,8 @@ public class PratilipiProvider extends ContentProvider {
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private PratilipiDbHelper mOpenHelper;
 
-    static final int HOMESCREEN = 100;
-    static final int HOMESCREEN_CONTENT_BY_CATEGORY = 101;
+    static final int HOME_SCREEN_BRIDGE = 100;
+//    static final int HOMESCREEN_CONTENT_BY_CATEGORY = 101;
     static final int USER = 200;
     static final int USER_BY_EMAIL = 201;
     static final int CATEGORY = 300;
@@ -30,17 +30,11 @@ public class PratilipiProvider extends ContentProvider {
     static final int PRATILIPI_BY_ID = 401;
     static final int CATEGORY_PRATILIPI = 500;
 
-    private static final String sLanguageAndCategorySelection =
-            PratilipiContract.HomeScreenEntity.COLUMN_CATEGORY_ID + "=?" +
-                    PratilipiContract.HomeScreenEntity.COLUMN_LANGUAGE_ID + "=?";
-    private static final String sUserByEmailSelection = PratilipiContract.UserEntity.COLUMN_EMAIL + "=?";
-
     static UriMatcher buildUriMatcher(){
         final UriMatcher uriMatcher = new UriMatcher( UriMatcher.NO_MATCH );
         final String pratilipiAuthority = PratilipiContract.CONTENT_AUTHORITY;
 
-        uriMatcher.addURI(pratilipiAuthority, PratilipiContract.PATH_HOMESCREEN, HOMESCREEN);
-        uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_HOMESCREEN + "/*/#", HOMESCREEN_CONTENT_BY_CATEGORY );
+        uriMatcher.addURI(pratilipiAuthority, PratilipiContract.PATH_HOMESCREEN_BRIDGE, HOME_SCREEN_BRIDGE);
         uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_USER, USER );
         uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_USER + "/*", USER_BY_EMAIL );
         uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_CATEGORY, CATEGORY_LIST);
@@ -61,21 +55,29 @@ public class PratilipiProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0;
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        int rowsDeleted=0;
+        switch (sUriMatcher.match(uri)){
+            case HOME_SCREEN_BRIDGE: {
+                rowsDeleted = db.delete( PratilipiContract.HomeScreenBridgeEntity.TABLE_NAME, selection, selectionArgs );
+                break;
+            }
+            case CATEGORY_LIST: {
+                rowsDeleted = db.delete( PratilipiContract.CategoriesEntity.TABLE_NAME, selection, selectionArgs );
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+        return rowsDeleted;
     }
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         Cursor retCursor;
-        Log.e(LOG_TAG, "URI : " + uri);
-        Log.e(LOG_TAG, "URI MATCHED WITH : " + sUriMatcher.match(uri));
         switch (sUriMatcher.match(uri)){
-            case HOMESCREEN_CONTENT_BY_CATEGORY :{
-                retCursor = getContentByLanguageAndCategory(uri, projection, sortOrder);
-                break;
-            }
-            case HOMESCREEN :{
-                retCursor = getDistinctCategory(projection);
+            case HOME_SCREEN_BRIDGE:{
+                retCursor = getPratilipiListByCategory(uri, HOME_SCREEN_BRIDGE);
                 break;
             }
             case USER :{
@@ -93,7 +95,7 @@ public class PratilipiProvider extends ContentProvider {
                 break;
             }
             case PRATILIPI :{
-                retCursor = getPratilipiListByCategory(uri);
+                retCursor = getPratilipiListByCategory( uri, CATEGORY_PRATILIPI );
                 break;
             }
             case PRATILIPI_BY_ID :{
@@ -111,13 +113,13 @@ public class PratilipiProvider extends ContentProvider {
         return null;
     }
 
-    private void normalizeDate(ContentValues values) {
-        // normalize the date value
-        if (values.containsKey(PratilipiContract.HomeScreenEntity.COLUMN_DATE)) {
-            long dateValue = values.getAsLong(PratilipiContract.HomeScreenEntity.COLUMN_DATE);
-            values.put(PratilipiContract.HomeScreenEntity.COLUMN_DATE, PratilipiContract.normalizeDate(dateValue));
-        }
-    }
+//    private void normalizeDate(ContentValues values) {
+//        // normalize the date value
+//        if (values.containsKey(PratilipiContract.HomeScreenEntity.COLUMN_DATE)) {
+//            long dateValue = values.getAsLong(PratilipiContract.HomeScreenEntity.COLUMN_DATE);
+//            values.put(PratilipiContract.HomeScreenEntity.COLUMN_DATE, PratilipiContract.normalizeDate(dateValue));
+//        }
+//    }
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
@@ -125,9 +127,8 @@ public class PratilipiProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         Uri returnUri = null;
         switch (match){
-            case HOMESCREEN:{
-                normalizeDate(values);
-                long id = db.insert(PratilipiContract.HomeScreenEntity.TABLE_NAME, null, values);
+            case HOME_SCREEN_BRIDGE:{
+                long id = db.insert(PratilipiContract.HomeScreenBridgeEntity.TABLE_NAME, null, values);
                 if( id > 0 )
                     Log.d(LOG_TAG, "Inserted Row Id : " + id);
                 break;
@@ -166,13 +167,12 @@ public class PratilipiProvider extends ContentProvider {
     public int bulkInsert(Uri uri, ContentValues[] values) {
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         switch (sUriMatcher.match(uri)){
-            case HOMESCREEN: {
+            case HOME_SCREEN_BRIDGE: {
                 db.beginTransaction();
                 int rowsInserted = 0;
                 try{
                     for( ContentValues value : values ){
-                        normalizeDate(value);
-                        long _id = db.insert(PratilipiContract.HomeScreenEntity.TABLE_NAME, null, value);
+                        long _id = db.insert(PratilipiContract.HomeScreenBridgeEntity.TABLE_NAME, null, value);
                         if (_id != -1) {
                             rowsInserted++;
                         }
@@ -252,37 +252,40 @@ public class PratilipiProvider extends ContentProvider {
         return rowsUpdated;
     }
 
-    public Cursor getDistinctCategory(String[] projection){
-        SQLiteQueryBuilder contentByCategoryAndLanguage = new SQLiteQueryBuilder();
-        contentByCategoryAndLanguage.setTables(PratilipiContract.HomeScreenEntity.TABLE_NAME);
+//    public Cursor getDistinctCategory(Uri uri, String[] projection){
+//        SQLiteQueryBuilder contentByCategoryAndLanguage = new SQLiteQueryBuilder();
+//        contentByCategoryAndLanguage.setTables(PratilipiContract.HomeScreenBridgeEntity.TABLE_NAME);
+//
+//        return contentByCategoryAndLanguage.query(
+//                mOpenHelper.getReadableDatabase(),
+//                projection,
+//                null,
+//                null,
+//                null,
+//                null,
+//                null);
+//
+//    }
 
-        return contentByCategoryAndLanguage.query(
-                mOpenHelper.getReadableDatabase(),
-                projection,
-                null,
-                null,
-                PratilipiContract.HomeScreenEntity.COLUMN_CATEGORY_ID,
-                null,
-                null);
-
-    }
-
-    private Cursor getContentByLanguageAndCategory( Uri uri, String[] projection, String sortOrder){
-
-        String languageId = PratilipiContract.HomeScreenEntity.getLanguageIdFromUri(uri);
-        String categoryId = PratilipiContract.HomeScreenEntity.getCategoryIdFromUri(uri);
-
-        SQLiteQueryBuilder contentByCategoryAndLanguage = new SQLiteQueryBuilder();
-        contentByCategoryAndLanguage.setTables(PratilipiContract.HomeScreenEntity.TABLE_NAME);
-
-        return contentByCategoryAndLanguage.query( mOpenHelper.getReadableDatabase(),
-                projection,
-                sLanguageAndCategorySelection,
-                new String[]{categoryId, languageId},
-                null,
-                null,
-                null );
-    }
+//    private Cursor getContentByLanguageAndCategory( Uri uri, String[] projection, String sortOrder){
+//
+//        String languageId = PratilipiContract.HomeScreenEntity.getLanguageIdFromUri(uri);
+//        String categoryId = PratilipiContract.HomeScreenEntity.getCategoryIdFromUri(uri);
+//
+//        String selection = PratilipiContract.HomeScreenEntity.COLUMN_CATEGORY_ID + "=? and " +
+//                PratilipiContract.HomeScreenEntity.COLUMN_LANGUAGE_ID + "=?";
+//
+//        SQLiteQueryBuilder contentByCategoryAndLanguage = new SQLiteQueryBuilder();
+//        contentByCategoryAndLanguage.setTables(PratilipiContract.HomeScreenEntity.TABLE_NAME);
+//
+//        return contentByCategoryAndLanguage.query( mOpenHelper.getReadableDatabase(),
+//                projection,
+//                selection,
+//                new String[]{categoryId, languageId},
+//                null,
+//                null,
+//                null );
+//    }
 
     private Cursor getUser( Uri uri, String[] projection, String selection, String[] selectionArgs ){
         SQLiteQueryBuilder userQuery = new SQLiteQueryBuilder();
@@ -300,12 +303,13 @@ public class PratilipiProvider extends ContentProvider {
     private Cursor getUserByEmail(Uri uri, String[] projection){
 
         String email = PratilipiContract.UserEntity.getEmailFromUri(uri);
+        String selection = PratilipiContract.UserEntity.COLUMN_EMAIL + "=?";
         SQLiteQueryBuilder userQuery = new SQLiteQueryBuilder();
         userQuery.setTables(PratilipiContract.UserEntity.TABLE_NAME);
 
         return userQuery.query(mOpenHelper.getReadableDatabase(),
                 projection,
-                sUserByEmailSelection,
+                selection,
                 new String[]{email},
                 null,
                 null,
@@ -317,8 +321,10 @@ public class PratilipiProvider extends ContentProvider {
         categoryList.setTables(PratilipiContract.CategoriesEntity.TABLE_NAME);
 
         String languageId = PratilipiContract.CategoriesEntity.getLanguageFromUri(uri);
-        String selection = PratilipiContract.CategoriesEntity.COLUMN_LANGUAGE + "=?";
-        String[] selectionArgs = {languageId};
+        String isOnHomeScreen = PratilipiContract.CategoriesEntity.getColumnIsOnHomeScreenFromUri(uri);
+        String selection = PratilipiContract.CategoriesEntity.COLUMN_LANGUAGE + "=? and " +
+                PratilipiContract.CategoriesEntity.COLUMN_IS_ON_HOME_SCREEN + "=?";
+        String[] selectionArgs = {languageId, isOnHomeScreen};
         String sortOrder = PratilipiContract.CategoriesEntity.COLUMN_SORT_ORDER;
 
         return categoryList.query(
@@ -349,11 +355,24 @@ public class PratilipiProvider extends ContentProvider {
                 null);
     }
 
-    private Cursor getPratilipiListByCategory(Uri uri){
-        String categoryId = PratilipiContract.PratilipiEntity.getCategoryIdFromUri(uri);
+    private Cursor getPratilipiListByCategory(Uri uri, int switchCase){
+        String categoryId = null;
+        String tableName = null;
+        switch (switchCase){
+            case HOME_SCREEN_BRIDGE: {
+                tableName = PratilipiContract.HomeScreenBridgeEntity.TABLE_NAME;
+                categoryId = PratilipiContract.HomeScreenBridgeEntity.getCategoryIdFromUri(uri);
+                break;
+            }
+            case CATEGORY_PRATILIPI: {
+                tableName = PratilipiContract.CategoriesPratilipiEntity.TABLE_NAME;
+                categoryId = PratilipiContract.PratilipiEntity.getCategoryIdFromUri(uri);
+                break;
+            }
+        }
 
         String subQuery = "select " + PratilipiContract.CategoriesPratilipiEntity.COLUMN_PRATILIPI_ID
-                            + " from " + PratilipiContract.CategoriesPratilipiEntity.TABLE_NAME
+                            + " from " + tableName
                             + " where " + PratilipiContract.CategoriesPratilipiEntity.COLUMN_CATEGORY_ID + " = ?";
         String rawQuery = "SELECT * FROM "
                             + PratilipiContract.PratilipiEntity.TABLE_NAME + " WHERE "
@@ -362,6 +381,7 @@ public class PratilipiProvider extends ContentProvider {
                             + ")";
 
         Log.e(LOG_TAG, "Raw query : " + rawQuery);
+        Log.e(LOG_TAG, "Category Id : " + categoryId);
         return mOpenHelper.getReadableDatabase()
                 .rawQuery(rawQuery, new String[]{categoryId});
     }
