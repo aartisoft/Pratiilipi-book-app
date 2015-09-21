@@ -39,7 +39,7 @@ public class CardListViewAdapter extends RecyclerView.Adapter<CardListViewAdapte
 
     public CardListViewAdapter(){
         mPratilipiList = new ArrayList<>();
-    }
+}
 
     @Override
     public CardListViewAdapter.DataViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -125,7 +125,6 @@ public class CardListViewAdapter extends RecyclerView.Adapter<CardListViewAdapte
     }
 
     public void swapCursor(Cursor c){
-
         if( c == null ) {
             mPratilipiList = new ArrayList<>();
             this.notifyDataSetChanged();
@@ -166,4 +165,9 @@ public class CardListViewAdapter extends RecyclerView.Adapter<CardListViewAdapte
         Log.e(LOG_TAG, "Array Length : " + mPratilipiList.size());
         return;
     }
+
+    public void addToPratilipiList( List<Pratilipi> pratilipiList ){
+        mPratilipiList.addAll( pratilipiList );
+    }
+
 }

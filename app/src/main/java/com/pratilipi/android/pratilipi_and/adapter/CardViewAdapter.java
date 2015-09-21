@@ -1,6 +1,6 @@
 package com.pratilipi.android.pratilipi_and.adapter;
 
-import android.content.Context;
+import android.database.Cursor;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -13,8 +13,10 @@ import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.pratilipi.android.pratilipi_and.AppController;
 import com.pratilipi.android.pratilipi_and.R;
+import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
 import com.pratilipi.android.pratilipi_and.datafiles.Homescreen;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,12 +28,12 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.DataVi
 
     private List<Homescreen> mHomescreenList;
     private ViewGroup mViewGroup;
-
     private ImageLoader mImageLoader;
 
-    public CardViewAdapter( List<Homescreen> homescreens ){
-        this.mHomescreenList = homescreens;
+    public CardViewAdapter(List<Homescreen> homescreenList){
+        this.mHomescreenList = homescreenList;
         mImageLoader = new AppController().getInstance().getImageLoader();
+        this.notifyDataSetChanged();
     }
 
     @Override
@@ -50,14 +52,13 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.DataVi
 
     @Override
     public void onBindViewHolder(CardViewAdapter.DataViewHolder dateViewHolder, int position) {
-        final Context context = mViewGroup.getContext();
 
         final Homescreen homescreenObject = mHomescreenList.get(position);
 
-        dateViewHolder.bookTitle.setText(homescreenObject.getmTitle());
-        dateViewHolder.bookCover.setImageUrl("http:" + homescreenObject.getmCoverImageUrl(), mImageLoader);
+        dateViewHolder.bookTitle.setText(homescreenObject.getTitle());
+        dateViewHolder.bookCover.setImageUrl("http:" + homescreenObject.getCoverImageUrl(), mImageLoader);
 
-        if( homescreenObject.getmPrice() == 0f) {
+        if( homescreenObject.getPrice() == 0f) {
             dateViewHolder.freeButton.setText("FREE!");
         }
 //        else {
@@ -91,7 +92,7 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.DataVi
         dateViewHolder.mHomeCardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.e(LOG_TAG, "Card Clicked " + homescreenObject.getmTitle());
+                Log.e(LOG_TAG, "Card Clicked " + homescreenObject.getTitle());
 //                Intent i = new Intent(context, DetailPageActivity.class);
 //                i.putExtra(DetailPageActivity.METADATA, (Serializable) homescreenObject);
 //                context.startActivity(i);
@@ -130,5 +131,27 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.DataVi
             bookTitle.setSelected(true);
 
         }
+    }
+
+    public void swapCursor( Cursor cursor ){
+        Log.e(LOG_TAG, "swapCursor() function called");
+        if( cursor == null ) {
+            mHomescreenList = new ArrayList<>();
+            this.notifyDataSetChanged();
+            return;
+        }
+
+        for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            Homescreen homescreen = new Homescreen();
+            homescreen.setPratilipiId(cursor.getString(cursor.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID)));
+            homescreen.setTitle(cursor.getString(cursor.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_TITLE)));
+            homescreen.setCoverImageUrl(cursor.getString(cursor.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_COVER_IMAGE_URL)));
+            homescreen.setPrice(cursor.getFloat(cursor.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_PRICE)));
+            homescreen.setDiscountedPrice(cursor.getFloat(cursor.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_DISCOUNTED_PRICE)));
+            mHomescreenList.add(homescreen);
+            this.notifyDataSetChanged();
+        }
+
+        return;
     }
 }
