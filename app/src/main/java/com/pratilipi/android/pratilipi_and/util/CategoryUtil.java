@@ -3,6 +3,8 @@ package com.pratilipi.android.pratilipi_and.util;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -13,7 +15,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -29,6 +30,17 @@ public class CategoryUtil {
     private static final String CATEGORY_ID = "id";
     private static final String CATEGORY_NAME = "plural";
     private static final String SORT_ORDER = "serialNumber";
+
+    public static final String[] CATEGORY_COLUMNS = {
+            PratilipiContract.CategoriesEntity._ID,
+            PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_ID,
+            PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_NAME,
+            PratilipiContract.CategoriesEntity.COLUMN_CREATION_DATE,
+    };
+
+    public static final int COL_CATEGORY_ID = 1;
+    public static final int COL_CATEGORY_NAME = 2;
+    public static final int COL_CREATION_DATE = 3;
 
     private boolean mIsSuccessful;
     private ProgressDialog mProgressDialog;
@@ -68,16 +80,25 @@ public class CategoryUtil {
         }
     }
 
-    public int bulkInsert(Context context, String apiResponseString)
+    public static ContentValues createCategoryEntityContentValue( Context context, String categoryId, String categoryName, int sortOrder, int isOnHomeScreen ){
+        ContentValues values = new ContentValues();
+        values.put(PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_ID, categoryId);
+        values.put(PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_NAME, categoryName);
+        values.put(PratilipiContract.CategoriesEntity.COLUMN_SORT_ORDER, sortOrder);
+        values.put(PratilipiContract.CategoriesEntity.COLUMN_LANGUAGE, String.valueOf(AppUtil.getPreferredLanguage(context)));
+        values.put(PratilipiContract.CategoriesEntity.COLUMN_IS_ON_HOME_SCREEN, isOnHomeScreen);
+        values.put(PratilipiContract.CategoriesEntity.COLUMN_CREATION_DATE, AppUtil.getCurrentJulianDay());
+
+        return values;
+    }
+
+    public static int bulkInsert(Context context, String apiResponseString)
             throws JSONException {
         int rowsInserted = 0;
         Vector<ContentValues> cVVector = new Vector<ContentValues>();
 
-        Date date = new Date();
-        long dateInMillis = date.getTime();
-
-        JSONObject apiResposneObject = new JSONObject(apiResponseString);
-        JSONArray categoryDataJSONArray = apiResposneObject.getJSONArray(CATEGORY_DATA_LIST);
+        JSONObject apiResponseObject = new JSONObject(apiResponseString);
+        JSONArray categoryDataJSONArray = apiResponseObject.getJSONArray(CATEGORY_DATA_LIST);
 
         int arraySize = categoryDataJSONArray.length();
         for(int i = 0; i < arraySize; ++i){
@@ -87,6 +108,7 @@ public class CategoryUtil {
             values.put(PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_NAME, categoryData.getString(CATEGORY_NAME));
             values.put(PratilipiContract.CategoriesEntity.COLUMN_SORT_ORDER, categoryData.getString(SORT_ORDER));
             values.put(PratilipiContract.CategoriesEntity.COLUMN_LANGUAGE, AppUtil.getPreferredLanguage(context));
+            values.put(PratilipiContract.CategoriesEntity.COLUMN_IS_ON_HOME_SCREEN, 0);
             values.put(PratilipiContract.CategoriesEntity.COLUMN_CREATION_DATE, AppUtil.getCurrentJulianDay());
 
             cVVector.add(values);
@@ -96,16 +118,28 @@ public class CategoryUtil {
             ContentValues[] cvArray = new ContentValues[cVVector.size()];
             cVVector.toArray(cvArray);
             rowsInserted = context.getContentResolver().bulkInsert(PratilipiContract.CategoriesEntity.CONTENT_URI, cvArray);
-            Log.e(LOG_TAG, "Number of Rows Inserted : " + rowsInserted);
+            Log.e(LOG_TAG, "Number Categories Inserted : " + rowsInserted);
         }
 
         if( rowsInserted > 0 ) {
-            int rowsDeleted = context.getContentResolver().delete(PratilipiContract.HomeScreenEntity.CONTENT_URI,
-                    PratilipiContract.HomeScreenEntity.COLUMN_DATE + "<?",
-                    new String[]{String.valueOf(AppUtil.getCurrentJulianDay())});
-            Log.e(LOG_TAG, "Number of Rows Deleted : " + rowsDeleted);
+            int rowsDeleted = context.getContentResolver().delete(PratilipiContract.CategoriesEntity.CONTENT_URI,
+                    PratilipiContract.CategoriesEntity.COLUMN_CREATION_DATE + "<? and " + PratilipiContract.CategoriesEntity.COLUMN_IS_ON_HOME_SCREEN + "=?",
+                    new String[]{String.valueOf(AppUtil.getCurrentJulianDay()), String.valueOf(0)});
+            Log.e(LOG_TAG, "Number Categories Deleted : " + rowsDeleted);
         }
 
         return rowsInserted;
+    }
+
+    public static Cursor getCategoryList( Context context, int isOnHomeScreen ){
+        Long languageId = AppUtil.getPreferredLanguage( context );
+        Uri uri = PratilipiContract.CategoriesEntity.getCategoryListUri( languageId, isOnHomeScreen );
+
+        return context.getContentResolver().query(
+                uri,
+                CATEGORY_COLUMNS,
+                null,
+                null,
+                PratilipiContract.CategoriesEntity.COLUMN_SORT_ORDER );
     }
 }

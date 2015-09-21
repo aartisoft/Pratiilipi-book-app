@@ -32,4 +32,7 @@
     <string name="string_no_result">No results!</string>
     <string name="string_free">FREE</string>
 
+    <string name="category_id_tag">category_id</string>
+    <string name="category_name_tag">category_name</string>
+
 </resources>
