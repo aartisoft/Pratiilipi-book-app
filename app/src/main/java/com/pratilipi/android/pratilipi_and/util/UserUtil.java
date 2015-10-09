@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -11,6 +12,7 @@ import android.util.Log;
 
 import com.pratilipi.android.pratilipi_and.GetCallback;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
+import com.pratilipi.android.pratilipi_and.datafiles.User;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,11 +42,13 @@ public class UserUtil {
     private static final String ACCESS_TOKEN_EXPIRY = "expiry";
     private static final String ACCESS_TOKEN = "accessToken";
 
+    private Context mContext;
     private boolean mIsSuccessful;
     private ProgressDialog mProgressDialog;
 
 
     public UserUtil(Context context, String processMesssage){
+        mContext = context;
         mProgressDialog = new ProgressDialog(context);
         mProgressDialog.setCancelable(false);
         mProgressDialog.setMessage(processMesssage);
@@ -102,6 +106,7 @@ public class UserUtil {
     public static String getAccessToken(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getString(ACCESS_TOKEN, null);
+        //TODO : FETCH ACCESS_TOKEN FROM SERVER IF ACCESS_TOKEN == NULL;
     }
 
     private String makeServerCall (String apiEndpoint, String method, String requestData){
@@ -172,7 +177,7 @@ public class UserUtil {
 
         @Override
         protected String doInBackground(HashMap<String, String>... params) {
-            HashMap<String, String> responseMap = HttpUtil.makePOSTRequest(LOGIN_ENDPOINT, params[0]);
+            HashMap<String, String> responseMap = HttpUtil.makePOSTRequest(mContext, LOGIN_ENDPOINT, params[0]);
             mIsSuccessful = Boolean.parseBoolean(responseMap.get(HttpUtil.IS_SUCCESSFUL));
             return responseMap.get(HttpUtil.RESPONSE_STRING);
         }
@@ -196,14 +201,9 @@ public class UserUtil {
 
         @Override
         protected String doInBackground(HashMap<String, String>... params){
-            try {
-                HashMap<String, String> responseMap = HttpUtil.makePUTRequest(REGISTER_ENDPOINT, params[0]);
-                mIsSuccessful = Boolean.parseBoolean(responseMap.get(HttpUtil.IS_SUCCESSFUL));
-                return responseMap.get(HttpUtil.RESPONSE_STRING);
-            } catch (JSONException e){
-                e.printStackTrace();
-            }
-            return null;
+            HashMap<String, String> responseMap = HttpUtil.makePUTRequest(mContext, REGISTER_ENDPOINT, params[0]);
+            mIsSuccessful = Boolean.parseBoolean(responseMap.get(HttpUtil.IS_SUCCESSFUL));
+            return responseMap.get(HttpUtil.RESPONSE_STRING);
         }
 
         @Override
@@ -228,7 +228,7 @@ public class UserUtil {
             String accessToken = params[0];
             HashMap<String, String> requestParams = new HashMap<>(1);
             requestParams.put(ACCESS_TOKEN, accessToken);
-            HashMap<String, String> responseMap = HttpUtil.makeGETRequest(USER_PROFILE_ENDPOINT, requestParams);
+            HashMap<String, String> responseMap = HttpUtil.makeGETRequest(mContext, USER_PROFILE_ENDPOINT, requestParams);
             mIsSuccessful = Boolean.getBoolean(responseMap.get(HttpUtil.IS_SUCCESSFUL));
             return responseMap.get(HttpUtil.RESPONSE_STRING);
         }
@@ -241,5 +241,40 @@ public class UserUtil {
             super.onPostExecute(responseString);
         }
 
+    }
+
+    public static User getLoggedInUser( Context context ){
+        User user = new User();
+        String selection = PratilipiContract.UserEntity.COLUMN_IS_LOGGED_IN + "=?";
+        String[] selectionArgs = {String.valueOf( 1 )};
+
+        Cursor cursor = context.getContentResolver().query(
+                PratilipiContract.UserEntity.CONTENT_URI,
+                null,
+                selection,
+                selectionArgs,
+                null
+        );
+
+        if( cursor.moveToFirst() ){
+            user.setEmail( cursor.getString(cursor.getColumnIndex(PratilipiContract.UserEntity.COLUMN_EMAIL)));
+            user.setDisplayName(cursor.getString(cursor.getColumnIndex(PratilipiContract.UserEntity.COLUMN_DISPLAY_NAME)));
+            user.setContentsInShelf(
+                    Integer.valueOf(cursor.getString(cursor.getColumnIndex(PratilipiContract.UserEntity.COLUMN_CONTENTS_IN_SHELF)))
+            );
+            user.setProfileImageUrl(cursor.getString(cursor.getColumnIndex(PratilipiContract.UserEntity.COLUMN_PROFILE_IMAGE)));
+            user.setIsLoggedIn(
+                    Boolean.valueOf(cursor.getString(cursor.getColumnIndex(PratilipiContract.UserEntity.COLUMN_IS_LOGGED_IN)))
+            );
+        } else
+            user = null;
+
+        return user;
+    }
+
+    public static int incrementContentInShelfCount(Context context, String emmail){
+//        Cursor cursor = context.getContentResolver().query()
+
+        return 0;
     }
 }
