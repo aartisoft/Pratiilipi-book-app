@@ -1,12 +1,13 @@
 package com.pratilipi.android.pratilipi_and.util;
 
-import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import com.pratilipi.android.pratilipi_and.GetCallback;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
@@ -42,17 +43,16 @@ public class CategoryUtil {
     public static final int COL_CATEGORY_NAME = 2;
     public static final int COL_CREATION_DATE = 3;
 
+    private Context mContext;
     private boolean mIsSuccessful;
-    private ProgressDialog mProgressDialog;
+    private ProgressBar mProgressBar;
 
-    public CategoryUtil(Context context, String processMessage){
-        mProgressDialog = new ProgressDialog(context);
-        mProgressDialog.setCancelable(false);
-        mProgressDialog.setMessage(processMessage);
+    public CategoryUtil(Context context, ProgressBar progressBar){
+        mContext = context;
+        mProgressBar = progressBar;
     }
 
     public void fetchCategories( HashMap<String, String> requestParams, GetCallback callback){
-        mProgressDialog.show();
         new CategoriesAsyncTask(callback).execute(requestParams);
     }
 
@@ -65,16 +65,24 @@ public class CategoryUtil {
         }
 
         @Override
+        protected void onPreExecute() {
+            if( mProgressBar != null )
+                mProgressBar.setVisibility( View.VISIBLE );
+        }
+
+        @Override
         protected String doInBackground(HashMap<String, String>... params) {
-            HashMap<String, String> responseMap = HttpUtil.makeGETRequest(CATEGORIES_ENDPOINT, params[0]);
+            HashMap<String, String> responseMap = HttpUtil.makeGETRequest(mContext, CATEGORIES_ENDPOINT, params[0]);
+            if( responseMap == null )
+                return null;
             mIsSuccessful = Boolean.parseBoolean(responseMap.get(HttpUtil.IS_SUCCESSFUL));
             return responseMap.get(HttpUtil.RESPONSE_STRING);
         }
 
         @Override
         protected void onPostExecute(String responseString) {
-            mProgressDialog.hide();
-            mProgressDialog.dismiss();
+            if( mProgressBar != null )
+                mProgressBar.setVisibility( View.GONE );
             callback.done(mIsSuccessful, responseString);
             super.onPostExecute(responseString);
         }
