@@ -68,6 +68,7 @@
         </provider>
 
         <service android:name=".service.PratilipiService" />
+        <service android:name=".service.DownloadService" />
 
         <!-- SyncAdapter's dummy authentication service -->
         <!-- <service -->
