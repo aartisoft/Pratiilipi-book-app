@@ -1,50 +1,37 @@
 package com.pratilipi.android.pratilipi_and;
 
 import android.app.Activity;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
+import com.pratilipi.android.pratilipi_and.adapter.ShelfAdapter;
+import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
+import com.pratilipi.android.pratilipi_and.util.AppUtil;
+import com.pratilipi.android.pratilipi_and.util.ShelfUtil;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link ShelfFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link ShelfFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class ShelfFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+public class ShelfFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private static final String LOG_TAG = ShelfFragment.class.getSimpleName();
+    private static int SHELF_LOADER = 0;
+    private ShelfAdapter mShelfAdapter;
 
-//    private OnFragmentInteractionListener mListener;
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ShelfFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ShelfFragment newInstance(String param1, String param2) {
-        ShelfFragment fragment = new ShelfFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     public ShelfFragment() {
         // Required empty public constructor
@@ -53,56 +40,112 @@ public class ShelfFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_shelf, container, false);
-    }
+        View rootView = inflater.inflate(R.layout.fragment_shelf, container, false);
 
-    // TODO: Rename method, update argument and hook method into UI event
-//    public void onButtonPressed(Uri uri) {
-//        if (mListener != null) {
-//            mListener.onFragmentInteraction(uri);
-//        }
-//    }
+        mShelfAdapter = new ShelfAdapter();
+
+        RecyclerView recyclerView  = ( RecyclerView ) rootView.findViewById( R.id.shelf_recyclerview );
+        recyclerView.setHasFixedSize(true);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(mShelfAdapter);
+
+        Log.e(LOG_TAG, "onCreateView function of ShelfFragment");
+        fetchData();
+        return rootView;
+    }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-//        try {
-//            mListener = (OnFragmentInteractionListener) activity;
-//        } catch (ClassCastException e) {
-//            throw new ClassCastException(activity.toString()
-//                    + " must implement OnFragmentInteractionListener");
-//        }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-//        mListener = null;
     }
 
-//    /**
-//     * This interface must be implemented by activities that contain this
-//     * fragment to allow an interaction in this fragment to be communicated
-//     * to the activity and potentially other fragments contained in that
-//     * activity.
-//     * <p/>
-//     * See the Android Training lesson <a href=
-//     * "http://developer.android.com/training/basics/fragments/communicating.html"
-//     * >Communicating with Other Fragments</a> for more information.
-//     */
-//    public interface OnFragmentInteractionListener {
-//        // TODO: Update argument type and name
-//        public void onFragmentInteraction(Uri uri);
-//    }
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader( getActivity(), PratilipiContract.ShelfEntity.CONTENT_URI, null, null, null, null );
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mShelfAdapter.swapCursor(data);
+        mShelfAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mShelfAdapter.swapCursor(null);
+        mShelfAdapter.notifyDataSetChanged();
+    }
+
+    private void fetchData(){
+        Log.e(LOG_TAG, "fetchData function of ShelfFragment");
+        Cursor cursor = getActivity().getContentResolver().query(PratilipiContract.ShelfEntity.CONTENT_URI, null, null, null, null);
+        if(!cursor.moveToFirst())
+            fetchDataFromServer();
+        else{
+            mShelfAdapter.swapCursor(cursor);
+            cursor.moveToFirst();
+            int currentJulianDay = AppUtil.getCurrentJulianDay();
+            int lastDbUpdateJulianDay = cursor.getInt(cursor.getColumnIndex(PratilipiContract.ShelfEntity.COLUMN_CREATION_DATE));
+            if( currentJulianDay > lastDbUpdateJulianDay )
+                fetchDataFromServer();
+        }
+    }
+
+    private void fetchDataFromServer(){
+        Log.e(LOG_TAG, "fetchDataFromServer function of ShelfFragment");
+        ShelfUtil.getShelfPratilipiListFromServer(getActivity(), new GetCallback() {
+            @Override
+            public void done(boolean isSuccessful, String data) {
+                if( isSuccessful )
+                    onSuccess(data);
+                else
+                    onFailed(data);
+            }
+        });
+    }
+
+    private void onSuccess(String data){
+        Log.e(LOG_TAG, "onSuccess function of ShelfFragment");
+        try{
+            JSONObject responseJSON = new JSONObject( data );
+            Log.e(LOG_TAG, "response data converted to json object");
+            JSONArray pratilipiDataListJSONArray = responseJSON.getJSONArray(ShelfUtil.PRATILIPI_DATA_LIST);
+            Log.e(LOG_TAG, "JSONArray is extracted from json object with length : " + pratilipiDataListJSONArray.length());
+            int rowsInserted = ShelfUtil.bulkInsert( getActivity(), pratilipiDataListJSONArray );
+            if( rowsInserted > 0 )
+                getLoaderManager().initLoader(SHELF_LOADER, null, this);
+            else {
+                Log.e(LOG_TAG, "Shelf Entity update failed");
+            }
+        } catch (JSONException e){
+            e.printStackTrace();
+        }
+    }
+
+    private void onFailed(String data){
+        Log.e(LOG_TAG, "onFailed function of ShelfFragment");
+        try {
+            JSONObject jsonObject = new JSONObject(data);
+            Toast.makeText(getActivity(), jsonObject.getString("message"), Toast.LENGTH_LONG);
+        } catch ( JSONException e){
+            e.printStackTrace();
+        }
+    }
+
+
 
 }
