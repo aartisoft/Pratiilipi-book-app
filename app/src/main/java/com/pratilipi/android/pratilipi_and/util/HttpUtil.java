@@ -1,9 +1,8 @@
 package com.pratilipi.android.pratilipi_and.util;
 
+import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
-
-import org.json.JSONException;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -25,12 +24,14 @@ public class HttpUtil {
     public static final String IS_SUCCESSFUL = "isSuccessful";
     public static final String RESPONSE_STRING = "responseString";
 
+    private static final String ACCESS_TOKEN = "accessToken";
+
     private static int sResponseCode = -1;
     private static String sResponseString;
 
     private static final String LOG_TAG = HttpUtil.class.getSimpleName();
 
-    public static HashMap<String, String> makeGETRequest(String apiEndpoint, HashMap<String, String> requestParams){
+    public static HashMap<String, String> makeGETRequest(Context context, String apiEndpoint, HashMap<String, String> requestParams){
         HttpURLConnection connection = null;
         BufferedReader bufferedReader = null;
 
@@ -44,9 +45,14 @@ public class HttpUtil {
             } else {
                 query = new StringBuilder("?");
             }
-            for (Map.Entry<String, String> entry : requestParams.entrySet()) {
-                query.append(entry.getKey() + "=" + entry.getValue() + "&");
+            if(requestParams != null) {
+                for (Map.Entry<String, String> entry : requestParams.entrySet()) {
+                    query.append(entry.getKey() + "=" + entry.getValue() + "&");
+                }
             }
+
+            String accessToken = UserUtil.getAccessToken(context);
+            query.append(ACCESS_TOKEN + "=" + accessToken);
 
             Log.e(LOG_TAG, "URL : " + apiEndpoint + query);
 
@@ -96,7 +102,7 @@ public class HttpUtil {
         return null;
     }
 
-    public static HashMap<String, String> makePOSTRequest(String apiEndpoint, HashMap<String, String> requestParams){
+    public static HashMap<String, String> makePOSTRequest(Context context, String apiEndpoint, HashMap<String, String> requestParams){
         HttpURLConnection connection = null;
         BufferedReader bufferedReader = null;
 
@@ -122,6 +128,10 @@ public class HttpUtil {
                     payload += entry.getKey() + "=" + entry.getValue()
                             + "&";
                 }
+
+                String accessToken = UserUtil.getAccessToken(context);
+                payload += ACCESS_TOKEN + "=" + accessToken;
+
                 DataOutputStream wr = new DataOutputStream(
                         connection.getOutputStream());
                 wr.writeBytes(payload);
@@ -167,7 +177,7 @@ public class HttpUtil {
         return null;
     }
 
-    public static HashMap<String, String> makePUTRequest(String apiEndpoint, HashMap<String, String> requestParams) throws JSONException{
+    public static HashMap<String, String> makePUTRequest(Context context, String apiEndpoint, HashMap<String, String> requestParams) {
 
         HttpURLConnection connection = null;
         BufferedReader bufferedReader = null;
@@ -188,6 +198,9 @@ public class HttpUtil {
             for (Map.Entry<String, String> entry : requestParams.entrySet()) {
                 rawFormat += "\"" + entry.getKey() + "\":\"" + entry.getValue() + "\", ";
             }
+
+            String accessToken = UserUtil.getAccessToken(context);
+            rawFormat += "\"" + ACCESS_TOKEN + "\":\"" + accessToken + "\"";
             rawFormat += "}";
 
             Log.e(LOG_TAG, "Raw Format : " + rawFormat);
@@ -245,7 +258,7 @@ public class HttpUtil {
             return returnMap;
 
         } catch ( IOException e){
-            Log.e(LOG_TAG, "Error ", e);
+            e.printStackTrace();
         }
         return null;
     }
