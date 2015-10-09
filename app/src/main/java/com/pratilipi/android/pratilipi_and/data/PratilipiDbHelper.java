@@ -75,26 +75,6 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
                 // UNIQUE CATEGORY_ID AND PRATILIPI_ID ARE REQUIRED AS TABLE IS RE-POPULATED EACH TIME
                 ")";
 
-//        final String SQL_CREATE_HOMESCREEN_TABLE = "CREATE TABLE " + PratilipiContract.HomeScreenEntity.TABLE_NAME + " (" +
-//
-//                PratilipiContract.HomeScreenEntity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-//
-//                // the ID of the location entry associated with this weather data
-//                PratilipiContract.HomeScreenEntity.COLUMN_PRATILIPI_ID + " INTEGER NOT NULL, " +
-//                PratilipiContract.HomeScreenEntity.COLUMN_PRATILIPI_TITLE + " TEXT NOT NULL, " +
-//                PratilipiContract.HomeScreenEntity.COLUMN_CONTENT_TYPE + " TEXT NOT NULL, " +
-//                PratilipiContract.HomeScreenEntity.COLUMN_COVER_URL + " TEXT NOT NULL, " +
-//                PratilipiContract.HomeScreenEntity.COLUMN_PRICE + " TEXT NOT NULL, " +
-//                PratilipiContract.HomeScreenEntity.COLUMN_DISCOUNTED_PRICE + " TEXT NOT NULL, " +
-//
-//                PratilipiContract.HomeScreenEntity.COLUMN_LANGUAGE_ID + " INTEGER NOT NULL, " +
-//
-//                PratilipiContract.HomeScreenEntity.COLUMN_AUTHOR_ID + " INTEGER NOT NULL, " +
-//                PratilipiContract.HomeScreenEntity.COLUMN_AUTHOR_NAME + " TEXT NOT NULL," +
-//
-//                PratilipiContract.HomeScreenEntity.COLUMN_CATEGORY_ID + " INTEGER NOT NULL, " +
-//                PratilipiContract.HomeScreenEntity.COLUMN_CATEGORY_NAME + " TEXT NOT NULL, " +
-//                PratilipiContract.HomeScreenEntity.COLUMN_DATE + " INTEGER NOT NULL " + " )";
 
         final String SQL_CREATE_USER_TABLE = "CREATE TABLE " + PratilipiContract.UserEntity.TABLE_NAME + " (" +
 
@@ -139,10 +119,44 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
                 PratilipiContract.PratilipiEntity.COLUMN_LISTING_DATE + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_LAST_UPDATED_DATE + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_CREATION_DATE + " INTEGER NOT NULL, " +
+                PratilipiContract.PratilipiEntity.COLUMN_DOWNLOAD_STATUS + " INTEGER NOT NULL, " +
                 PratilipiContract.PratilipiEntity.COLUMN_LAST_ACCESSED_ON + " INTEGER NOT NULL, " +
 
                 //To make sure all entries are unique.
                 " UNIQUE (" + PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID + ") ON CONFLICT REPLACE" +
+                ")";
+
+        final String SQL_CREATE_SHELF_TABLE = "CREATE TABLE " + PratilipiContract.ShelfEntity.TABLE_NAME + " (" +
+
+                PratilipiContract.ShelfEntity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+
+                PratilipiContract.ShelfEntity.COLUMN_USER_EMAIL + " TEXT NOT NULL, " +
+                PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + " TEXT NOT NULL, " +
+                PratilipiContract.ShelfEntity.COLUMN_CREATION_DATE + " INTEGER NOT NULL, " +
+                PratilipiContract.ShelfEntity.COLUMN_LAST_ACCESSED_DATE + " INTEGER NOT NULL, " +
+
+                // Set up the pratilipi_id column as a foreign key to pratilipi table.
+                " FOREIGN KEY (" + PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + ") REFERENCES " +
+                PratilipiContract.PratilipiEntity.TABLE_NAME + " (" + PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID + ") " +
+                " UNIQUE (" + PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + ") ON CONFLICT REPLACE" +
+                ")";
+
+        final String SQL_CREATE_CONTENT_TABLE = "CREATE TABLE " + PratilipiContract.ContentEntity.TABLE_NAME + " (" +
+
+                PratilipiContract.ContentEntity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+
+                PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + " TEXT NOT NULL, " +
+                PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER + " TEXT, " +
+                PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER + " TEXT, " +
+                PratilipiContract.ContentEntity.COLUMN_TEXT_CONTENT + " TEXT, " +
+                PratilipiContract.ContentEntity.COLUMN_IMAGE_CONTENT + " BLOB, " +
+
+                // Set up the pratilipi_id column as a foreign key to shelf table.
+                " FOREIGN KEY (" + PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + ") REFERENCES " +
+                PratilipiContract.ShelfEntity.TABLE_NAME + " (" + PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + ") " +
+                " UNIQUE (" + PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID +  ", " +
+                PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER + ", " +
+                PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER + ") ON CONFLICT REPLACE" +
                 ")";
 
         sqLiteDatabase.execSQL(SQL_CREATE_CATEGORY_PRATILIPI_TABLE);
@@ -150,6 +164,8 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(SQL_CREATE_USER_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_CATEGORY_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_PRATILIPI_TABLE);
+        sqLiteDatabase.execSQL( SQL_CREATE_SHELF_TABLE );
+        sqLiteDatabase.execSQL(SQL_CREATE_CONTENT_TABLE);
     }
 
     @Override
@@ -164,6 +180,7 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.CategoriesPratilipiEntity.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.HomeScreenBridgeEntity.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.PratilipiEntity.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.ShelfEntity.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.UserEntity.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }

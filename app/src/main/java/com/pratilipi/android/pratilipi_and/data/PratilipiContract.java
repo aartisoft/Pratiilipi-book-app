@@ -26,6 +26,8 @@ public class PratilipiContract {
     public static final String PATH_HOMESCREEN_BRIDGE = "home_screen_bridge";
     public static final String PATH_USER = "user";
     public static final String PATH_PRATILIPI = "pratilipi";
+    public static final String PATH_SHELF = "shelf";
+    public static final String PATH_CONTENT = "content";
 
     // To make it easy to query for the exact date, we normalize all dates that go into
     // the database to the start of the the Julian day at UTC.
@@ -105,6 +107,57 @@ public class PratilipiContract {
 
     }
 
+    public static final class ContentEntity implements BaseColumns {
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_CONTENT).build();
+
+        public static final String TABLE_NAME = "content";
+
+        public static final String COLUMN_PRATILIPI_ID = "pratilipi_id";
+        //chapter_number column will be used for text content type and will be null for image content type
+        public static final String COLUMN_CHAPTER_NUMBER = "chapter_number";
+        //page_number column will be used for image content type and will be null for text content type
+        public static final String COLUMN_PAGE_NUMBER = "page_number";
+        public static final String COLUMN_IMAGE_CONTENT = "image_content";
+        public static final String COLUMN_TEXT_CONTENT = "text_content";
+
+        public static Uri getContentEntityUri( String id ){
+            return CONTENT_URI.buildUpon().appendPath( id ).build();
+        }
+
+        public static Uri getContentByPratilipiIdUri(String pratilipiId){
+            return CONTENT_URI.buildUpon().appendQueryParameter(COLUMN_PRATILIPI_ID, pratilipiId).build();
+        }
+
+        public static Uri getPratilipiContentByChapterUri(String pratilipiId, String chapterNumber){
+            return CONTENT_URI.buildUpon()
+                    .appendQueryParameter(COLUMN_PRATILIPI_ID, pratilipiId)
+                    .appendQueryParameter(COLUMN_CHAPTER_NUMBER, chapterNumber)
+                    .build();
+        }
+
+        public static Uri getPratilipiContentByPageNumberUri(String pratilipiId, String pageNumber){
+            return CONTENT_URI.buildUpon()
+                    .appendQueryParameter(COLUMN_PRATILIPI_ID, pratilipiId)
+                    .appendQueryParameter(COLUMN_PAGE_NUMBER, pageNumber)
+                    .build();
+        }
+
+        public static String getPratilipiIdFromUri(Uri uri){
+            return uri.getQueryParameter(COLUMN_PRATILIPI_ID);
+        }
+
+        public static String getChapterNumberFromUri(Uri uri){
+            return uri.getQueryParameter(COLUMN_CHAPTER_NUMBER);
+        }
+
+        public static String getPageNumberFromUri(Uri uri){
+            return uri.getQueryParameter(COLUMN_PAGE_NUMBER);
+        }
+
+
+    }
+
     public static final class HomeScreenBridgeEntity implements BaseColumns {
 
         public static final Uri CONTENT_URI =
@@ -131,46 +184,6 @@ public class PratilipiContract {
         }
 
     }
-
-//    public static final class HomeScreenEntity implements BaseColumns {
-//
-//        public static final Uri CONTENT_URI =
-//                BASE_CONTENT_URI.buildUpon().appendPath(PATH_HOMESCREEN).build();
-//
-//        public static final String TABLE_NAME = "homescreen";
-//
-//        // fields for the database
-//        public static final String COLUMN_CATEGORY_NAME = "category_name";
-//        public static final String COLUMN_CATEGORY_ID = "category_id";
-//
-//        public static final String COLUMN_PRATILIPI_ID = "pratilipi_id";
-//        public static final String COLUMN_PRATILIPI_TITLE = "pratilipi_title";
-//        public static final String COLUMN_CONTENT_TYPE = "content_type";
-//        public static final String COLUMN_COVER_URL = "cover_url";
-//        public static final String COLUMN_PRICE = "price";
-//        public static final String COLUMN_DISCOUNTED_PRICE = "discounted_price";
-//
-//        public static final String COLUMN_LANGUAGE_ID = "language_id";
-//
-//        public static final String COLUMN_AUTHOR_ID = "author_id";
-//        public static final String COLUMN_AUTHOR_NAME = "author_name";
-//
-//        public static final String COLUMN_DATE = "date";
-//
-//
-//        public static Uri getCategoryWiseContentForHomeScreenUri(String languageId, String categoryId) {
-//            return CONTENT_URI.buildUpon().appendPath(languageId)
-//                    .appendPath(categoryId).build();
-//        }
-//
-//        public static String getLanguageIdFromUri(Uri uri){
-//            return uri.getPathSegments().get(1);
-//        }
-//
-//        public static String getCategoryIdFromUri(Uri uri){
-//            return uri.getPathSegments().get(2);
-//        }
-//    }
 
     public static final class PratilipiEntity implements BaseColumns {
         public static final Uri CONTENT_URI =
@@ -204,7 +217,20 @@ public class PratilipiContract {
         public static final String COLUMN_LISTING_DATE = "listing_date";
         public static final String COLUMN_LAST_UPDATED_DATE = "last_updated_date";
         public static final String COLUMN_CREATION_DATE = "creation_date";
+        /**
+         * Value of following column can be 0, 1 or 2 depending on download status
+         */
+        public static final String COLUMN_DOWNLOAD_STATUS = "status";
+
+        public static final int CONTENT_NOT_DOWNLOADED = 0;
+        public static final int CONTENT_DOWNLOADED = 1;
+        public static final int CONTENT_DOWNLOADING = 2;
+
         public static final String COLUMN_LAST_ACCESSED_ON = "last_accessed_on";
+
+        public static Uri getPratilipiEntityUri( String id ){
+            return CONTENT_URI.buildUpon().appendPath( id ).build();
+        }
 
         public static Uri getPratilipiByIdUri(String pratilipiId){
             return CONTENT_URI.buildUpon()
@@ -227,6 +253,23 @@ public class PratilipiContract {
         }
 
     }
+
+    public static final class ShelfEntity implements BaseColumns {
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_SHELF).build();
+
+        public static final String TABLE_NAME = "shelf";
+
+        public static final String COLUMN_USER_EMAIL = "user_email";
+        public static final String COLUMN_PRATILIPI_ID = "pratilipi_id";
+        public static final String COLUMN_CREATION_DATE = "creation_date";
+        public static final String COLUMN_LAST_ACCESSED_DATE = "last_accessed_date";
+
+        public static Uri getShelfEntityUri( String id ){
+            return CONTENT_URI.buildUpon().appendPath( id ).build();
+        }
+    }
+
 
     public static final class UserEntity implements BaseColumns {
         public static final Uri CONTENT_URI =

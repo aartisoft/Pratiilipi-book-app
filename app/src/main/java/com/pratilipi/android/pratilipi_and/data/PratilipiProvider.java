@@ -9,6 +9,8 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
 
+import com.pratilipi.android.pratilipi_and.CardListActivity;
+
 /**
  * Created by Rahul Ranjan on 8/21/2015.
  */
@@ -29,6 +31,8 @@ public class PratilipiProvider extends ContentProvider {
     static final int PRATILIPI = 400;
     static final int PRATILIPI_BY_ID = 401;
     static final int CATEGORY_PRATILIPI = 500;
+    static final int SHELF = 600;
+    static final int CONTENT = 700;
 
     static UriMatcher buildUriMatcher(){
         final UriMatcher uriMatcher = new UriMatcher( UriMatcher.NO_MATCH );
@@ -42,6 +46,8 @@ public class PratilipiProvider extends ContentProvider {
         uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_PRATILIPI, PRATILIPI);
         uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_PRATILIPI + "/*", PRATILIPI_BY_ID);
         uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_CATEGORY_PRATILIPI, CATEGORY_PRATILIPI);
+        uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_SHELF, SHELF);
+        uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_CONTENT, CONTENT);
 
         return uriMatcher;
     }
@@ -99,7 +105,15 @@ public class PratilipiProvider extends ContentProvider {
                 break;
             }
             case PRATILIPI_BY_ID :{
-                retCursor = null;
+                retCursor = getPratilipi(uri, null);
+                break;
+            }
+            case SHELF: {
+                retCursor = getPratilipiListInShelf();
+                break;
+            }
+            case CONTENT: {
+                retCursor = getPratilipiContent( uri );
                 break;
             }
             default:
@@ -154,7 +168,31 @@ public class PratilipiProvider extends ContentProvider {
                 if( id > 0 ){
                     returnUri = PratilipiContract.CategoriesPratilipiEntity.getCategoryPratilipiUri(String.valueOf(id));
                 } else
-                    Log.e(LOG_TAG, "Category Insert Failed");
+                    Log.e(LOG_TAG, "Category Pratilipi Insert Failed");
+                break;
+            }
+            case SHELF: {
+                long id = db.insert(PratilipiContract.ShelfEntity.TABLE_NAME, null, values);
+                if( id > 0 ){
+                    returnUri = PratilipiContract.ShelfEntity.getShelfEntityUri( String.valueOf(id) );
+                } else
+                    Log.e(LOG_TAG, "Shelf Insert Failed");
+                break;
+            }
+            case CONTENT: {
+                long id = db.insert(PratilipiContract.ContentEntity.TABLE_NAME, null, values);
+                if( id > 0 ){
+                    returnUri = PratilipiContract.ContentEntity.getContentEntityUri( String.valueOf(id) );
+                } else
+                    Log.e(LOG_TAG, "Content Insert Failed");
+                break;
+            }
+            case PRATILIPI: {
+                long id = db.insert(PratilipiContract.PratilipiEntity.TABLE_NAME, null, values);
+                if( id > 0 ){
+                    returnUri = PratilipiContract.PratilipiEntity.getPratilipiEntityUri(String.valueOf(id));
+                } else
+                    Log.e(LOG_TAG, "Content Insert Failed");
                 break;
             }
             default:
@@ -231,6 +269,22 @@ public class PratilipiProvider extends ContentProvider {
                 }
                 return rowsInserted;
             }
+            case SHELF: {
+                db.beginTransaction();
+                int rowsInserted = 0;
+                try{
+                    for( ContentValues value : values ){
+                        long _id = db.insert(PratilipiContract.ShelfEntity.TABLE_NAME, null, value);
+                        if (_id != -1) {
+                            rowsInserted++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                return rowsInserted;
+            }
             default:
                 return super.bulkInsert(uri, values);
         }
@@ -242,50 +296,22 @@ public class PratilipiProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         int rowsUpdated = 0;
         switch (match){
+            case PRATILIPI: {
+                rowsUpdated = db.update(PratilipiContract.PratilipiEntity.TABLE_NAME, values, selection, selectionArgs);
+                break;
+            }
             case USER:{
                 rowsUpdated = db.update(PratilipiContract.UserEntity.TABLE_NAME, values, selection, selectionArgs);
-                Log.e(LOG_TAG, "Updated Id : " + rowsUpdated);
+                break;
+            }
+            case SHELF: {
+                rowsUpdated = db.update( PratilipiContract.ShelfEntity.TABLE_NAME, values, selection, selectionArgs );
                 break;
             }
             default: throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
         return rowsUpdated;
     }
-
-//    public Cursor getDistinctCategory(Uri uri, String[] projection){
-//        SQLiteQueryBuilder contentByCategoryAndLanguage = new SQLiteQueryBuilder();
-//        contentByCategoryAndLanguage.setTables(PratilipiContract.HomeScreenBridgeEntity.TABLE_NAME);
-//
-//        return contentByCategoryAndLanguage.query(
-//                mOpenHelper.getReadableDatabase(),
-//                projection,
-//                null,
-//                null,
-//                null,
-//                null,
-//                null);
-//
-//    }
-
-//    private Cursor getContentByLanguageAndCategory( Uri uri, String[] projection, String sortOrder){
-//
-//        String languageId = PratilipiContract.HomeScreenEntity.getLanguageIdFromUri(uri);
-//        String categoryId = PratilipiContract.HomeScreenEntity.getCategoryIdFromUri(uri);
-//
-//        String selection = PratilipiContract.HomeScreenEntity.COLUMN_CATEGORY_ID + "=? and " +
-//                PratilipiContract.HomeScreenEntity.COLUMN_LANGUAGE_ID + "=?";
-//
-//        SQLiteQueryBuilder contentByCategoryAndLanguage = new SQLiteQueryBuilder();
-//        contentByCategoryAndLanguage.setTables(PratilipiContract.HomeScreenEntity.TABLE_NAME);
-//
-//        return contentByCategoryAndLanguage.query( mOpenHelper.getReadableDatabase(),
-//                projection,
-//                selection,
-//                new String[]{categoryId, languageId},
-//                null,
-//                null,
-//                null );
-//    }
 
     private Cursor getUser( Uri uri, String[] projection, String selection, String[] selectionArgs ){
         SQLiteQueryBuilder userQuery = new SQLiteQueryBuilder();
@@ -371,6 +397,9 @@ public class PratilipiProvider extends ContentProvider {
             }
         }
 
+        Integer lowerLimit = uri.getQueryParameter(CardListActivity.LOWER_LIMIT) == null ? 0 : Integer.parseInt( uri.getQueryParameter( CardListActivity.LOWER_LIMIT ));
+        Integer upperLimit = uri.getQueryParameter(CardListActivity.UPPER_LIMIT) == null ? 50 : Integer.parseInt( uri.getQueryParameter( CardListActivity.UPPER_LIMIT ));
+
         String subQuery = "select " + PratilipiContract.CategoriesPratilipiEntity.COLUMN_PRATILIPI_ID
                             + " from " + tableName
                             + " where " + PratilipiContract.CategoriesPratilipiEntity.COLUMN_CATEGORY_ID + " = ?";
@@ -378,11 +407,61 @@ public class PratilipiProvider extends ContentProvider {
                             + PratilipiContract.PratilipiEntity.TABLE_NAME + " WHERE "
                             + PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID + " IN ( "
                             + subQuery
-                            + ")";
+                            + " LIMIT "
+                            + lowerLimit + ", " + upperLimit
+                            + " )";
 
-        Log.e(LOG_TAG, "Raw query : " + rawQuery);
-        Log.e(LOG_TAG, "Category Id : " + categoryId);
         return mOpenHelper.getReadableDatabase()
                 .rawQuery(rawQuery, new String[]{categoryId});
     }
+
+    private Cursor getPratilipiListInShelf(){
+
+        String query = "SELECT " + PratilipiContract.PratilipiEntity.TABLE_NAME + ".* "
+                + " FROM " + PratilipiContract.PratilipiEntity.TABLE_NAME + ", " + PratilipiContract.ShelfEntity.TABLE_NAME
+                + " WHERE " + PratilipiContract.PratilipiEntity.TABLE_NAME + "." + PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID
+                    + " = " + PratilipiContract.ShelfEntity.TABLE_NAME + "." + PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID
+                + " ORDER BY " + PratilipiContract.ShelfEntity.COLUMN_LAST_ACCESSED_DATE;
+
+        return mOpenHelper.getReadableDatabase()
+                .rawQuery( query, null );
+    }
+
+    private Cursor getPratilipiContent(Uri uri){
+        SQLiteQueryBuilder pratilipiContent = new SQLiteQueryBuilder();
+        pratilipiContent.setTables(PratilipiContract.ContentEntity.TABLE_NAME);
+
+        String pratilipiId = PratilipiContract.ContentEntity.getPratilipiIdFromUri(uri);
+        String chapterNumber = PratilipiContract.ContentEntity.getChapterNumberFromUri(uri);
+        String pageNumber = PratilipiContract.ContentEntity.getPageNumberFromUri(uri);
+
+        String selection = null;
+        String[] selectionArgs = null;
+
+        if(chapterNumber != null){
+            selection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=? AND "
+                    + PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER + "=?";
+            selectionArgs = new String[]{pratilipiId, chapterNumber};
+        }
+
+        if(pageNumber != null){
+            selection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=? AND "
+                    + PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER + "=?";
+            selectionArgs = new String[]{pratilipiId, pageNumber};
+        }
+
+        if(selectionArgs != null)
+            return pratilipiContent.query(
+                    mOpenHelper.getReadableDatabase(),
+                    null,
+                    selection,
+                    selectionArgs,
+                    null,
+                    null,
+                    null
+            );
+        else
+            return null;
+    }
+
 }
