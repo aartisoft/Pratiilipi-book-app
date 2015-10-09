@@ -60,6 +60,8 @@ public class PratilipiService extends IntentService {
             if( buffer.length() == 0 )
                 return;
 
+            HomeFragmentUtil.cleanHomeScreenEntity( this );
+            HomeFragmentUtil.cleanCategoryEntity( this );
             HomeFragmentUtil.bulkInsert( this, buffer.toString());
 
         } catch (IOException e) {

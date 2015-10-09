@@ -31,10 +31,12 @@ public class HomeFragmentUtil {
     private static final String CATEGORY_NAME = "name";
     private static final String CONTENT = "content";
 
+    private Context mContext;
     private boolean mIsSuccessful;
     private ProgressDialog mProgressDialog;
 
     public HomeFragmentUtil(Context context, String processMessage){
+        mContext = context;
         mProgressDialog = new ProgressDialog(context);
         mProgressDialog.setCancelable(false);
         mProgressDialog.setMessage(processMessage);
@@ -55,7 +57,7 @@ public class HomeFragmentUtil {
 
         @Override
         protected String doInBackground(HashMap<String, String>... params) {
-            HashMap<String, String> responseMap = HttpUtil.makeGETRequest(MOBILE_INIT_ENDPOINT, params[0]);
+            HashMap<String, String> responseMap = HttpUtil.makeGETRequest(mContext, MOBILE_INIT_ENDPOINT, params[0]);
             mIsSuccessful = Boolean.parseBoolean(responseMap.get(HttpUtil.IS_SUCCESSFUL));
             return responseMap.get(HttpUtil.RESPONSE_STRING);
         }
@@ -99,14 +101,18 @@ public class HomeFragmentUtil {
     }
 
     public static int cleanHomeScreenEntity( Context context ){
-        return context.getContentResolver().delete( PratilipiContract.HomeScreenBridgeEntity.CONTENT_URI, null, null );
+        int deletedRows = context.getContentResolver().delete( PratilipiContract.HomeScreenBridgeEntity.CONTENT_URI, null, null );
+        Log.v( LOG_TAG, "Clean Home Screen Entity : " + deletedRows );
+        return deletedRows;
     }
 
     public static int cleanCategoryEntity( Context context ){
         Uri uri = PratilipiContract.CategoriesEntity.CONTENT_URI;
         String selection = PratilipiContract.CategoriesEntity.COLUMN_IS_ON_HOME_SCREEN + "=?";
         String[] selectionArgs = {String.valueOf(1)};
-        return context.getContentResolver().delete(uri, selection, selectionArgs);
+        int deletedRows = context.getContentResolver().delete(uri, selection, selectionArgs);
+        Log.v( LOG_TAG, "Clean Home Screen Entity : " + deletedRows );
+        return deletedRows;
     }
 
 }
