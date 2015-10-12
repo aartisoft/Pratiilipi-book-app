@@ -139,10 +139,12 @@ public class DetailActivity extends AppCompatActivity {
 
     private Intent getParentActivityIntentImpl(){
         Intent parentIntent = null;
-        if( mParentActivityClassName.equals(CardListActivity.class.getSimpleName())){
+        if( mParentActivityClassName.equals(CardListActivity.class.getSimpleName()))
             parentIntent = new Intent( this, CardListActivity.class);
-            parentIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        }
+        else if(mParentActivityClassName.equals(MainActivity.class.getSimpleName()))
+            parentIntent = new Intent( this, MainActivity.class);
+
+        parentIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
         return parentIntent;
     }
