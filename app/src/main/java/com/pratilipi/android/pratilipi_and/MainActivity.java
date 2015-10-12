@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity{
                 Intent intent = new Intent(getApplicationContext(), CardListActivity.class);
                 intent.putExtra(CardListActivity.INTENT_EXTRA_LAUNCHER, CardListActivity.LAUNCHER_SEARCH );
                 intent.putExtra( CardListActivity.INTENT_EXTRA_SEARCH_QUERY, query );
+                intent.putExtra( CardListActivity.INTENT_EXTRA_TITLE, query );
                 startActivity(intent);
                 return true;
             }
@@ -95,9 +96,8 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     public boolean onSearchRequested() {
-        Log.e(LOG_TAG, "Search Button Clicked");
         String searchQuery = (String) mSearchView.getQuery();
-        Log.e(LOG_TAG, "Search Query : " + searchQuery);
+        Log.v(LOG_TAG, "Search Query : " + searchQuery);
         return true;
     }
 
