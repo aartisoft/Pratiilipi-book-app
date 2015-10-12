@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.pratilipi.android.pratilipi_and.adapter.CategoryFragmentAdapter;
@@ -33,11 +34,11 @@ public class CategoryFragment extends Fragment implements LoaderManager.LoaderCa
     private static final String LOG_TAG = CategoryFragment.class.getSimpleName();
     private static final int CATEGORY_LOADER = 1;
     private static final String LANGUAGE_ID = "languageId";
-    private static final String CATEGORY_LOADING_MESSAGE = "Loading...";
 
     private CategoryFragmentAdapter mCategoryFragmentAdapter;
     private ListView mCategoriesListView;
     private CategoryUtil mCategoryUtil;
+    private ProgressBar mProgressBar;
 
     private static final String[] CATEGORY_COLUMNS = {
             PratilipiContract.CategoriesEntity._ID,
@@ -66,6 +67,8 @@ public class CategoryFragment extends Fragment implements LoaderManager.LoaderCa
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_category, container, false);
 
+        mProgressBar = ( ProgressBar ) rootView.findViewById( R.id.card_list_progress_bar );
+
         mCategoryFragmentAdapter = new CategoryFragmentAdapter(getActivity(), null, 0);
         mCategoriesListView = (ListView) rootView.findViewById(R.id.category_list_listview);
         mCategoriesListView.setAdapter(mCategoryFragmentAdapter);
@@ -78,6 +81,7 @@ public class CategoryFragment extends Fragment implements LoaderManager.LoaderCa
                 String categoryName = cursor.getString(COL_CATEGORY_NAME);
 
                 Intent intent = new Intent(getActivity(), CardListActivity.class);
+                intent.putExtra( CardListActivity.INTENT_EXTRA_LAUNCHER, CardListActivity.LAUNCHER_CATEGORY );
                 intent.putExtra(CardListActivity.INTENT_EXTRA_ID, categoryId);
                 intent.putExtra(CardListActivity.INTENT_EXTRA_TITLE, categoryName);
 
@@ -136,7 +140,7 @@ public class CategoryFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     private void fetchDataFromServer(){
-        mCategoryUtil = new CategoryUtil(getActivity(), CATEGORY_LOADING_MESSAGE);
+        mCategoryUtil = new CategoryUtil( getActivity(), mProgressBar );
         HashMap<String, String> params = new HashMap<>();
         params.put(LANGUAGE_ID, String.valueOf(AppUtil.getPreferredLanguage(getActivity())));
         mCategoryUtil.fetchCategories(params, new GetCallback() {
