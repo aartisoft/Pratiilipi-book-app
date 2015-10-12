@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -18,7 +19,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -327,6 +330,52 @@ public class PratilipiUtil {
         return pratilipi;
     }
 
+    public static List<Pratilipi> createPratilipiListFromCursor(Cursor c){
+        if(c == null) {
+            Log.e(LOG_TAG, "Cursor sent is null");
+            return null;
+        }
+
+        if(!c.moveToFirst()) {
+            Log.e(LOG_TAG, "Cursor sent is empty");
+            return null;
+        }
+
+        List<Pratilipi> pratilipiList = new ArrayList<>(c.getCount());
+        for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
+            Pratilipi pratilipi = new Pratilipi();
+            pratilipi.setPratilipiId(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID)));
+            if(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_TITLE)).isEmpty())
+                pratilipi.setTitle(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_TITLE_EN)));
+            else
+                pratilipi.setTitle(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_TITLE)));
+
+            pratilipi.setType(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_TYPE)));
+            pratilipi.setAuthorName(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_NAME)));
+            pratilipi.setLanguageId(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_ID)));
+            pratilipi.setLanguageName(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_NAME)));
+            pratilipi.setState(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_STATE)));
+            pratilipi.setSummary(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_SUMMARY)));
+            pratilipi.setIndex(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_INDEX)));
+            pratilipi.setContentType(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_CONTENT_TYPE)));
+            pratilipi.setRatingCount(c.getLong(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_RATING_COUNT)));
+            pratilipi.setAverageRating(c.getFloat(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_AVERAGE_RATING)));
+            pratilipi.setPrice(c.getDouble(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_PRICE)));
+            pratilipi.setDiscountedPrice(c.getDouble(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_DISCOUNTED_PRICE)));
+            pratilipi.setFontSize(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_FONT_SIZE)));
+            pratilipi.setCurrentChapter(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_CURRENT_CHAPTER)));
+            pratilipi.setPageCount(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_PAGE_COUNT)));
+            pratilipi.setCurrentPage(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_CURRENT_PAGE)));
+            pratilipi.setCoverImageUrl(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_COVER_IMAGE_URL)));
+            pratilipi.setGenreList(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_GENRE_NAME_LIST)));
+            pratilipi.setDownloadStatus(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_DOWNLOAD_STATUS)));
+            pratilipi.setCreationDate(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_CREATION_DATE)));
+
+            pratilipiList.add(pratilipi);
+        }
+        return pratilipiList;
+    }
+
     public static boolean updatePratilipiDownloadStatus(Context context, String pratilipiId, int downloadStatus){
         ContentValues values = new ContentValues();
         values.put(PratilipiContract.PratilipiEntity.COLUMN_DOWNLOAD_STATUS, downloadStatus);
@@ -342,5 +391,16 @@ public class PratilipiUtil {
             return true;
         }
         return false;
+    }
+
+    public static Pratilipi getPratilipiById(Context context, String pratilipiId){
+        Uri uri = PratilipiContract.PratilipiEntity.getPratilipiByIdUri(pratilipiId);
+        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+        List<Pratilipi> pratilipiList = createPratilipiListFromCursor(cursor);
+        if(pratilipiList.size() > 1){
+            Log.e(LOG_TAG, "Multiple entries exists for pratilipi id " + pratilipiId);
+        }
+
+        return pratilipiList.get(0);
     }
 }
