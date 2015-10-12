@@ -8,8 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,10 +15,8 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.pratilipi.android.pratilipi_and.adapter.CardViewAdapter;
 import com.pratilipi.android.pratilipi_and.adapter.HomeFragmentAdapter;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
-import com.pratilipi.android.pratilipi_and.datafiles.Homescreen;
 import com.pratilipi.android.pratilipi_and.service.PratilipiService;
 import com.pratilipi.android.pratilipi_and.util.AppUtil;
 import com.pratilipi.android.pratilipi_and.util.CategoryUtil;
@@ -29,9 +25,7 @@ import com.pratilipi.android.pratilipi_and.util.HomeFragmentUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 
 public class HomeFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -43,9 +37,6 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
 
     private HomeFragmentAdapter mHomeFragmentAdapter;
     private ListView mHomeListView;
-    private RecyclerView mCardListView;
-    private CardViewAdapter mCardViewAdapter;
-    private List<Homescreen> mHomescreenList;
     private HomeFragmentUtil mHomeFragmentUtil;
 
 
@@ -56,26 +47,13 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mHomescreenList = new ArrayList<>();
-        mCardViewAdapter = new CardViewAdapter(mHomescreenList);
-        mHomeFragmentAdapter = new HomeFragmentAdapter( getActivity(), null, 0, mCardViewAdapter );
+        mHomeFragmentAdapter = new HomeFragmentAdapter( getActivity(), null, 0 );
         fetchData();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        Log.e(LOG_TAG, "onCreateView() function called");
-
-        View cardView = inflater.inflate(R.layout.homescreen_list_item, (ViewGroup) mHomeListView, false);
-        mCardListView = (RecyclerView) cardView.findViewById(R.id.homescreen_card_list_view);
-        mCardListView.setAdapter(mCardViewAdapter);
-        mCardListView.setHasFixedSize(true);
-
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-        layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        mCardListView.setLayoutManager(layoutManager);
 
         View rootView = inflater.inflate(R.layout.fragment_home, container, false);
 
@@ -94,8 +72,9 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         CursorLoader cursorLoader;
-        Uri categoryUri = PratilipiContract.HomeScreenBridgeEntity.CONTENT_URI
+        Uri categoryUri = PratilipiContract.CategoriesEntity.CONTENT_URI
                 .buildUpon()
+                .appendQueryParameter(PratilipiContract.CategoriesEntity.COLUMN_LANGUAGE, String.valueOf( AppUtil.getPreferredLanguage( getActivity() )))
                 .appendQueryParameter(PratilipiContract.CategoriesEntity.COLUMN_IS_ON_HOME_SCREEN, String.valueOf(1))
                 .build();
         cursorLoader = new CursorLoader(getActivity(), categoryUri, CategoryUtil.CATEGORY_COLUMNS, null, null, null);

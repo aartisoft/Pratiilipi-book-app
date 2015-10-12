@@ -384,15 +384,22 @@ public class PratilipiProvider extends ContentProvider {
     private Cursor getPratilipiListByCategory(Uri uri, int switchCase){
         String categoryId = null;
         String tableName = null;
+        String subQuery = null;
         switch (switchCase){
             case HOME_SCREEN_BRIDGE: {
                 tableName = PratilipiContract.HomeScreenBridgeEntity.TABLE_NAME;
                 categoryId = PratilipiContract.HomeScreenBridgeEntity.getCategoryIdFromUri(uri);
+                subQuery = "select " + PratilipiContract.HomeScreenBridgeEntity.COLUMN_PRATILIPI_ID
+                        + " from " + tableName
+                        + " where " + PratilipiContract.HomeScreenBridgeEntity.COLUMN_CATEGORY_ID + " = ?";
                 break;
             }
             case CATEGORY_PRATILIPI: {
                 tableName = PratilipiContract.CategoriesPratilipiEntity.TABLE_NAME;
                 categoryId = PratilipiContract.PratilipiEntity.getCategoryIdFromUri(uri);
+                subQuery = "select " + PratilipiContract.CategoriesPratilipiEntity.COLUMN_PRATILIPI_ID
+                        + " from " + tableName
+                        + " where " + PratilipiContract.CategoriesPratilipiEntity.COLUMN_CATEGORY_ID + " = ?";
                 break;
             }
         }
@@ -400,9 +407,7 @@ public class PratilipiProvider extends ContentProvider {
         Integer lowerLimit = uri.getQueryParameter(CardListActivity.LOWER_LIMIT) == null ? 0 : Integer.parseInt( uri.getQueryParameter( CardListActivity.LOWER_LIMIT ));
         Integer upperLimit = uri.getQueryParameter(CardListActivity.UPPER_LIMIT) == null ? 50 : Integer.parseInt( uri.getQueryParameter( CardListActivity.UPPER_LIMIT ));
 
-        String subQuery = "select " + PratilipiContract.CategoriesPratilipiEntity.COLUMN_PRATILIPI_ID
-                            + " from " + tableName
-                            + " where " + PratilipiContract.CategoriesPratilipiEntity.COLUMN_CATEGORY_ID + " = ?";
+
         String rawQuery = "SELECT * FROM "
                             + PratilipiContract.PratilipiEntity.TABLE_NAME + " WHERE "
                             + PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID + " IN ( "
