@@ -206,7 +206,7 @@ public class DetailActivity extends AppCompatActivity {
                 //Make request for next page
                 if( mPageCount > mPageNumber ){
                     float completedPercentage = ((float)mPageNumber/(float)mPageCount) *100;
-                    Toast.makeText(mContext, completedPercentage + "% Completed", Toast.LENGTH_SHORT)
+                    Toast.makeText(mContext, (int)(double) completedPercentage + "% Completed", Toast.LENGTH_SHORT)
                             .show();
                     mPageNumber++;
                     if(mIndexJsonArray == null){
@@ -223,7 +223,7 @@ public class DetailActivity extends AppCompatActivity {
                     }
 
                 } else{
-                    //TODO : UPDATE PRATILIPI ENTITY is_downloaded = true
+                    //UPDATE PRATILIPI ENTITY is_downloaded = true
                     PratilipiUtil.updatePratilipiDownloadStatus(
                             mContext,
                             mPratilipiId,
