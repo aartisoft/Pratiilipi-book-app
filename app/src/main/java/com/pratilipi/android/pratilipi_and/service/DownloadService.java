@@ -47,13 +47,6 @@ public class DownloadService extends IntentService {
         int chapterNumber = intent.getIntExtra(INTENT_EXTRA_CHAPTER_NUMBER, 0);
         ResultReceiver receiver = (ResultReceiver) intent.getParcelableExtra(INTENT_EXTRA_RECEIVER);
 
-//        Bundle bundle = intent.getExtras();
-//        for (String key : bundle.keySet()) {
-//            Object value = bundle.get(key);
-//            Log.e(LOG_TAG, String.format("%s %s (%s)", key,
-//                    value.toString(), value.getClass().getName()));
-//        }
-
         String uriString;
         if(contentType.equals(IMAGE_COTENT_TYPE))
             uriString = IMAGE_CONTENT_ENDPOINT;
