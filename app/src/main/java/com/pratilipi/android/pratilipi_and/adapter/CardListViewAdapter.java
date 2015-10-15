@@ -157,12 +157,12 @@ public class CardListViewAdapter extends RecyclerView.Adapter<CardListViewAdapte
             pratilipi.setCurrentPage(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_CURRENT_PAGE)));
             pratilipi.setCoverImageUrl(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_COVER_IMAGE_URL)));
             pratilipi.setGenreList(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_GENRE_NAME_LIST)));
+            pratilipi.setDownloadStatus(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_DOWNLOAD_STATUS)));
             pratilipi.setCreationDate(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_CREATION_DATE)));
 
             mPratilipiList.add(pratilipi);
-//            this.notifyDataSetChanged();
+            notifyItemInserted( mPratilipiList.size() );
         }
-        Log.e(LOG_TAG, "Array Length : " + mPratilipiList.size());
         return;
     }
 
