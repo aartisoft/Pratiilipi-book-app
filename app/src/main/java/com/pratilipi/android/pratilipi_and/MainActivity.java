@@ -111,6 +111,12 @@ public class MainActivity extends AppCompatActivity{
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_search) {
             return true;
+        } else if(id == R.id.action_change_content_language){
+            Log.e(LOG_TAG, "Change Content Language option is clicked");
+            Intent intent = new Intent(this, LanguageSelectionActivity.class);
+            startActivity(intent);
+        } else if(id == R.id.action_change_menu_language){
+            Log.e(LOG_TAG, "Change Menu Language option is clicked");
         }
 
         return super.onOptionsItemSelected(item);

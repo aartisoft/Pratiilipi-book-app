@@ -8,10 +8,17 @@ import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.TextView;
+
+import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
+import com.pratilipi.android.pratilipi_and.data.PratilipiDbHelper;
+import com.pratilipi.android.pratilipi_and.util.CategoryPratilipiUtil;
+import com.pratilipi.android.pratilipi_and.util.CategoryUtil;
+import com.pratilipi.android.pratilipi_and.util.HomeFragmentUtil;
 
 import java.lang.reflect.Field;
 import java.util.Locale;
@@ -38,6 +45,11 @@ public class LanguageSelectionActivity extends Activity {
 
     public void goSelected(View view) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        if(sharedPref.getString(SELECTED_LANGUAGE, null) != null){
+            Log.e(LOG_TAG, "Preferred Content Language is updated");
+            cleanDatabase();
+        } else
+            Log.e(LOG_TAG, "Preferred Content Language is set for first time");
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(SELECTED_LANGUAGE, mSelectedLanguage);
         editor.commit();
@@ -137,6 +149,29 @@ public class LanguageSelectionActivity extends Activity {
             e.printStackTrace();
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
+        }
+    }
+
+    protected void cleanDatabase(){
+        int categoryPratilipiRowCount = CategoryPratilipiUtil.delete(this, null, null);
+        Log.e(LOG_TAG, "Category Pratilipi Deleted Rows : " + categoryPratilipiRowCount);
+        int homeScreenBridgeRowCount = HomeFragmentUtil.delete(this, null, null);
+        Log.e(LOG_TAG, "Category Pratilipi Deleted Rows : " + homeScreenBridgeRowCount);
+        if(CategoryPratilipiUtil.isTableEmpty(this) && HomeFragmentUtil.isTableEmpty(this)) {
+            int categoryRowCount = CategoryUtil.delete(this, null, null);
+            Log.e(LOG_TAG, "Category Pratilipi Deleted Rows : " + categoryRowCount);
+            String subQuery = "select " + PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID
+                    + " FROM "
+                    + PratilipiContract.ShelfEntity.TABLE_NAME;
+            String query = "DELETE FROM " + PratilipiContract.PratilipiEntity.TABLE_NAME
+                    + " WHERE "
+                    + PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID + " IN ( "
+                    + subQuery
+                    + " )";
+
+            new PratilipiDbHelper(this).getReadableDatabase().rawQuery(query, null);
+        } else{
+            Log.e(LOG_TAG, "Unable to delete all row from CategroyPratilipi entity or HomeScreenBridge entity");
         }
     }
 }

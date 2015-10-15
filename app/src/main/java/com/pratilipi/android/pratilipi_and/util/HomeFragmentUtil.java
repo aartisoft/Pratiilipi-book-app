@@ -3,12 +3,14 @@ package com.pratilipi.android.pratilipi_and.util;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
 import com.pratilipi.android.pratilipi_and.GetCallback;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
+import com.pratilipi.android.pratilipi_and.data.PratilipiDbHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -102,7 +104,7 @@ public class HomeFragmentUtil {
 
     public static int cleanHomeScreenEntity( Context context ){
         int deletedRows = context.getContentResolver().delete( PratilipiContract.HomeScreenBridgeEntity.CONTENT_URI, null, null );
-        Log.v( LOG_TAG, "Clean Home Screen Entity : " + deletedRows );
+        Log.v(LOG_TAG, "Clean Home Screen Entity : " + deletedRows);
         return deletedRows;
     }
 
@@ -113,6 +115,23 @@ public class HomeFragmentUtil {
         int deletedRows = context.getContentResolver().delete(uri, selection, selectionArgs);
         Log.v( LOG_TAG, "Clean Home Screen Entity : " + deletedRows );
         return deletedRows;
+    }
+
+    public static int delete(Context context, String selection, String[] selectionArgs){
+        return context.getContentResolver().delete(
+                PratilipiContract.HomeScreenBridgeEntity.CONTENT_URI,
+                selection,
+                selectionArgs);
+    }
+
+    public static boolean isTableEmpty(Context context){
+        //TODO: GET RID OF rawQuery() FUNCTION. SECURITY HAZARD
+        String query = "SELECT * FROM " + PratilipiContract.HomeScreenBridgeEntity.TABLE_NAME;
+        Cursor cursor = new PratilipiDbHelper(context).getReadableDatabase().rawQuery(query, null);
+        if(cursor.moveToFirst())
+            return false;
+        else
+            return true;
     }
 
 }
