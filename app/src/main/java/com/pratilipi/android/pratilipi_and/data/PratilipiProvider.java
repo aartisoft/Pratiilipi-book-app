@@ -72,6 +72,14 @@ public class PratilipiProvider extends ContentProvider {
                 rowsDeleted = db.delete( PratilipiContract.CategoriesEntity.TABLE_NAME, selection, selectionArgs );
                 break;
             }
+            case CATEGORY: {
+                rowsDeleted = db.delete( PratilipiContract.CategoriesEntity.TABLE_NAME, selection, selectionArgs );
+                break;
+            }
+            case CATEGORY_PRATILIPI: {
+                rowsDeleted = db.delete( PratilipiContract.CategoriesPratilipiEntity.TABLE_NAME, selection, selectionArgs );
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
