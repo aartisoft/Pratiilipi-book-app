@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Pratilipi</string>
 
+    <string name="loading">Loading ...</string>
+
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="action_change_content_language">Content Language</string>

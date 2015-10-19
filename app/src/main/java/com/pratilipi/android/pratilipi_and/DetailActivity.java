@@ -27,6 +27,7 @@ import com.pratilipi.android.pratilipi_and.service.DownloadService;
 import com.pratilipi.android.pratilipi_and.util.PratilipiUtil;
 import com.pratilipi.android.pratilipi_and.util.ShelfUtil;
 import com.pratilipi.android.pratilipi_and.util.UserUtil;
+import com.pratilipi.android.reader.ReaderActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -98,7 +99,8 @@ public class DetailActivity extends AppCompatActivity {
         readButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getBaseContext(), "ReadButton Clicked", Toast.LENGTH_LONG).show();
+                Intent i = new Intent( DetailActivity.this, ReaderActivity.class );
+                startActivity(i);
             }
         });
 
