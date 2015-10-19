@@ -123,7 +123,7 @@ public class ShelfUtil {
             Vector<ContentValues> vector = new Vector<ContentValues>();
             for( int i = 0; i < length; ++i ){
                 JSONObject pratilipiObject = pratilipiListArray.getJSONObject(i);
-                Uri uri = PratilipiContract.PratilipiEntity.getPratilipiByIdUri(pratilipiObject.getString(PRATILIPI_ID));
+                Uri uri = PratilipiContract.PratilipiEntity.getPratilipiByIdUri(pratilipiObject.getString(PRATILIPI_ID_KEY));
                 Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
                 if( !cursor.moveToFirst() ){
                     Uri pratilipiUri = PratilipiUtil.insert(context, pratilipiObject);
