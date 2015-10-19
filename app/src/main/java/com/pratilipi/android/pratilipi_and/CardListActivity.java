@@ -14,6 +14,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.pratilipi.android.pratilipi_and.adapter.CardListViewAdapter;
@@ -46,6 +49,8 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
     private static final String RESULT_COUNT_STRING = "resultCount";
     private static final int RESULT_COUNT = 20;
     private static final String CURSOR = "cursor";
+    // The minimum amount of items to have below your current scroll position before loading more.
+    private static final int VISIBLE_THRESHOLD = 1;
 
     private String mId;
     private String mTitle;
@@ -54,11 +59,16 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
     private LinearLayoutManager mLayoutManager;
     private CardListViewAdapter mCardListViewAdapter;
     private RecyclerView mCardListRecyclerView;
+    private TextView mNoResultTextView;
+    private ProgressBar mProgressBar;
     private PratilipiUtil mPratilipiUtil;
     private SearchUtil mSearchUtil;
     private int mRowsInserted = 0;
     private String mCursorString;
-    private int mNumberOfRetries = 0;
+    private int mLowerLimit = 0;
+    private int mUpperLimit = 0;
+
+    private boolean mLoadingFinished = false;
 
     public static final String INTENT_EXTRA_LAUNCHER = "launcher";
     public static final String INTENT_EXTRA_ID = "categoryId";
@@ -66,14 +76,13 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
     public static final String INTENT_EXTRA_SEARCH_QUERY = "query";
     public static final String LAUNCHER_SEARCH = "search";
     public static final String LAUNCHER_CATEGORY = "category";
+    public static final String LOWER_LIMIT = "lowerLimit";
+    public static final String UPPER_LIMIT = "upperLimit";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_card_list);
-
-        String parentClass = this.getParentActivityIntent().getClass().getSimpleName();
-        Log.e(LOG_TAG, "Parent Activity Class Name : " + parentClass );
 
         Bundle bundle = getIntent().getExtras();
         mLauncher = bundle.getString(INTENT_EXTRA_LAUNCHER);
@@ -82,19 +91,43 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
             mTitle = bundle.getString(INTENT_EXTRA_TITLE);
         } else if( mLauncher.equals(LAUNCHER_SEARCH) ) {
             mSearchQuery = bundle.getString(INTENT_EXTRA_SEARCH_QUERY);
+            mTitle = bundle.getString( INTENT_EXTRA_TITLE );
         }
 
         setTitle(mTitle);
         getSupportActionBar().setElevation(1f);
+
+        mNoResultTextView = ( TextView ) findViewById( R.id.card_list_no_result_textview );
+        mProgressBar = ( ProgressBar ) findViewById( R.id.card_list_progress_bar );
 
         mCardListRecyclerView = (RecyclerView) findViewById(R.id.card_list_recyclerview);
         mCardListRecyclerView.setHasFixedSize(true);
 
         mLayoutManager = new LinearLayoutManager(this);
         mCardListRecyclerView.setLayoutManager(mLayoutManager);
+        mCardListRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                int totalItemCount = mLayoutManager.getItemCount();
+                int lastVisibleItem = mLayoutManager.findLastVisibleItemPosition();
+                if ( !mLoadingFinished && totalItemCount <= ( lastVisibleItem + VISIBLE_THRESHOLD )) {
+                    Log.e(LOG_TAG, "End is reached");
+                    if ( mLauncher.equals( LAUNCHER_CATEGORY )) {
+                        fetchDataFromServer( mCursorString );
+                    } else if ( mLauncher.equals( LAUNCHER_SEARCH )) {
+                        fetchSearchData( mCursorString );
+                    }
+                } else{
+                    mUpperLimit = 0;
+                    mLowerLimit = 0;
+                }
+            }
+        });
 
         mCardListViewAdapter = new CardListViewAdapter();
-        mCardListRecyclerView.setAdapter(mCardListViewAdapter);
+        mCardListRecyclerView.setAdapter( mCardListViewAdapter );
         mCardListViewAdapter.notifyDataSetChanged();
 
 
@@ -107,15 +140,17 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Uri pratilipiListUri =
                 PratilipiContract.PratilipiEntity
-                        .getPratilipiListByCategoryUri(mId);
-        Log.e(LOG_TAG, "ONCREATELOADER. Pratilipi List Uri : " + pratilipiListUri);
+                        .getPratilipiListByCategoryUri(mId)
+                        .buildUpon()
+                        .appendQueryParameter( LOWER_LIMIT, String.valueOf( mLowerLimit ))
+                        .appendQueryParameter( UPPER_LIMIT, String.valueOf( mUpperLimit ))
+                        .build();
         return new CursorLoader( this, pratilipiListUri, null, null, null, null );
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mCardListViewAdapter.swapCursor(data);
-        Log.e(LOG_TAG, "onLoadFinished function call");
         mCardListViewAdapter.notifyDataSetChanged();
     }
 
@@ -124,7 +159,7 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mCardListViewAdapter.swapCursor(null);
-        mCardListViewAdapter.notifyDataSetChanged();
+//        mCardListViewAdapter.notifyDataSetChanged();
     }
 
     @Nullable
@@ -140,11 +175,10 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
             Cursor cursor = this.getContentResolver().query(uri, null, null, null, null);
 
             if (!cursor.moveToFirst()) {
-                Log.e(LOG_TAG, "Server call for categories");
                 fetchDataFromServer(null);
             } else {
                 mCardListViewAdapter.swapCursor(cursor);
-                mCardListViewAdapter.notifyDataSetChanged();
+//                mCardListViewAdapter.notifyDataSetChanged();
 
                 int currentJulianDay = AppUtil.getCurrentJulianDay();
                 cursor.moveToFirst();
@@ -158,14 +192,14 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
     }
 
     public void fetchSearchData( String cursorString ){
-        mSearchUtil = new SearchUtil(this, "Loading Result...");
+        mSearchUtil = new SearchUtil( this, mProgressBar );
         HashMap<String, String> params = new HashMap<>();
         params.put(LANGUAGE_ID, String.valueOf(AppUtil.getPreferredLanguage(this)));
         params.put( QUERY, mSearchQuery );
         if( cursorString != null && !cursorString.isEmpty() )
             params.put( CURSOR, cursorString );
         params.put( RESULT_COUNT_STRING, String.valueOf(RESULT_COUNT) );
-        mSearchUtil.fetchSearchResults( params, new GetCallback() {
+        mSearchUtil.fetchSearchResults(params, new GetCallback() {
             @Override
             public void done(boolean isSuccessful, String data) {
                 if (isSuccessful) {
@@ -201,28 +235,35 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
     private void onSuccess(String data){
         try{
             JSONObject responseJSON = new JSONObject(data);
-            mCursorString = responseJSON.getString(CURSOR);
+            Log.e( LOG_TAG, "hasCursorString : " + responseJSON.has( CURSOR ) );
+            if( responseJSON.has( CURSOR ))
+                mCursorString = responseJSON.getString(CURSOR);
+            else
+                mCursorString = null;
             if( mLauncher.equals( LAUNCHER_CATEGORY )) {
                 JSONArray pratilipiListArray = responseJSON.getJSONArray(PratilipiUtil.PRATILIPI_LIST);
                 mRowsInserted = PratilipiUtil.bulkInsert(this, pratilipiListArray, mId);
-                if (mRowsInserted > 0) {
-                    getSupportLoaderManager().initLoader(PRATILIPI_LIST_LOADER, null, this);
-                    if (mRowsInserted == RESULT_COUNT && (mCursorString != null || !mCursorString.isEmpty())) {
-                        fetchDataFromServer(mCursorString);
-                    }
-                } else {
-                    Log.e(LOG_TAG, "Pratilipi Entity update failed");
-                    while (mNumberOfRetries < 3)
-                        fetchDataFromServer(mCursorString);
-                }
+                mLowerLimit = mUpperLimit;
+                mUpperLimit += mRowsInserted;
+                getSupportLoaderManager().initLoader(PRATILIPI_LIST_LOADER, null, this);
+                if ( pratilipiListArray.length() == RESULT_COUNT && (mCursorString != null || !mCursorString.isEmpty())) {
+                    mLoadingFinished = false;
+                } else
+                    mLoadingFinished = true;
             } else if( mLauncher.equals( LAUNCHER_SEARCH )){
                 //WHEN LAUNCHER IS SEARCH
                 JSONArray pratilipiListArray = responseJSON.getJSONArray( SearchUtil.PRATILIPI_DATA_LIST );
+                if( pratilipiListArray == null || pratilipiListArray.length() == 0 ){
+                    mNoResultTextView.setVisibility(View.VISIBLE);
+                    return;
+                }
                 mCardListViewAdapter.addToPratilipiList( mSearchUtil.getPratilipiList(pratilipiListArray));
                 mCardListViewAdapter.notifyDataSetChanged();
                 int resultCount = pratilipiListArray.length();
                 if( resultCount == RESULT_COUNT && ( mCursorString != null || !mCursorString.isEmpty() ))
-                    fetchSearchData( mCursorString );
+                    mLoadingFinished = false;
+                else
+                    mLoadingFinished = true;
             }
         } catch (JSONException e){
             e.printStackTrace();
