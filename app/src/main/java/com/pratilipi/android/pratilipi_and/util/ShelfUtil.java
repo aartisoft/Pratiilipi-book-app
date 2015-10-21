@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.pratilipi.android.pratilipi_and.GetCallback;
 import com.pratilipi.android.pratilipi_and.UserLoginActivity;
@@ -27,6 +28,7 @@ import java.util.Vector;
 public class ShelfUtil {
 
     private static final String LOG_TAG = ShelfUtil.class.getSimpleName();
+//    private static final String SHELF_ENDPOINT = "http://mark-4p47.www.prod-pratilipi.appspot.com/api.pratilipi/userpratilipi/library";
     private static final String SHELF_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/userpratilipi/library";
 
     private static final String PRATILIPI_ID = "pratilipiId";
@@ -65,6 +67,31 @@ public class ShelfUtil {
         HashMap<String, String> paramsMap = new HashMap<>();
         paramsMap.put(PRATILIPI_ID, pratilipi.getPratilipiId());
         paramsMap.put(ADD_TO_LIB, String.valueOf(true));
+
+        new PutToShelfAsyncTask(callback).execute(paramsMap);
+    }
+
+    public static void removePratilipiFromShelf(Context context, Pratilipi pratilipi, GetCallback callback) {
+
+        //REMOVE PRATILIPI FROM SHELF ENTITY
+        mContext = context;
+        User user = UserUtil.getLoggedInUser(context);
+
+        if(user == null){
+            Log.e(LOG_TAG, "User is not logged in");
+        }
+
+        int deleteRowCount = delete(context, pratilipi.getPratilipiId());
+        if(deleteRowCount == 0){
+            Log.e(LOG_TAG, "ShelfEntity deletion failed");
+            Toast.makeText(context, "Request failed. Try after some time", Toast.LENGTH_LONG);
+            return;
+        }
+
+        //MAKE SERVER CALL TO UPDATE SITE DATABASE
+        HashMap<String, String> paramsMap = new HashMap<>();
+        paramsMap.put(PRATILIPI_ID, pratilipi.getPratilipiId());
+        paramsMap.put(ADD_TO_LIB, String.valueOf(false));
 
         new PutToShelfAsyncTask(callback).execute(paramsMap);
     }
@@ -151,6 +178,11 @@ public class ShelfUtil {
         return 0;
     }
 
-
+    public static int delete(Context context, String pratilipiId){
+        Uri uri = PratilipiContract.ShelfEntity.CONTENT_URI;
+        String selection = PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + "=?";
+        String[] selectionArgs = new String[]{pratilipiId};
+        return context.getContentResolver().delete(uri, selection, selectionArgs);
+    }
 
 }

@@ -1,15 +1,19 @@
 package com.pratilipi.android.pratilipi_and.adapter;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,10 +21,17 @@ import android.widget.Toast;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.pratilipi.android.pratilipi_and.AppController;
+import com.pratilipi.android.pratilipi_and.GetCallback;
 import com.pratilipi.android.pratilipi_and.R;
+import com.pratilipi.android.pratilipi_and.Widget.MySpinner;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
 import com.pratilipi.android.pratilipi_and.datafiles.Pratilipi;
 import com.pratilipi.android.pratilipi_and.util.AppUtil;
+import com.pratilipi.android.pratilipi_and.util.ContentUtil;
+import com.pratilipi.android.pratilipi_and.util.ShelfUtil;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +39,16 @@ import java.util.List;
 /**
  * Created by Rahul Ranjan on 9/24/2015.
  */
-public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHolder>  {
+public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHolder> {
 
     private static final String LOG_TAG = ShelfAdapter.class.getSimpleName();
+
 
     private List<Pratilipi> mPratilipiList;
     private ViewGroup mViewGroup;
     private ImageLoader mImageLoader;
+    private int mDeleteContentPosition = 1;
+    private int mRemoveContentFromShelfPosition = 0;
 
     public ShelfAdapter(){
         Log.e(LOG_TAG, "ShelfAdapter Constructor");
@@ -93,6 +107,96 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
                 Toast.makeText(context, "Is Downloaded : " + cursor.getInt(cursor.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_DOWNLOAD_STATUS)), Toast.LENGTH_SHORT).show();
             }
         });
+
+
+        List<String> menuItems = new ArrayList<>();
+        menuItems.add("Remove");
+        menuItems.add("Delete Content");
+        // Creating adapter for spinner
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, menuItems);
+
+        // Drop down layout style - list view with radio button
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        // attaching data adapter to spinner
+        holder.dropdown.setAdapter(dataAdapter);
+//        holder.dropdown.setSelection(0, false);
+        holder.dropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            int mCount = 0;
+
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                mCount = mCount + 1;
+                if(mCount > 1){
+                    // On selecting a spinner item
+                    String item = parent.getItemAtPosition(position).toString();
+                    if(position == mRemoveContentFromShelfPosition) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+
+                        builder.setTitle("Confirm");
+                        builder.setMessage("Do you want to remove " + pratilipi.getTitle() + " from shelf?");
+
+                        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                removeContentFromShelf(context, pratilipi);
+                                //Update UI List
+                                Cursor cursor = context.getContentResolver().query(PratilipiContract.ShelfEntity.CONTENT_URI, null, null, null, null);
+                                swapCursor(cursor);
+
+                                dialog.dismiss();
+                            }
+
+                        });
+
+                        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // Do nothing
+                                dialog.dismiss();
+                            }
+                        });
+
+                        AlertDialog alert = builder.create();
+                        alert.show();
+
+                    }
+                    else if(position == mDeleteContentPosition) {AlertDialog.Builder builder = new AlertDialog.Builder(context);
+
+                        builder.setTitle("Confirm");
+                        builder.setMessage("Are you sure you want to delete " + pratilipi.getTitle() + " from phone memory?");
+
+                        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                deleteContent(context, pratilipi);
+                                //COULDN'T UPDATE SPECIFIC PRATILIPI OBJECT'S DOWNLOAD_STATUS. SO FETCHED WHOLE LIST FROM DATABASE
+                                //TODO : FIND PROPER SOLUTION FOR THIS HACK
+                                Cursor cursor = context.getContentResolver().query(PratilipiContract.ShelfEntity.CONTENT_URI, null, null, null, null);
+                                swapCursor(cursor);
+
+                                dialog.dismiss();
+                            }
+
+                        });
+
+                        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // Do nothing
+                                dialog.dismiss();
+                            }
+                        });
+
+                        AlertDialog alert = builder.create();
+                        alert.show();
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
     }
 
     public class DataViewHolder extends RecyclerView.ViewHolder{
@@ -102,6 +206,7 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
         TextView authorName;
         NetworkImageView bookCover;
         RatingBar ratingBar;
+        MySpinner dropdown;
 //        TextView ratingCount;
 //        TextView averageRating;
 //        ImageView imgOverflowButton ;
@@ -117,13 +222,14 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
 //            ratingCount = (TextView)itemView.findViewById(R.id.card_list_rating_count_textview);
 //            averageRating = (TextView)itemView.findViewById(R.id.averageRatingTextView);
 //            imgOverflowButton = (ImageView) itemView.findViewById(R.id.overflow_cardlist);
+            dropdown = (MySpinner) itemView.findViewById(R.id.shelf_dropdown_menu);
         }
     }
 
     public void swapCursor( Cursor c ){
         Log.e(LOG_TAG, "swapCursor function");
+        mPratilipiList.clear();
         if( c == null ) {
-            mPratilipiList.clear();
             notifyDataSetChanged();
             return;
         }
@@ -160,8 +266,44 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
             mPratilipiList.add(pratilipi);
         }
 
-        Log.e(LOG_TAG, "Notify data set changed");
         notifyDataSetChanged();
         return;
+    }
+
+    private void removeContentFromShelf(final Context context, final Pratilipi pratilipi){
+        ShelfUtil.removePratilipiFromShelf(context, pratilipi, new GetCallback() {
+            @Override
+            public void done(boolean isSuccessful, String data) {
+                if (isSuccessful) {
+                    onSuccess(context, data, pratilipi);
+                } else {
+                    onFailed(context, data);
+                }
+            }
+        });
+    }
+
+    private void onSuccess(Context context, String data, Pratilipi pratilipi){
+        Log.e(LOG_TAG, "onSuccess function of ShelfFragment");
+        //delete content
+        deleteContent(context, pratilipi);
+    }
+
+    private void onFailed(Context context, String data){
+        Log.e(LOG_TAG, "onFailed function of ShelfFragment");
+        try {
+            JSONObject jsonObject = new JSONObject(data);
+            Toast.makeText(context, jsonObject.getString("message"), Toast.LENGTH_LONG).show();
+        } catch ( JSONException e){
+            e.printStackTrace();
+        }
+    }
+
+    private void deleteContent(Context context, Pratilipi pratilipi){
+        if(pratilipi.getDownloadStatus() == PratilipiContract.PratilipiEntity.CONTENT_NOT_DOWNLOADED){
+            Log.e(LOG_TAG, "Content is NOT downloaded");
+            return;
+        }
+        ContentUtil.delete(context, pratilipi);
     }
 }
