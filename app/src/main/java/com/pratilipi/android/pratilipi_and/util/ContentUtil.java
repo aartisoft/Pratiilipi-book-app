@@ -4,8 +4,11 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
+import com.pratilipi.android.pratilipi_and.datafiles.Pratilipi;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,6 +17,8 @@ import org.json.JSONObject;
  * Created by Rahul Ranjan on 10/1/2015.
  */
 public class ContentUtil {
+
+    private static final String LOG_TAG = ContentUtil.class.getSimpleName();
 
     private static final String TEXT_CONTENT = "pageContent";
     private static final String IMAGE_CONTENT = "data";
@@ -88,5 +93,24 @@ public class ContentUtil {
             }
         }
         return false;
+    }
+
+    public static void delete(Context context, Pratilipi pratilipi){
+        Uri uri = PratilipiContract.ContentEntity.CONTENT_URI;
+        String selection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=?";
+        String[] selectionArgs = new String[]{pratilipi.getPratilipiId()};
+        int rowsDeleted = context.getContentResolver().delete(uri, selection, selectionArgs);
+        if(rowsDeleted == 0){
+            Log.e(LOG_TAG, "Content Deletion failed");
+            Toast.makeText(context, "Content Deletion failed. Try again later", Toast.LENGTH_LONG).show();
+        } else {
+            //UPDATE DOWNLOAD_STATUS
+            PratilipiUtil.updatePratilipiDownloadStatus(
+                    context,
+                    pratilipi.getPratilipiId(),
+                    PratilipiContract.PratilipiEntity.CONTENT_NOT_DOWNLOADED);
+//            pratilipi.setDownloadStatus(PratilipiContract.PratilipiEntity.CONTENT_NOT_DOWNLOADED);
+            Toast.makeText(context, "Content Deleted", Toast.LENGTH_LONG).show();
+        }
     }
 }
