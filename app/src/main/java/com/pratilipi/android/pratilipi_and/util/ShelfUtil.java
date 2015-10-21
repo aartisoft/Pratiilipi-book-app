@@ -108,8 +108,11 @@ public class ShelfUtil {
         @Override
         protected String doInBackground(Void... params) {
             HashMap<String, String> responseMap = HttpUtil.makeGETRequest(mContext, SHELF_ENDPOINT, null);
-            mIsSuccessful = Boolean.valueOf(responseMap.get(HttpUtil.IS_SUCCESSFUL));
-            return responseMap.get(HttpUtil.RESPONSE_STRING);
+            if(responseMap != null) {
+                mIsSuccessful = Boolean.valueOf(responseMap.get(HttpUtil.IS_SUCCESSFUL));
+                return responseMap.get(HttpUtil.RESPONSE_STRING);
+            } else
+                return null;
         }
 
         @Override

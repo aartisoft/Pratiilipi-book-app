@@ -110,6 +110,9 @@ public class ShelfFragment extends Fragment implements LoaderManager.LoaderCallb
         ShelfUtil.getShelfPratilipiListFromServer(getActivity(), new GetCallback() {
             @Override
             public void done(boolean isSuccessful, String data) {
+                if(data == null)
+                    return;
+
                 if( isSuccessful )
                     onSuccess(data);
                 else
