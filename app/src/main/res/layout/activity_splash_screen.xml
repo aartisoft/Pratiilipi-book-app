@@ -1,12 +1,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/splashscreen_linear_layout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
     android:background="@drawable/splash"
     tools:context="com.pratilipi.android.pratilipi_and.SplashScreen">
 
-    <ImageView android:id="@+id/splashscreen" android:layout_width="wrap_content"
+    <ImageView android:id="@+id/splashscreen_image_view" android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:src="@drawable/splash"
         android:layout_gravity="center"

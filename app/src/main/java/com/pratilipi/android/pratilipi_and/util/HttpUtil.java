@@ -52,7 +52,8 @@ public class HttpUtil {
             }
 
             String accessToken = UserUtil.getAccessToken(context);
-            query.append(ACCESS_TOKEN + "=" + accessToken);
+            if(accessToken != null)
+                query.append(ACCESS_TOKEN + "=" + accessToken);
 
             Log.e(LOG_TAG, "URL : " + apiEndpoint + query);
 
@@ -130,7 +131,8 @@ public class HttpUtil {
                 }
 
                 String accessToken = UserUtil.getAccessToken(context);
-                payload += ACCESS_TOKEN + "=" + accessToken;
+                if(accessToken != null)
+                    payload += ACCESS_TOKEN + "=" + accessToken;
 
                 DataOutputStream wr = new DataOutputStream(
                         connection.getOutputStream());
@@ -209,6 +211,7 @@ public class HttpUtil {
             connection = (HttpURLConnection) url.openConnection();
             connection.setDoOutput(true);
             connection.setRequestMethod("PUT");
+            connection.setRequestProperty("Content-Length", rawFormat.length() + "");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("Accept", "application/json");
 
