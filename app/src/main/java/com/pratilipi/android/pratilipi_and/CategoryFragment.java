@@ -140,6 +140,10 @@ public class CategoryFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     private void fetchDataFromServer(){
+        if(!AppUtil.isOnline(getActivity())) {
+//            AppUtil.showNoConnectionDialog(getActivity());
+            return;
+        }
         mCategoryUtil = new CategoryUtil( getActivity(), mProgressBar );
         HashMap<String, String> params = new HashMap<>();
         params.put(LANGUAGE_ID, String.valueOf(AppUtil.getPreferredLanguage(getActivity())));

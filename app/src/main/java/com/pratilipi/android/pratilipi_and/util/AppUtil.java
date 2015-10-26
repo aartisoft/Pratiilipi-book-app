@@ -1,11 +1,18 @@
 package com.pratilipi.android.pratilipi_and.util;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.text.format.Time;
+import android.util.Log;
 
 import com.pratilipi.android.pratilipi_and.LanguageSelectionActivity;
+import com.pratilipi.android.pratilipi_and.R;
 
 /**
  * Created by Rahul Ranjan on 9/6/2015.
@@ -22,6 +29,43 @@ public class AppUtil {
     public static final String HINDI_LOCALE = "hi";
     public static final String TAMIL_LOCALE = "ta";
 
+    public static boolean isOnline(Context context) {
+        ConnectivityManager cm =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        Log.e(LOG_TAG, "Network Info : " + netInfo);
+    if( netInfo != null )
+            Log.e(LOG_TAG, "Is Connected : " + netInfo.isConnectedOrConnecting());
+    return netInfo != null && netInfo.isConnectedOrConnecting();
+}
+
+    public static void showNoConnectionDialog(Context ctx1) {
+        final Context ctx = ctx1;
+        AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+        builder.setCancelable(true);
+        builder.setMessage(R.string.no_connection);
+        builder.setTitle(R.string.no_connection_title);
+        builder.setPositiveButton(R.string.settings, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+
+                Intent dialogIntent = new Intent(android.provider.Settings.ACTION_SETTINGS);
+                dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                ctx.startActivity(dialogIntent);
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                return;
+            }
+        });
+        builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            public void onCancel(DialogInterface dialog) {
+                return;
+            }
+        });
+
+        builder.show();
+    }
 
     public static Long getPreferredLanguage(Context context){
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);

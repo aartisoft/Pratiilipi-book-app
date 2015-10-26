@@ -98,10 +98,6 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
 
         if (!cursor.moveToFirst()) {
             fetchDataFromServer();
-//            if(isOnline())
-//                makeJsonArryReq();
-//            else
-//                showNoConnectionDialog(getActivity());
         }
         else{
             mHomeFragmentAdapter.swapCursor(cursor);
@@ -114,6 +110,11 @@ public class HomeFragment extends Fragment implements LoaderManager.LoaderCallba
     }
 
     private void fetchDataFromServer(){
+        if(!AppUtil.isOnline(getActivity())) {
+            AppUtil.showNoConnectionDialog(getActivity());
+            return;
+        }
+
         mHomeFragmentUtil = new HomeFragmentUtil(getActivity(), LOADING_MESSAGE);
         HashMap<String, String> params = new HashMap<>();
         params.put( LANGUAGE_ID, String.valueOf(AppUtil.getPreferredLanguage(getActivity())) );

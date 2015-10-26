@@ -108,6 +108,12 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
         mCardListRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                Log.e(LOG_TAG, "Scroll Event Called");
+                if(!AppUtil.isOnline(getApplicationContext())) {
+                    Toast.makeText(getApplicationContext(), "Connect to internet to fetch more data from server", Toast.LENGTH_SHORT);
+                    return;
+                }
+
                 super.onScrolled(recyclerView, dx, dy);
 
                 int totalItemCount = mLayoutManager.getItemCount();
@@ -212,6 +218,9 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
 
 
     private void fetchDataFromServer(String cursorString){
+        if(!AppUtil.isOnline(this)){
+            return;
+        }
         mPratilipiUtil = new PratilipiUtil(this, "Loading...");
         HashMap<String, String> params = new HashMap<>();
         params.put(LANGUAGE_ID, String.valueOf(AppUtil.getPreferredLanguage(this)));
@@ -246,7 +255,7 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
                 mLowerLimit = mUpperLimit;
                 mUpperLimit += mRowsInserted;
                 getSupportLoaderManager().initLoader(PRATILIPI_LIST_LOADER, null, this);
-                if ( pratilipiListArray.length() == RESULT_COUNT && (mCursorString != null || !mCursorString.isEmpty())) {
+                if ( pratilipiListArray.length() == RESULT_COUNT && (mCursorString != null && !mCursorString.isEmpty())) {
                     mLoadingFinished = false;
                 } else
                     mLoadingFinished = true;
@@ -272,6 +281,10 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
 
     private void onFailed(String data){
         try {
+            if(data == null){
+                Toast.makeText(this, "Data Not Available", Toast.LENGTH_LONG);
+                return;
+            }
             JSONObject jsonObject = new JSONObject(data);
             Toast.makeText(this, jsonObject.getString("message"), Toast.LENGTH_LONG);
         } catch ( JSONException e){

@@ -33,14 +33,15 @@ public class UserUtil {
 
     private static final String LOG_TAG = UserUtil.class.getSimpleName();
 
+    private static final String ACCESS_TOKEN_ENDPOINT = "http://android.pratilipi.com//user/accesstoken";
     private final String LOGIN_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/oauth";
     private final String REGISTER_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/register";
     private final String USER_PROFILE_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/userprofile";
 
 
     private static final String USER_NAME = "userName";
-    private static final String ACCESS_TOKEN_EXPIRY = "expiry";
-    private static final String ACCESS_TOKEN = "accessToken";
+    public static final String ACCESS_TOKEN_EXPIRY = "expiry";
+    public static final String ACCESS_TOKEN = "accessToken";
 
     private Context mContext;
     private boolean mIsSuccessful;
@@ -52,6 +53,10 @@ public class UserUtil {
         mProgressDialog = new ProgressDialog(context);
         mProgressDialog.setCancelable(false);
         mProgressDialog.setMessage(processMesssage);
+    }
+
+    public static void fetchAccessToken(Context context, GetCallback callback){
+        new AccessTokenAsyncTask(callback).execute(context);
     }
 
     public void userLogin( HashMap<String, String> requestParams, GetCallback callback){
@@ -103,10 +108,11 @@ public class UserUtil {
         return editor.commit();
     }
 
-    public static String getAccessToken(Context context) {
+    public static String getAccessToken(final Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString(ACCESS_TOKEN, null);
-        //TODO : FETCH ACCESS_TOKEN FROM SERVER IF ACCESS_TOKEN == NULL;
+        String accessToken = prefs.getString(ACCESS_TOKEN, null);
+        Log.e(LOG_TAG, "Access Token : " + accessToken);
+        return accessToken;
     }
 
     private String makeServerCall (String apiEndpoint, String method, String requestData){
@@ -165,6 +171,28 @@ public class UserUtil {
             Log.e(LOG_TAG, "Error ", e);
         }
         return null;
+    }
+
+    private static class AccessTokenAsyncTask extends AsyncTask<Context, Void, String>{
+        private GetCallback callback;
+        private boolean isSuccessful;
+
+        public AccessTokenAsyncTask( GetCallback callback){
+            this.callback = callback;
+        }
+
+        @Override
+        protected String doInBackground(Context... params) {
+            HashMap<String, String> responseMap = HttpUtil.makeGETRequest(params[0], ACCESS_TOKEN_ENDPOINT, null);
+            isSuccessful = Boolean.parseBoolean(responseMap.get(HttpUtil.IS_SUCCESSFUL));
+            return responseMap.get(HttpUtil.RESPONSE_STRING);
+        }
+
+        @Override
+        protected void onPostExecute(String responseString) {
+            callback.done(isSuccessful, responseString);
+            super.onPostExecute(responseString);
+        }
     }
 
     private class UserLoginAsyncTask extends AsyncTask<HashMap<String, String>, Void, String> {
