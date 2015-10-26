@@ -125,8 +125,9 @@ public class CardListViewAdapter extends RecyclerView.Adapter<CardListViewAdapte
     }
 
     public void swapCursor(Cursor c){
+        mPratilipiList.clear();
         if( c == null ) {
-            mPratilipiList = new ArrayList<>();
+//            mPratilipiList = new ArrayList<>();
             this.notifyDataSetChanged();
             return;
         }
@@ -161,7 +162,8 @@ public class CardListViewAdapter extends RecyclerView.Adapter<CardListViewAdapte
             pratilipi.setCreationDate(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_CREATION_DATE)));
 
             mPratilipiList.add(pratilipi);
-            notifyItemInserted( mPratilipiList.size() );
+//            notifyItemInserted( mPratilipiList.size()-1 );
+            notifyDataSetChanged();
         }
         return;
     }
