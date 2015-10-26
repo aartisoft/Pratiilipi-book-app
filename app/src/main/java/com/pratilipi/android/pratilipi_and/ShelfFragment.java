@@ -17,8 +17,10 @@ import android.widget.Toast;
 
 import com.pratilipi.android.pratilipi_and.adapter.ShelfAdapter;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
+import com.pratilipi.android.pratilipi_and.datafiles.User;
 import com.pratilipi.android.pratilipi_and.util.AppUtil;
 import com.pratilipi.android.pratilipi_and.util.ShelfUtil;
+import com.pratilipi.android.pratilipi_and.util.UserUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,7 +61,9 @@ public class ShelfFragment extends Fragment implements LoaderManager.LoaderCallb
         recyclerView.setAdapter(mShelfAdapter);
 
         Log.e(LOG_TAG, "onCreateView function of ShelfFragment");
-        fetchData();
+        User user = UserUtil.getLoggedInUser(getActivity());
+        if(user != null)
+            fetchData();
         return rootView;
     }
 
@@ -106,7 +110,8 @@ public class ShelfFragment extends Fragment implements LoaderManager.LoaderCallb
     }
 
     private void fetchDataFromServer(){
-        Log.e(LOG_TAG, "fetchDataFromServer function of ShelfFragment");
+        if(AppUtil.isOnline(getActivity()))
+            return;
         ShelfUtil.getShelfPratilipiListFromServer(getActivity(), new GetCallback() {
             @Override
             public void done(boolean isSuccessful, String data) {
@@ -122,10 +127,8 @@ public class ShelfFragment extends Fragment implements LoaderManager.LoaderCallb
     }
 
     private void onSuccess(String data){
-        Log.e(LOG_TAG, "onSuccess function of ShelfFragment");
         try{
             JSONObject responseJSON = new JSONObject( data );
-            Log.e(LOG_TAG, "response data converted to json object");
             JSONArray pratilipiDataListJSONArray = responseJSON.getJSONArray(ShelfUtil.PRATILIPI_DATA_LIST);
             Log.e(LOG_TAG, "JSONArray is extracted from json object with length : " + pratilipiDataListJSONArray.length());
             int rowsInserted = ShelfUtil.bulkInsert( getActivity(), pratilipiDataListJSONArray );

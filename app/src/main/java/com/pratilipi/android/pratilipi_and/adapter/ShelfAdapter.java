@@ -110,10 +110,14 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
 
 
         List<String> menuItems = new ArrayList<>();
-        menuItems.add("Remove");
-        menuItems.add("Delete Content");
+        menuItems.add("Remove From Shelf");
+        if(pratilipi.getDownloadStatus() == PratilipiContract.PratilipiEntity.CONTENT_NOT_DOWNLOADED)
+            menuItems.add("Download");
+        else{
+            menuItems.add("Delete Content");
+        }
         // Creating adapter for spinner
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, menuItems);
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_dropdown_item, menuItems);
 
         // Drop down layout style - list view with radio button
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
