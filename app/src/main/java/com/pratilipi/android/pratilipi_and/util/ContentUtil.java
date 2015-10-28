@@ -4,14 +4,18 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.pratilipi.android.pratilipi_and.GetCallback;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
 import com.pratilipi.android.pratilipi_and.datafiles.Pratilipi;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.HashMap;
 
 /**
  * Created by Rahul Ranjan on 10/1/2015.
@@ -20,8 +24,19 @@ public class ContentUtil {
 
     private static final String LOG_TAG = ContentUtil.class.getSimpleName();
 
+    private static final String IMAGE_CONTENT_ENDPOINT = "http://android.pratilipi.com/pratilipi/content/image";
+    private static final String TEXT_CONTENT_ENDPOINT = "http://android.pratilipi.com/pratilipi/content";
     private static final String TEXT_CONTENT = "pageContent";
     private static final String IMAGE_CONTENT = "data";
+
+    private static final String PRATILIPI_ID = "pratilipiId";
+    private static final String CHAPTER_NUMBER = "chapterNo";
+    private static final String PAGE_NUMBER = "pageNo";
+    private static final String PAGE_CONTENT = "pageContent";
+
+
+    public static final String TEXT_CONTENT_TYPE = "pratilipi";
+    public static final String IMAGE_COTENT_TYPE = "image";
 
     public static boolean insert(Context context, JSONObject object, String pratilipiId, String chapterNumber, String pageNumber){
 
@@ -113,4 +128,108 @@ public class ContentUtil {
             Toast.makeText(context, "Content Deleted", Toast.LENGTH_LONG).show();
         }
     }
+
+    public static String update(Context context, String pratilipiId, String chapterNo, String pageNo, String content){
+        Uri uri = PratilipiContract.ContentEntity.CONTENT_URI;
+        String selection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=? "
+                + PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER + "=?"
+                + PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER + "=?";
+        ContentValues values = new ContentValues();
+        if(content != null)
+            values.put(PratilipiContract.ContentEntity.COLUMN_TEXT_CONTENT, content);
+        values.put(PratilipiContract.ContentEntity.COLUMN_LAST_ACCESSED_ON, AppUtil.getCurrentJulianDay());
+
+        String[] selectionArgs = new String[]{pratilipiId, chapterNo, pageNo};
+        context.getContentResolver().update(uri, values, selection, selectionArgs);
+        return content;
+    }
+
+    public static void getContent(
+            Context context, String pratilipiId, String chapterNo, String pageNo, String contentType, GetCallback callback){
+
+        Uri uri = PratilipiContract.ContentEntity.CONTENT_URI;
+        String[] projection = new String[]{PratilipiContract.ContentEntity.COLUMN_TEXT_CONTENT};
+        String selection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=? "
+                + PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER + "=?"
+                + PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER + "=?";
+        String[] selectionArgs = new String[]{pratilipiId, chapterNo, pageNo};
+        Cursor cursor = context.getContentResolver().query(
+                uri,
+                projection,
+                selection,
+                selectionArgs,
+                null
+        );
+
+        if(!cursor.moveToFirst()){
+            HashMap<String, String> params = new HashMap<>();
+            params.put(PRATILIPI_ID, pratilipiId);
+            params.put(CHAPTER_NUMBER, chapterNo);
+            params.put(PAGE_NUMBER, pageNo);
+            new DownloadAsyncTask(context, chapterNo, contentType, callback).execute(params);
+        } else {
+            //update last accessed date
+            update(context, pratilipiId, chapterNo, pageNo, null);
+            try {
+                JSONObject json = new JSONObject();
+                json.put(PRATILIPI_ID, pratilipiId);
+                json.put(PAGE_NUMBER, pageNo);
+                json.put(PAGE_CONTENT, cursor.getString(0));
+                callback.done(true, json.toString());
+            } catch (JSONException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static class DownloadAsyncTask extends AsyncTask<HashMap<String, String>, Void, String> {
+
+        private GetCallback mCallback;
+        private boolean mIsSuccessful;
+        private String mContentType;
+        private Context mContext;
+        private String mChapterNo;
+
+        public DownloadAsyncTask(Context context, String chapterNo, String contentType, GetCallback callback){
+            this.mContext = context;
+            this.mChapterNo = chapterNo;
+            this.mCallback = callback;
+            this.mContentType = contentType;
+        }
+
+        @Override
+        protected String doInBackground(HashMap<String, String>... params) {
+            String apiEndPoint;
+            if(mContentType.equals(TEXT_CONTENT_TYPE)){
+                apiEndPoint = TEXT_CONTENT_ENDPOINT;
+            } else
+                apiEndPoint = IMAGE_CONTENT_ENDPOINT;
+            HashMap<String, String> responseMap = HttpUtil.makeGETRequest(mContext, apiEndPoint, params[0]);
+            mIsSuccessful = Boolean.valueOf(responseMap.get(HttpUtil.IS_SUCCESSFUL));
+            return responseMap.get(HttpUtil.RESPONSE_STRING);
+        }
+
+        @Override
+        protected void onPostExecute(String responseString) {
+            //UPDATE DATABASE
+            try{
+                if(mIsSuccessful) {
+                    JSONObject json = new JSONObject(responseString);
+                    update(
+                            mContext,
+                            json.getString(PRATILIPI_ID),
+                            mChapterNo,
+                            json.getString(PAGE_NUMBER),
+                            json.getString(PAGE_CONTENT)
+                    );
+                }
+            } catch (JSONException e){
+                e.printStackTrace();
+            }
+            mCallback.done(mIsSuccessful, responseString);
+            super.onPostExecute(responseString);
+        }
+
+    }
+
 }

@@ -114,12 +114,11 @@ public class PratilipiContract {
         public static final String TABLE_NAME = "content";
 
         public static final String COLUMN_PRATILIPI_ID = "pratilipi_id";
-        //chapter_number column will be used for text content type and will be null for image content type
         public static final String COLUMN_CHAPTER_NUMBER = "chapter_number";
-        //page_number column will be used for image content type and will be null for text content type
         public static final String COLUMN_PAGE_NUMBER = "page_number";
         public static final String COLUMN_IMAGE_CONTENT = "image_content";
         public static final String COLUMN_TEXT_CONTENT = "text_content";
+        public static final String COLUMN_LAST_ACCESSED_ON = "last_accessed_on";
 
         public static Uri getContentEntityUri( String id ){
             return CONTENT_URI.buildUpon().appendPath( id ).build();

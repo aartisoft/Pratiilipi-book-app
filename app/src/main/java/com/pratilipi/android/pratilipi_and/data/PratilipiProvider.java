@@ -324,6 +324,10 @@ public class PratilipiProvider extends ContentProvider {
                 rowsUpdated = db.update( PratilipiContract.ShelfEntity.TABLE_NAME, values, selection, selectionArgs );
                 break;
             }
+            case CONTENT:{
+                rowsUpdated = db.update( PratilipiContract.ContentEntity.TABLE_NAME, values, selection, selectionArgs );
+                break;
+            }
             default: throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
         return rowsUpdated;

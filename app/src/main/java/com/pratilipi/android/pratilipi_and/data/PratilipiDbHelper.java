@@ -150,10 +150,8 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
                 PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER + " TEXT, " +
                 PratilipiContract.ContentEntity.COLUMN_TEXT_CONTENT + " TEXT, " +
                 PratilipiContract.ContentEntity.COLUMN_IMAGE_CONTENT + " BLOB, " +
+                PratilipiContract.ContentEntity.COLUMN_LAST_ACCESSED_ON + " INTEGER, " +
 
-                // Set up the pratilipi_id column as a foreign key to shelf table.
-                " FOREIGN KEY (" + PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + ") REFERENCES " +
-                PratilipiContract.ShelfEntity.TABLE_NAME + " (" + PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + ") " +
                 " UNIQUE (" + PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID +  ", " +
                 PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER + ", " +
                 PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER + ") ON CONFLICT REPLACE" +
