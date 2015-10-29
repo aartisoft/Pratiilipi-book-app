@@ -145,14 +145,18 @@ public class ContentUtil {
     }
 
     public static void getContent(
-            Context context, String pratilipiId, String chapterNo, String pageNo, String contentType, GetCallback callback){
+            Context context, long pratilipiId, int chapterNo, int pageNo, String contentType, GetCallback callback){
+
+        String pratilipiIdStr = pratilipiId + "";
+        String chapterNoStr = chapterNo + "";
+        String pageNoStr = pageNo + "";
 
         Uri uri = PratilipiContract.ContentEntity.CONTENT_URI;
         String[] projection = new String[]{PratilipiContract.ContentEntity.COLUMN_TEXT_CONTENT};
         String selection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=? "
                 + PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER + "=?"
                 + PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER + "=?";
-        String[] selectionArgs = new String[]{pratilipiId, chapterNo, pageNo};
+        String[] selectionArgs = new String[]{pratilipiIdStr, chapterNoStr, pageNoStr};
         Cursor cursor = context.getContentResolver().query(
                 uri,
                 projection,
@@ -163,13 +167,13 @@ public class ContentUtil {
 
         if(!cursor.moveToFirst()){
             HashMap<String, String> params = new HashMap<>();
-            params.put(PRATILIPI_ID, pratilipiId);
-            params.put(CHAPTER_NUMBER, chapterNo);
-            params.put(PAGE_NUMBER, pageNo);
-            new DownloadAsyncTask(context, chapterNo, contentType, callback).execute(params);
+            params.put(PRATILIPI_ID, pratilipiIdStr);
+            params.put(CHAPTER_NUMBER, chapterNoStr);
+            params.put(PAGE_NUMBER, pageNoStr);
+            new DownloadAsyncTask(context, chapterNoStr, contentType, callback).execute(params);
         } else {
             //update last accessed date
-            update(context, pratilipiId, chapterNo, pageNo, null);
+            update(context, pratilipiIdStr, chapterNoStr, pageNoStr, null);
             try {
                 JSONObject json = new JSONObject();
                 json.put(PRATILIPI_ID, pratilipiId);
