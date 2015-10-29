@@ -131,8 +131,8 @@ public class ContentUtil {
 
     public static String update(Context context, String pratilipiId, String chapterNo, String pageNo, String content){
         Uri uri = PratilipiContract.ContentEntity.CONTENT_URI;
-        String selection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=? "
-                + PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER + "=?"
+        String selection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=? and "
+                + PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER + "=? and "
                 + PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER + "=?";
         ContentValues values = new ContentValues();
         if(content != null)
@@ -151,26 +151,31 @@ public class ContentUtil {
         String chapterNoStr = chapterNo + "";
         String pageNoStr = pageNo + "";
 
-        Uri uri = PratilipiContract.ContentEntity.CONTENT_URI;
+        Uri uri = PratilipiContract.ContentEntity.getPratilipiContentUri(pratilipiIdStr, chapterNoStr, pageNoStr);
         String[] projection = new String[]{PratilipiContract.ContentEntity.COLUMN_TEXT_CONTENT};
-        String selection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=? "
-                + PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER + "=?"
-                + PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER + "=?";
-        String[] selectionArgs = new String[]{pratilipiIdStr, chapterNoStr, pageNoStr};
         Cursor cursor = context.getContentResolver().query(
                 uri,
                 projection,
-                selection,
-                selectionArgs,
+                null,
+                null,
                 null
         );
 
-        if(!cursor.moveToFirst()){
+        if(cursor == null || !cursor.moveToFirst()){
+            //INSERT INTO DATABASE WITH CONTENT = ""
+            ContentValues values = new ContentValues();
+            values.put(PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID, pratilipiId);
+            values.put(PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER, chapterNo);
+            values.put(PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER, pageNo);
+            values.put(PratilipiContract.ContentEntity.COLUMN_LAST_ACCESSED_ON, AppUtil.getCurrentJulianDay());
+            Uri insertedUri = context.getContentResolver().insert(PratilipiContract.ContentEntity.CONTENT_URI, values);
+            Log.e(LOG_TAG, "Inserted Uri : " + insertedUri);
+
             HashMap<String, String> params = new HashMap<>();
             params.put(PRATILIPI_ID, pratilipiIdStr);
             params.put(CHAPTER_NUMBER, chapterNoStr);
             params.put(PAGE_NUMBER, pageNoStr);
-            new DownloadAsyncTask(context, chapterNoStr, contentType, callback).execute(params);
+            new DownloadAsyncTask(context, pratilipiIdStr, chapterNoStr, pageNoStr, contentType, callback).execute(params);
         } else {
             //update last accessed date
             update(context, pratilipiIdStr, chapterNoStr, pageNoStr, null);
@@ -192,11 +197,15 @@ public class ContentUtil {
         private boolean mIsSuccessful;
         private String mContentType;
         private Context mContext;
+        private String mPratilipiId;
         private String mChapterNo;
+        private String mPageNo;
 
-        public DownloadAsyncTask(Context context, String chapterNo, String contentType, GetCallback callback){
+        public DownloadAsyncTask(Context context, String pratilipiId, String chapterNo, String pageNo, String contentType, GetCallback callback){
             this.mContext = context;
+            this.mPratilipiId = pratilipiId;
             this.mChapterNo = chapterNo;
+            this.mPageNo = pageNo;
             this.mCallback = callback;
             this.mContentType = contentType;
         }
@@ -204,20 +213,33 @@ public class ContentUtil {
         @Override
         protected String doInBackground(HashMap<String, String>... params) {
             String apiEndPoint;
-            if(mContentType.equals(TEXT_CONTENT_TYPE)){
+            if(mContentType.toLowerCase().equals(TEXT_CONTENT_TYPE)){
                 apiEndPoint = TEXT_CONTENT_ENDPOINT;
             } else
                 apiEndPoint = IMAGE_CONTENT_ENDPOINT;
             HashMap<String, String> responseMap = HttpUtil.makeGETRequest(mContext, apiEndPoint, params[0]);
             mIsSuccessful = Boolean.valueOf(responseMap.get(HttpUtil.IS_SUCCESSFUL));
+
+            //TODO : MOVE DELETE CODE TO onPostExecute FUNCTION
+            if(!mIsSuccessful){
+                //DELETE INSERTED ROW. onPostExecute is not getting called in case of error. Hence
+                //included here.
+                Uri uri = PratilipiContract.ContentEntity.CONTENT_URI;
+                String selection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=? and "
+                        + PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER + "=? and "
+                        + PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER + "=?";
+                String[] selectionArgs = new String[]{mPratilipiId, mChapterNo, mPageNo};
+                int deletedRows = mContext.getContentResolver().delete(uri, selection, selectionArgs);
+                Log.e(LOG_TAG, "Inserted Uri : " + deletedRows);
+            }
             return responseMap.get(HttpUtil.RESPONSE_STRING);
         }
 
         @Override
         protected void onPostExecute(String responseString) {
-            //UPDATE DATABASE
-            try{
-                if(mIsSuccessful) {
+            if(mIsSuccessful) {
+                //UPDATE DATABASE
+                try{
                     JSONObject json = new JSONObject(responseString);
                     update(
                             mContext,
@@ -226,9 +248,9 @@ public class ContentUtil {
                             json.getString(PAGE_NUMBER),
                             json.getString(PAGE_CONTENT)
                     );
+                } catch (JSONException e){
+                    e.printStackTrace();
                 }
-            } catch (JSONException e){
-                e.printStackTrace();
             }
             mCallback.done(mIsSuccessful, responseString);
             super.onPostExecute(responseString);

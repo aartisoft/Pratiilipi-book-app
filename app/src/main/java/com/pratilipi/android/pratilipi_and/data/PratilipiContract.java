@@ -65,10 +65,10 @@ public class PratilipiContract {
 
         public static Uri getCategoryListUri(long language, int isOnHomeScreen){
             Uri uri = CONTENT_URI
-                            .buildUpon()
-                            .appendQueryParameter(COLUMN_LANGUAGE, String.valueOf(language))
-                            .appendQueryParameter(COLUMN_IS_ON_HOME_SCREEN, String.valueOf(isOnHomeScreen))
-                            .build();
+                    .buildUpon()
+                    .appendQueryParameter(COLUMN_LANGUAGE, String.valueOf(language))
+                    .appendQueryParameter(COLUMN_IS_ON_HOME_SCREEN, String.valueOf(isOnHomeScreen))
+                    .build();
             return uri;
         }
 
@@ -121,11 +121,19 @@ public class PratilipiContract {
         public static final String COLUMN_LAST_ACCESSED_ON = "last_accessed_on";
 
         public static Uri getContentEntityUri( String id ){
-            return CONTENT_URI.buildUpon().appendPath( id ).build();
+            return CONTENT_URI.buildUpon().appendPath(id).build();
         }
 
         public static Uri getContentByPratilipiIdUri(String pratilipiId){
             return CONTENT_URI.buildUpon().appendQueryParameter(COLUMN_PRATILIPI_ID, pratilipiId).build();
+        }
+
+        public static Uri getPratilipiContentUri(String pratilipiId, String chapterNumber, String pageNumber){
+            return CONTENT_URI.buildUpon()
+                    .appendQueryParameter(COLUMN_PRATILIPI_ID, pratilipiId)
+                    .appendQueryParameter(COLUMN_CHAPTER_NUMBER, chapterNumber)
+                    .appendQueryParameter(COLUMN_PAGE_NUMBER, pageNumber)
+                    .build();
         }
 
         public static Uri getPratilipiContentByChapterUri(String pratilipiId, String chapterNumber){
