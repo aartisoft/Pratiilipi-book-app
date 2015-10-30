@@ -21,7 +21,6 @@
     <style name="PratilipiTheme.ActionBar" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
         <item name="displayOptions">useLogo|showHome</item>
         <item name="logo">@drawable/ic_logo</item>
-        <item name="icon">@drawable/ic_dot_logo</item>
     </style>
 
     <!-- Pratilipi Textbox styling -->
