@@ -2,6 +2,7 @@ package com.pratilipi.android.pratilipi_and;
 
 import android.app.Activity;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -96,7 +97,11 @@ public class ShelfFragment extends Fragment implements LoaderManager.LoaderCallb
 
     private void fetchData(){
         Log.e(LOG_TAG, "fetchData function of ShelfFragment");
-        Cursor cursor = getActivity().getContentResolver().query(PratilipiContract.ShelfEntity.CONTENT_URI, null, null, null, null);
+        User user = UserUtil.getLoggedInUser(getActivity());
+        if(user == null)
+            return;
+        Uri uri = PratilipiContract.ShelfEntity.getShelfContentByUser(user.getEmail());
+        Cursor cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
         if(!cursor.moveToFirst())
             fetchDataFromServer();
         else{
@@ -110,7 +115,7 @@ public class ShelfFragment extends Fragment implements LoaderManager.LoaderCallb
     }
 
     private void fetchDataFromServer(){
-        if(AppUtil.isOnline(getActivity()))
+        if(!AppUtil.isOnline(getActivity()))
             return;
         ShelfUtil.getShelfPratilipiListFromServer(getActivity(), new GetCallback() {
             @Override

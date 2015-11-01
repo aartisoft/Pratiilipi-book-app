@@ -275,6 +275,16 @@ public class PratilipiContract {
         public static Uri getShelfEntityUri( String id ){
             return CONTENT_URI.buildUpon().appendPath( id ).build();
         }
+
+        public static Uri getShelfContentByUser(String userEmail){
+            return CONTENT_URI.buildUpon()
+                    .appendQueryParameter(COLUMN_USER_EMAIL, userEmail)
+                    .build();
+        }
+
+        public static String getUserEmailFromUri(Uri uri){
+            return uri.getQueryParameter(COLUMN_USER_EMAIL);
+        }
     }
 
 

@@ -1,15 +1,15 @@
 package com.pratilipi.android.pratilipi_and.data;
 
-import android.content.ContentProvider;
-import android.content.ContentValues;
-import android.content.UriMatcher;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteQueryBuilder;
-import android.net.Uri;
-import android.util.Log;
+        import android.content.ContentProvider;
+        import android.content.ContentValues;
+        import android.content.UriMatcher;
+        import android.database.Cursor;
+        import android.database.sqlite.SQLiteDatabase;
+        import android.database.sqlite.SQLiteQueryBuilder;
+        import android.net.Uri;
+        import android.util.Log;
 
-import com.pratilipi.android.pratilipi_and.CardListActivity;
+        import com.pratilipi.android.pratilipi_and.CardListActivity;
 
 /**
  * Created by Rahul Ranjan on 8/21/2015.
@@ -23,7 +23,7 @@ public class PratilipiProvider extends ContentProvider {
     private PratilipiDbHelper mOpenHelper;
 
     static final int HOME_SCREEN_BRIDGE = 100;
-//    static final int HOMESCREEN_CONTENT_BY_CATEGORY = 101;
+    //    static final int HOMESCREEN_CONTENT_BY_CATEGORY = 101;
     static final int USER = 200;
     static final int USER_BY_EMAIL = 201;
     static final int CATEGORY = 300;
@@ -125,7 +125,7 @@ public class PratilipiProvider extends ContentProvider {
                 break;
             }
             case SHELF: {
-                retCursor = getPratilipiListInShelf();
+                retCursor = getPratilipiListInShelf(uri);
                 break;
             }
             case CONTENT: {
@@ -233,7 +233,7 @@ public class PratilipiProvider extends ContentProvider {
                     }
                     db.setTransactionSuccessful();
                 } finally {
-                  db.endTransaction();
+                    db.endTransaction();
                 }
                 return rowsInserted;
             }
@@ -429,24 +429,27 @@ public class PratilipiProvider extends ContentProvider {
 
 
         String rawQuery = "SELECT * FROM "
-                            + PratilipiContract.PratilipiEntity.TABLE_NAME + " WHERE "
-                            + PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID + " IN ( "
-                            + subQuery
-                            + " LIMIT "
-                            + lowerLimit + ", " + upperLimit
-                            + " )";
+                + PratilipiContract.PratilipiEntity.TABLE_NAME + " WHERE "
+                + PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID + " IN ( "
+                + subQuery
+                + " LIMIT "
+                + lowerLimit + ", " + upperLimit
+                + " )";
 
         return mOpenHelper.getReadableDatabase()
                 .rawQuery(rawQuery, new String[]{categoryId});
     }
 
-    private Cursor getPratilipiListInShelf(){
+    private Cursor getPratilipiListInShelf(Uri uri){
 
+        String userEmail = PratilipiContract.ShelfEntity.getUserEmailFromUri(uri);
         String query = "SELECT " + PratilipiContract.PratilipiEntity.TABLE_NAME + ".* "
                 + " FROM " + PratilipiContract.PratilipiEntity.TABLE_NAME + ", " + PratilipiContract.ShelfEntity.TABLE_NAME
-                + " WHERE " + PratilipiContract.PratilipiEntity.TABLE_NAME + "." + PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID
+                + " WHERE "
+                + PratilipiContract.ShelfEntity.COLUMN_USER_EMAIL + " = '" + userEmail + "' AND "
+                + PratilipiContract.PratilipiEntity.TABLE_NAME + "." + PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID
                     + " = " + PratilipiContract.ShelfEntity.TABLE_NAME + "." + PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID
-                + " ORDER BY " + PratilipiContract.ShelfEntity.COLUMN_LAST_ACCESSED_DATE;
+                + " ORDER BY " + PratilipiContract.ShelfEntity.COLUMN_LAST_ACCESSED_DATE + " DESC";
 
         return mOpenHelper.getReadableDatabase()
                 .rawQuery( query, null );

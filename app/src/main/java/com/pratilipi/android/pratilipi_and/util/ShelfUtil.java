@@ -12,6 +12,7 @@ import android.widget.Toast;
 import com.pratilipi.android.pratilipi_and.GetCallback;
 import com.pratilipi.android.pratilipi_and.UserLoginActivity;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
+import com.pratilipi.android.pratilipi_and.data.PratilipiDbHelper;
 import com.pratilipi.android.pratilipi_and.datafiles.Pratilipi;
 import com.pratilipi.android.pratilipi_and.datafiles.User;
 
@@ -94,6 +95,27 @@ public class ShelfUtil {
         paramsMap.put(ADD_TO_LIB, String.valueOf(false));
 
         new PutToShelfAsyncTask(callback).execute(paramsMap);
+    }
+
+    public static int numberOfContentInShelf(Context context, String email){
+
+        String query = "SELECT COUNT(*) FROM " +
+                PratilipiContract.ShelfEntity.TABLE_NAME +
+                " WHERE " +
+                PratilipiContract.ShelfEntity.COLUMN_USER_EMAIL + " =?";
+        String[] selectionArgs = new String[]{email};
+
+        //TODO : FIND WORK AROUND FOR TO REPLACE rawQuery FUNCTION
+        Cursor cursor = new PratilipiDbHelper(context)
+                                .getReadableDatabase()
+                                .rawQuery(query, selectionArgs);
+
+        if( cursor != null && cursor.moveToFirst()){
+            cursor.moveToFirst();
+            return cursor.getInt(0);
+        }
+
+        return 0;
     }
 
     private static class GetShelfAsyncTask extends AsyncTask<Void, Void, String> {
