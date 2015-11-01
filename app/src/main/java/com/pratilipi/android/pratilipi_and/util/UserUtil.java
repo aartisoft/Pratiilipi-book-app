@@ -34,12 +34,15 @@ public class UserUtil {
     private static final String LOG_TAG = UserUtil.class.getSimpleName();
 
     private static final String ACCESS_TOKEN_ENDPOINT = "http://android.pratilipi.com//user/accesstoken";
-    private final String LOGIN_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/oauth";
-    private final String REGISTER_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/register";
+    private final String REGISTER_ENDPOINT = "http://android.pratilipi.com/user/register";
+    private final String LOGIN_ENDPOINT = "http://android.pratilipi.com/user/login";
+    private final String LOGOUT_ENDPOINT = "http://android.pratilipi.com/user/logout";
     private final String USER_PROFILE_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/userprofile";
 
+    public static String ANDROID_APP_SOURCE = "ANDROID_APP";
 
-    private static final String USER_NAME = "userName";
+
+    private static final String USER_NAME = "name";
     public static final String ACCESS_TOKEN_EXPIRY = "expiry";
     public static final String ACCESS_TOKEN = "accessToken";
 
@@ -69,6 +72,11 @@ public class UserUtil {
         new UserRegisterAsyncTask(callback).execute(requestParams);
     }
 
+    public void userLogout(HashMap<String, String> requestParams, GetCallback callback){
+        mProgressDialog.show();
+        new UserLogoutAsyncTask(callback).execute(requestParams);
+    }
+
     public void getUserDetails( String data, GetCallback callback){
         mProgressDialog.show();
         new GetUserProfileAsyncTask(callback).execute(data);
@@ -76,9 +84,6 @@ public class UserUtil {
 
     public static void updateUser(Context context, String email, JSONObject responseJson)
             throws JSONException {
-        Log.e(LOG_TAG, "updateUser function called");
-
-        saveAccessToken(context, responseJson.getString(ACCESS_TOKEN), responseJson.getLong(ACCESS_TOKEN_EXPIRY));
 
         ContentValues values = new ContentValues();
         values.put(PratilipiContract.UserEntity.COLUMN_DISPLAY_NAME, responseJson.getString(USER_NAME));
@@ -113,6 +118,13 @@ public class UserUtil {
         String accessToken = prefs.getString(ACCESS_TOKEN, null);
         Log.e(LOG_TAG, "Access Token : " + accessToken);
         return accessToken;
+    }
+
+    public static void deleteAccessToken( Context context){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.remove(ACCESS_TOKEN).commit();
+        editor.remove(ACCESS_TOKEN_EXPIRY).commit();
     }
 
     private String makeServerCall (String apiEndpoint, String method, String requestData){
@@ -205,7 +217,7 @@ public class UserUtil {
 
         @Override
         protected String doInBackground(HashMap<String, String>... params) {
-            HashMap<String, String> responseMap = HttpUtil.makePOSTRequest(mContext, LOGIN_ENDPOINT, params[0]);
+            HashMap<String, String> responseMap = HttpUtil.makePUTRequest(mContext, LOGIN_ENDPOINT, params[0]);
             mIsSuccessful = Boolean.parseBoolean(responseMap.get(HttpUtil.IS_SUCCESSFUL));
             return responseMap.get(HttpUtil.RESPONSE_STRING);
         }
@@ -239,6 +251,39 @@ public class UserUtil {
             mProgressDialog.hide();
             mProgressDialog.dismiss();
             callback.done(mIsSuccessful, responseString);
+            super.onPostExecute(responseString);
+        }
+    }
+
+    private class UserLogoutAsyncTask extends AsyncTask<HashMap<String, String>, Void, String>{
+
+//        private AccessTokenAsyncTask mAccessTokenAsyncTask;
+        private GetCallback mCallback;
+
+        public UserLogoutAsyncTask(GetCallback callback){
+            this.mCallback = callback;
+        }
+
+        @Override
+        protected String doInBackground(HashMap<String, String>... params) {
+            HashMap<String, String> responseMap = HttpUtil.makeGETRequest(mContext, LOGOUT_ENDPOINT, params[0]);
+            mIsSuccessful = Boolean.parseBoolean(responseMap.get(HttpUtil.IS_SUCCESSFUL));
+            if(mIsSuccessful){
+                //remove expired access token
+                deleteAccessToken(mContext);
+                //fetch fresh access token from server
+                responseMap = HttpUtil.makeGETRequest(mContext, ACCESS_TOKEN_ENDPOINT, null);
+                mIsSuccessful = Boolean.parseBoolean(responseMap.get(HttpUtil.IS_SUCCESSFUL));
+                return responseMap.get(HttpUtil.RESPONSE_STRING);
+            }
+            return responseMap.get(HttpUtil.RESPONSE_STRING);
+        }
+
+        @Override
+        protected void onPostExecute(String responseString) {
+            mProgressDialog.hide();
+            mProgressDialog.dismiss();
+            mCallback.done(mIsSuccessful, responseString);
             super.onPostExecute(responseString);
         }
     }

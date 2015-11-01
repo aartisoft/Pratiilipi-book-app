@@ -26,9 +26,11 @@ public class UserRegisterActivity extends AppCompatActivity {
     private final String USER_NAME = "name";
     private final String USER_EMAIL = "email";
     private final String USER_PASSWORD = "password";
+    private final String USER_CONFIRM_PASSWORD = "password2";
+    private final String USER_SOURCE = "source";
 
     private EditText mFirstNameEditText;
-    private EditText mLastNameEditText;
+    private EditText mConfirmPasswordEditText;
     private EditText mEmailEditText;
     private EditText mPasswordEditText;
     private Button registerButton;
@@ -38,21 +40,23 @@ public class UserRegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_register);
 
-        mFirstNameEditText = (EditText) this.findViewById(R.id.user_register_first_name);
-        mLastNameEditText = (EditText) this.findViewById(R.id.user_register_last_name);
+        mFirstNameEditText = (EditText) this.findViewById(R.id.user_register_name);
         mEmailEditText = (EditText) this.findViewById(R.id.user_register_email);
         mPasswordEditText  = (EditText) this.findViewById(R.id.user_register_password);
-        mPasswordEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        mConfirmPasswordEditText = (EditText) this.findViewById(R.id.user_register_confirm_password);
         registerButton = (Button) this.findViewById(R.id.user_register_button);
+
+        mPasswordEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        mConfirmPasswordEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String firstName = mFirstNameEditText.getText().toString().trim();
-                String lastName = mLastNameEditText.getText().toString().trim();
+                String name = mFirstNameEditText.getText().toString().trim();
                 final String email = mEmailEditText.getText().toString().trim();
                 String password = mPasswordEditText.getText().toString();
-                if(firstName == null || firstName.isEmpty()){
+                String confirmPassword = mConfirmPasswordEditText.getText().toString().trim();
+                if(name == null || name.isEmpty()){
                     Toast.makeText(getApplicationContext(),
                             "Please Enter First Name", Toast.LENGTH_LONG).show();
                 } else if(email == null || email.isEmpty()){
@@ -64,19 +68,21 @@ public class UserRegisterActivity extends AppCompatActivity {
                 } else if(password == null || password.isEmpty()){
                     Toast.makeText(getApplicationContext(),
                             "Please Enter Password", Toast.LENGTH_LONG).show();
+                } else if(confirmPassword == null || confirmPassword.isEmpty()){
+                    Toast.makeText(getApplicationContext(),
+                            "Please Confirm Password", Toast.LENGTH_LONG).show();
+                } else if(!confirmPassword.equals(password)){
+                    Toast.makeText(getApplicationContext(),
+                            "Your passwords do not match.Try Again", Toast.LENGTH_LONG).show();
                 } else{
-                    String name;
-                    if( lastName == null || lastName.isEmpty() )
-                        name = firstName;
-                    else
-                        name = firstName + " " + lastName;
-
                     HashMap<String, String>  params = new HashMap<>();
                     params.put(USER_NAME, name);
                     params.put(USER_EMAIL, email);
                     params.put(USER_PASSWORD, password);
+                    params.put(USER_CONFIRM_PASSWORD, confirmPassword);
+                    params.put(USER_SOURCE, UserUtil.ANDROID_APP_SOURCE);
 
-                    final UserUtil userUtil = new UserUtil(UserRegisterActivity.this, "Logging In...");
+                    final UserUtil userUtil = new UserUtil(UserRegisterActivity.this, "Creating Account...");
                     userUtil.userRegister(params, new GetCallback() {
                         @Override
                         public void done(boolean isSuccessful, String responseString) {

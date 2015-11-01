@@ -17,6 +17,13 @@ import android.widget.Toast;
 
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
 import com.pratilipi.android.pratilipi_and.datafiles.User;
+import com.pratilipi.android.pratilipi_and.util.ShelfUtil;
+import com.pratilipi.android.pratilipi_and.util.UserUtil;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
 
 
 public class ProfileFragment extends Fragment {
@@ -73,19 +80,26 @@ public class ProfileFragment extends Fragment {
             rootView.findViewById(R.id.guest_user_profile).setVisibility(View.GONE);
             rootView.findViewById(R.id.registered_user_profile).setVisibility(View.VISIBLE);
             ((TextView) rootView.findViewById(R.id.profile_name_textview)).setText(mUser.getDisplayName());
+            ((TextView) rootView.findViewById(R.id.profile_shelf_count_textview))
+                    .setText(String.valueOf(ShelfUtil.numberOfContentInShelf(getActivity(), mUser.getEmail())));
 
             Button logoutButton = (Button) rootView.findViewById(R.id.profile_logout_button);
 
             logoutButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = getActivity().getIntent();
-                    int userLoggedOutCount = logoutUser(mUser.getEmail());
-                    if( userLoggedOutCount == 1 )
-                        startActivity(intent);
-                    else{
-                        Toast.makeText(getActivity(), "Error While Logging out", Toast.LENGTH_LONG).show();
-                    }
+                    UserUtil userUtil = new UserUtil(getActivity(), "Logging Out...");
+                    HashMap<String, String> params = new HashMap<String, String>();
+                    params.put(UserUtil.ACCESS_TOKEN, UserUtil.getAccessToken(getActivity()));
+                    userUtil.userLogout(params, new GetCallback() {
+                        @Override
+                        public void done(boolean isSuccessful, String data) {
+                            if(isSuccessful)
+                                onLogoutSuccess(data);
+                            else
+                                onLogoutFail(data);
+                        }
+                    });
                 }
             });
         }
@@ -127,7 +141,7 @@ public class ProfileFragment extends Fragment {
             return null;
     }
 
-    private int logoutUser(String email){
+    private int updateUserEntity(String email){
         Uri uri = PratilipiContract.UserEntity.CONTENT_URI;
         String selection = PratilipiContract.UserEntity.COLUMN_EMAIL + "=?";
         String[] selectionArgs = {email};
@@ -136,6 +150,36 @@ public class ProfileFragment extends Fragment {
         values.put(PratilipiContract.UserEntity.COLUMN_IS_LOGGED_IN, 0);
 
         return getActivity().getContentResolver().update(uri, values, selection, selectionArgs);
+    }
+
+    private void onLogoutSuccess(String data){
+        try{
+            JSONObject jsonObject = new JSONObject(data);
+            if(jsonObject.has(UserUtil.ACCESS_TOKEN)){
+                UserUtil.saveAccessToken(getActivity(), jsonObject.getString(UserUtil.ACCESS_TOKEN), jsonObject.getLong(UserUtil.ACCESS_TOKEN_EXPIRY));
+                Intent intent = getActivity().getIntent();
+                int userLoggedOutCount = updateUserEntity(mUser.getEmail());
+                if( userLoggedOutCount == 1 )
+                    startActivity(intent);
+                else{
+                    Log.e(LOG_TAG, "Error while updating user entity");
+                }
+            } else {
+                Log.e(LOG_TAG, "Error while fetching access token from server");
+            }
+
+        } catch (JSONException e){
+            e.printStackTrace();
+        }
+    }
+
+    private void onLogoutFail(String data){
+        try {
+            JSONObject jsonObject = new JSONObject(data);
+            Toast.makeText(getActivity(), jsonObject.getString("message"), Toast.LENGTH_LONG);
+        } catch ( JSONException e){
+            e.printStackTrace();
+        }
     }
 
 }

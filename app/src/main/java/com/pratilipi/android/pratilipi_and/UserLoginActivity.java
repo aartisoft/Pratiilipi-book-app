@@ -23,8 +23,8 @@ public class UserLoginActivity extends AppCompatActivity {
 
     private final static String LOG_TAG = UserLoginActivity.class.getSimpleName();
 
-    private final String USER_ID = "userId";
-    private final String USER_SECRET = "userSecret";
+    private final String USER_EMAIL = "email";
+    private final String USER_PASSWORD = "password";
 
     private EditText mEmailEditText;
     private EditText mPasswordEditText;
@@ -58,8 +58,8 @@ public class UserLoginActivity extends AppCompatActivity {
                             "Please Enter Password", Toast.LENGTH_LONG).show();
                 } else{
                     HashMap<String, String> params = new HashMap<>();
-                    params.put(USER_ID, email);
-                    params.put(USER_SECRET, password);
+                    params.put(USER_EMAIL, email);
+                    params.put(USER_PASSWORD, password);
 
                     final UserUtil userUtil = new UserUtil(UserLoginActivity.this, "Logging In...");
                     userUtil.userLogin(params, new GetCallback() {
