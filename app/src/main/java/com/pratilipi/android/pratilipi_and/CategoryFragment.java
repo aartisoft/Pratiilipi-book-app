@@ -141,7 +141,6 @@ public class CategoryFragment extends Fragment implements LoaderManager.LoaderCa
 
     private void fetchDataFromServer(){
         if(!AppUtil.isOnline(getActivity())) {
-//            AppUtil.showNoConnectionDialog(getActivity());
             return;
         }
         mCategoryUtil = new CategoryUtil( getActivity(), mProgressBar );
