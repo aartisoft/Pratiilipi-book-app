@@ -8,8 +8,8 @@ android {
         applicationId "com.pratilipi.android.pratilipi_and"
         minSdkVersion 10
         targetSdkVersion 22
-        versionCode 1
-        versionName "1.0.1"
+        versionCode 0
+        versionName "0.0.1"
     }
     buildTypes {
         release {
