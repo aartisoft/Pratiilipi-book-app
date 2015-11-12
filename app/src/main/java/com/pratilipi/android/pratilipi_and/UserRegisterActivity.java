@@ -29,7 +29,7 @@ public class UserRegisterActivity extends AppCompatActivity {
     private final String USER_CONFIRM_PASSWORD = "password2";
     private final String USER_SOURCE = "source";
 
-    private EditText mFirstNameEditText;
+    private EditText mNameEditText;
     private EditText mConfirmPasswordEditText;
     private EditText mEmailEditText;
     private EditText mPasswordEditText;
@@ -40,7 +40,7 @@ public class UserRegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_register);
 
-        mFirstNameEditText = (EditText) this.findViewById(R.id.user_register_name);
+        mNameEditText = (EditText) this.findViewById(R.id.user_register_name);
         mEmailEditText = (EditText) this.findViewById(R.id.user_register_email);
         mPasswordEditText  = (EditText) this.findViewById(R.id.user_register_password);
         mConfirmPasswordEditText = (EditText) this.findViewById(R.id.user_register_confirm_password);
@@ -52,7 +52,7 @@ public class UserRegisterActivity extends AppCompatActivity {
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String name = mFirstNameEditText.getText().toString().trim();
+                String name = mNameEditText.getText().toString().trim();
                 final String email = mEmailEditText.getText().toString().trim();
                 String password = mPasswordEditText.getText().toString();
                 String confirmPassword = mConfirmPasswordEditText.getText().toString().trim();
@@ -91,7 +91,8 @@ public class UserRegisterActivity extends AppCompatActivity {
                                 JSONObject responseJson = new JSONObject(responseString);
                                 if(!isSuccessful){
                                     Toast.makeText(getApplicationContext(),
-                                            responseJson.getString("message"), Toast.LENGTH_LONG)
+//                                            responseJson.getString("message"), Toast.LENGTH_LONG)
+                                            responseString, Toast.LENGTH_LONG)
                                             .show();
                                 } else {
                                     userUtil.updateUser(UserRegisterActivity.this, email, responseJson);

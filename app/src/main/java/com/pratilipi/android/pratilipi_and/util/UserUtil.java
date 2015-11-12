@@ -217,7 +217,7 @@ public class UserUtil {
 
         @Override
         protected String doInBackground(HashMap<String, String>... params) {
-            HashMap<String, String> responseMap = HttpUtil.makePUTRequest(mContext, LOGIN_ENDPOINT, params[0]);
+            HashMap<String, String> responseMap = HttpUtil.makePOSTRequest(mContext, LOGIN_ENDPOINT, params[0]);
             mIsSuccessful = Boolean.parseBoolean(responseMap.get(HttpUtil.IS_SUCCESSFUL));
             return responseMap.get(HttpUtil.RESPONSE_STRING);
         }
@@ -241,7 +241,7 @@ public class UserUtil {
 
         @Override
         protected String doInBackground(HashMap<String, String>... params){
-            HashMap<String, String> responseMap = HttpUtil.makePUTRequest(mContext, REGISTER_ENDPOINT, params[0]);
+            HashMap<String, String> responseMap = HttpUtil.makePOSTRequest(mContext, REGISTER_ENDPOINT, params[0]);
             mIsSuccessful = Boolean.parseBoolean(responseMap.get(HttpUtil.IS_SUCCESSFUL));
             return responseMap.get(HttpUtil.RESPONSE_STRING);
         }
