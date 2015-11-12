@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/action_font_size_decrease"
+        android:icon="@drawable/ic_decrease_font_size"
+        android:title="@string/action_font_size_decrease"
+        app:showAsAction="always"
+        android:orderInCategory="1"
+        />
+        <!--android:actionLayout="@layout/action_provider"-->
+        <!--app:actionProviderClass="com.pratilipi.pratilipi.helper.FontProvide"-->
+    <item android:id="@+id/action_font_size_increase"
+        android:icon="@drawable/ic_increase_font_size"
+        android:title="@string/action_font_size_increase"
+        app:showAsAction="always"
+        android:orderInCategory="2"
+        />
+        <!--android:actionLayout="@layout/action_provider"-->
+        <!--app:actionProviderClass="com.pratilipi.pratilipi.helper.FontProvide"-->
+    <!--<item android:id="@+id/action_font"-->
+    <!--android:icon="@drawable/aa"-->
+    <!--android:title="@string/action_font"-->
+    <!--app:showAsAction="ifRoom"-->
+    <!--app:actionLayout="@layout/action_provider" />-->
+    <!--&lt;!&ndash;app:actionProviderClass="android.support.v7.widget.ShareActionProvider"/>&ndash;&gt;-->
+
+    <!--<item android:id="@+id/action_index"-->
+        <!--android:icon="@drawable/hamburger"-->
+        <!--android:title="@string/action_index"-->
+        <!--app:showAsAction="always"-->
+        <!--android:orderInCategory="4"/>-->
+
+    <!--<item android:id="@+id/content_formatter"-->
+    <!--android:title="Content Formatter"-->
+    <!--app:showAsAction="always"-->
+    <!--android:icon="@drawable/aa"-->
+    <!--android:orderInCategory="3" />-->
+    <!-- Git Check-->
+</menu>
