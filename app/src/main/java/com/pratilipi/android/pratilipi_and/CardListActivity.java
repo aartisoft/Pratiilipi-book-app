@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.pratilipi.android.pratilipi_and.adapter.CardListViewAdapter;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
 import com.pratilipi.android.pratilipi_and.util.AppUtil;
+import com.pratilipi.android.pratilipi_and.util.CategoryUtil;
 import com.pratilipi.android.pratilipi_and.util.PratilipiUtil;
 import com.pratilipi.android.pratilipi_and.util.SearchUtil;
 
@@ -30,6 +31,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Have to extends FragmentActivity to use getSupportLoadManager but this does not have actionbar.
@@ -41,7 +43,7 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
 
     private static final String LOG_TAG = CardListActivity.class.getSimpleName();
     private static final int PRATILIPI_LIST_LOADER = 0;
-    private static final String LANGUAGE_ID = "languageId";
+    public static final String LANGUAGE_ID = "languageId";
     private static final String CATEGORY_ID = "categoryId";
     private static final String QUERY = "query";
     private static final String STATE = "state";
@@ -108,7 +110,6 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
         mCardListRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                Log.e(LOG_TAG, "Scroll Event Called");
                 if(!AppUtil.isOnline(getApplicationContext())) {
                     Toast.makeText(getApplicationContext(), "Connect to internet to fetch more data from server", Toast.LENGTH_SHORT);
                     return;
@@ -136,8 +137,6 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
         mCardListRecyclerView.setAdapter( mCardListViewAdapter );
         mCardListViewAdapter.notifyDataSetChanged();
 
-
-
         fetchData();
 
     }
@@ -146,20 +145,20 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Uri pratilipiListUri =
                 PratilipiContract.PratilipiEntity
-                        .getPratilipiListByCategoryUri(mId)
+                        .getPratilipiListByCategoryUri(mId, mTitle)
                         .buildUpon()
-                        .appendQueryParameter( LOWER_LIMIT, String.valueOf( mLowerLimit ))
-                        .appendQueryParameter( UPPER_LIMIT, String.valueOf( mUpperLimit ))
+//                        .appendQueryParameter( LOWER_LIMIT, String.valueOf( mLowerLimit ))
+//                        .appendQueryParameter( UPPER_LIMIT, String.valueOf( mUpperLimit ))
                         .build();
+
         return new CursorLoader( this, pratilipiListUri, null, null, null, null );
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mCardListViewAdapter.swapCursor(data);
-        mCardListViewAdapter.notifyDataSetChanged();
+//        mCardListViewAdapter.notifyDataSetChanged();
     }
-
 
 
     @Override
@@ -177,7 +176,7 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
 
     public void fetchData() {
         if( mLauncher.equals( LAUNCHER_CATEGORY )) {
-            Uri uri = PratilipiContract.PratilipiEntity.getPratilipiListByCategoryUri(mId);
+            Uri uri = PratilipiContract.PratilipiEntity.getPratilipiListByCategoryUri(mId, mTitle);
             Cursor cursor = this.getContentResolver().query(uri, null, null, null, null);
 
             if (!cursor.moveToFirst()) {
@@ -223,9 +222,23 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
         }
         mPratilipiUtil = new PratilipiUtil(this, "Loading...");
         HashMap<String, String> params = new HashMap<>();
-        params.put(LANGUAGE_ID, String.valueOf(AppUtil.getPreferredLanguage(this)));
-        params.put(CATEGORY_ID, mId);
-        params.put(STATE, STATE_PUBLISHED);
+        if(mId != null) {
+            params.put(LANGUAGE_ID, String.valueOf(AppUtil.getPreferredLanguage(this)));
+            params.put(CATEGORY_ID, mId);
+            params.put(STATE, STATE_PUBLISHED);
+        } else{
+            JSONObject filtersJson = CategoryUtil.getFilters(this, mTitle);
+            Iterator<?> filterKeys = filtersJson.keys();
+            while(filterKeys.hasNext()){
+                String key = (String) filterKeys.next();
+                try {
+                    Log.e(LOG_TAG, "Key / Value : " + key + "/" + filtersJson.getString(key));
+                    params.put(key, filtersJson.getString(key));
+                } catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+        }
         params.put(RESULT_COUNT_STRING, String.valueOf(RESULT_COUNT));
         if( cursorString != null )
             params.put(CURSOR, cursorString);
@@ -251,7 +264,7 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
                 mCursorString = null;
             if( mLauncher.equals( LAUNCHER_CATEGORY )) {
                 JSONArray pratilipiListArray = responseJSON.getJSONArray(PratilipiUtil.PRATILIPI_LIST);
-                mRowsInserted = PratilipiUtil.bulkInsert(this, pratilipiListArray, mId);
+                mRowsInserted = PratilipiUtil.bulkInsert(this, pratilipiListArray, mId, mTitle);
                 mLowerLimit = mUpperLimit;
                 mUpperLimit += mRowsInserted;
                 getSupportLoaderManager().initLoader(PRATILIPI_LIST_LOADER, null, this);

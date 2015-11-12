@@ -26,16 +26,17 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
                 PratilipiContract.CategoriesEntity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
 
                 // the ID of the location entry associated with this weather data
-                PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_ID + " INTEGER NOT NULL, " +
-                PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_NAME + " TEXT NOT NULL, " +
+                PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_ID + " INTEGER, " +
+                PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_NAME + " TEXT, " +
                 PratilipiContract.CategoriesEntity.COLUMN_LANGUAGE + " TEXT NOT NULL, " +
+                PratilipiContract.CategoriesEntity.COLUMN_FILTERS + " TEXT, " +
                 PratilipiContract.CategoriesEntity.COLUMN_SORT_ORDER + " INTEGER NOT NULL, " +
                 PratilipiContract.CategoriesEntity.COLUMN_IS_ON_HOME_SCREEN + " INTEGER NOT NULL, " +
                 PratilipiContract.CategoriesEntity.COLUMN_CREATION_DATE + " INTEGER NOT NULL " +
                 /**
                  * CATEGORY_ID CANNOT BE UNIQUE AS THIS TABLE IS POPULATED FROM TWO DIFFERENT API
                  * RESPONSE. AND RESULTS OF BOTH APIs MAY NOT BE MUTUALLY EXCLUSIVE.
-                 * AND I DON'T CHECKING FOR PRESENCE BEFORE INSERTING EACH CATEGORY SEEMS TO COSTLY
+                 * AND I AM NOT CHECKING FOR THEIR PRESENCE BEFORE INSERTING EACH CATEGORY, SEEMS TO COSTLY
                  * RIGHT NOW.
                  */
                 ")";
@@ -45,7 +46,8 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
                 PratilipiContract.CategoriesEntity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
 
                 // the ID of the location entry associated with this weather data
-                PratilipiContract.CategoriesPratilipiEntity.COLUMN_CATEGORY_ID + " TEXT NOT NULL, " +
+                PratilipiContract.CategoriesPratilipiEntity.COLUMN_CATEGORY_ID + " TEXT, " +
+                PratilipiContract.CategoriesPratilipiEntity.COLUMN_CATEGORY_NAME + " TEXT, " +
                 PratilipiContract.CategoriesPratilipiEntity.COLUMN_PRATILIPI_ID + " TEXT NOT NULL, " +
                 PratilipiContract.CategoriesPratilipiEntity.COLUMN_CREATION_DATE + " INTEGER NOT NULL, " +
 
@@ -54,7 +56,10 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
                 PratilipiContract.PratilipiEntity.TABLE_NAME + " (" + PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID + ") " +
                 " FOREIGN KEY (" + PratilipiContract.CategoriesPratilipiEntity.COLUMN_CATEGORY_ID + ") REFERENCES " +
                 PratilipiContract.CategoriesEntity.TABLE_NAME + " (" + PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_ID + ") " +
+                " FOREIGN KEY (" + PratilipiContract.CategoriesPratilipiEntity.COLUMN_CATEGORY_NAME + ") REFERENCES " +
+                PratilipiContract.CategoriesEntity.TABLE_NAME + " (" + PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_NAME + ") " +
                 " UNIQUE (" + PratilipiContract.CategoriesPratilipiEntity.COLUMN_CATEGORY_ID + ", " +
+                PratilipiContract.CategoriesPratilipiEntity.COLUMN_CATEGORY_NAME + ", " +
                 PratilipiContract.CategoriesPratilipiEntity.COLUMN_PRATILIPI_ID + ") ON CONFLICT REPLACE" +
                 ")";
 
@@ -98,15 +103,15 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
                 PratilipiContract.PratilipiEntity.COLUMN_TITLE_EN + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_TYPE + " TEXT NOT NULL, " +
                 PratilipiContract.PratilipiEntity.COLUMN_COVER_IMAGE_URL + " TEXT NOT NULL, " +
-                PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_ID + " TEXT NOT NULL, " +
+                PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_ID + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_NAME + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_ID + " TEXT NOT NULL, " +
-                PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_NAME + " TEXT NOT NULL, " +
-                PratilipiContract.PratilipiEntity.COLUMN_PRICE + " TEXT NOT NULL, " +
-                PratilipiContract.PratilipiEntity.COLUMN_DISCOUNTED_PRICE + " TEXT NOT NULL, " +
+                PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_NAME + " TEXT, " +
+                PratilipiContract.PratilipiEntity.COLUMN_PRICE + " TEXT, " +
+                PratilipiContract.PratilipiEntity.COLUMN_DISCOUNTED_PRICE + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_SUMMARY + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_INDEX + " TEXT, " +
-                PratilipiContract.PratilipiEntity.COLUMN_CONTENT_TYPE + " TEXT NOT NULL, " +
+                PratilipiContract.PratilipiEntity.COLUMN_CONTENT_TYPE + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_STATE + " TEXT NOT NULL, " +
                 PratilipiContract.PratilipiEntity.COLUMN_GENRE_NAME_LIST + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_PAGE_COUNT + " INTEGER NOT NULL, " +
@@ -176,6 +181,7 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
         // should be your top priority before modifying this method.
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.CategoriesEntity.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.CategoriesPratilipiEntity.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.ContentEntity.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.HomeScreenBridgeEntity.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.PratilipiEntity.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.ShelfEntity.TABLE_NAME);

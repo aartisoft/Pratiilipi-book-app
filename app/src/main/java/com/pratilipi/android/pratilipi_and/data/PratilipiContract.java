@@ -54,6 +54,7 @@ public class PratilipiContract {
         public static final String COLUMN_CATEGORY_NAME = "category_name";
         public static final String COLUMN_LANGUAGE = "language";
         public static final String COLUMN_SORT_ORDER = "sort_order";
+        public static final String COLUMN_FILTERS = "filters";
         // 1 for categories on home screen and 0 for categories in category_list
         public static final String COLUMN_IS_ON_HOME_SCREEN = "is_on_home_screen";
         public static final String COLUMN_CREATION_DATE = "creation_date";
@@ -90,6 +91,7 @@ public class PratilipiContract {
         public static final String TABLE_NAME = "category_pratilipi";
 
         public static final String COLUMN_CATEGORY_ID = "category_id";
+        public static final String COLUMN_CATEGORY_NAME = "category_name";
         public static final String COLUMN_PRATILIPI_ID = "pratilipi_id";
         public static final String COLUMN_CREATION_DATE = "creation_date";
 
@@ -101,8 +103,16 @@ public class PratilipiContract {
             return CONTENT_URI.buildUpon().appendQueryParameter(COLUMN_CATEGORY_ID, categoryId).build();
         }
 
+        public static Uri getPratilipiIdListByCategoryNameUri(String categoryName){
+            return CONTENT_URI.buildUpon().appendQueryParameter(COLUMN_CATEGORY_NAME, categoryName).build();
+        }
+
         public static String getCategoryIdFromUri(Uri uri){
             return uri.getQueryParameter(COLUMN_CATEGORY_ID);
+        }
+
+        public static String getCategoryNameFromUri(Uri uri){
+            return uri.getQueryParameter(COLUMN_CATEGORY_NAME);
         }
 
     }
@@ -236,7 +246,7 @@ public class PratilipiContract {
         public static final String COLUMN_LAST_ACCESSED_ON = "last_accessed_on";
 
         public static Uri getPratilipiEntityUri( String id ){
-            return CONTENT_URI.buildUpon().appendPath( id ).build();
+            return CONTENT_URI.buildUpon().appendPath(id).build();
         }
 
         public static Uri getPratilipiByIdUri(String pratilipiId){
@@ -245,9 +255,15 @@ public class PratilipiContract {
                     .build();
         }
 
-        public static Uri getPratilipiListByCategoryUri(String categoryId){
-            return CONTENT_URI.buildUpon()
-                    .appendQueryParameter(CategoriesEntity.COLUMN_CATEGORY_ID, categoryId)
+        public static Uri getPratilipiListByCategoryUri(String categoryId, String categoryName){
+            if(categoryId != null )
+                return HomeScreenBridgeEntity.CONTENT_URI
+                        .buildUpon()
+                        .appendQueryParameter(HomeScreenBridgeEntity.COLUMN_CATEGORY_ID, categoryId)
+                        .build();
+            else
+                return CONTENT_URI.buildUpon()
+                    .appendQueryParameter(CategoriesEntity.COLUMN_CATEGORY_NAME, categoryName)
                     .build();
         }
 

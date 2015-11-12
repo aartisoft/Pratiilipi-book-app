@@ -87,7 +87,7 @@ public class HomeFragmentUtil {
                 Uri uri = context.getContentResolver().insert(PratilipiContract.CategoriesEntity.CONTENT_URI, values);
                 if( uri != null ){
                     JSONArray contentList = object.getJSONArray(CONTENT);
-                    rowsInserted = PratilipiUtil.bulkInsert(context, contentList, categoryId);
+                    rowsInserted = PratilipiUtil.bulkInsert(context, contentList, categoryId, categoryName);
                     if( rowsInserted == contentList.length() ){
                     } else {
                         Log.e(LOG_TAG, "Pratilipi Insert failed." );

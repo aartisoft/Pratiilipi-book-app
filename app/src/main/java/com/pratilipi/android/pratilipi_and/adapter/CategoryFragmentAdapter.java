@@ -8,8 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.pratilipi.android.pratilipi_and.CategoryFragment;
 import com.pratilipi.android.pratilipi_and.R;
+import com.pratilipi.android.pratilipi_and.util.CategoryUtil;
 
 /**
  * Created by Rahul Ranjan on 9/5/2015.
@@ -30,6 +30,6 @@ public class CategoryFragmentAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         TextView textView = (TextView) view.findViewById(R.id.category_list_item_textview);
-        textView.setText(cursor.getString(CategoryFragment.COL_CATEGORY_NAME));
+        textView.setText(cursor.getString(CategoryUtil.COL_CATEGORY_NAME));
     }
 }

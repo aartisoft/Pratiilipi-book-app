@@ -33,29 +33,15 @@ public class CategoryFragment extends Fragment implements LoaderManager.LoaderCa
 
     private static final String LOG_TAG = CategoryFragment.class.getSimpleName();
     private static final int CATEGORY_LOADER = 1;
-    private static final String LANGUAGE_ID = "languageId";
+    private static final String LANGUAGE = "language";
 
     private CategoryFragmentAdapter mCategoryFragmentAdapter;
     private ListView mCategoriesListView;
     private CategoryUtil mCategoryUtil;
     private ProgressBar mProgressBar;
 
-    private static final String[] CATEGORY_COLUMNS = {
-            PratilipiContract.CategoriesEntity._ID,
-            PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_ID,
-            PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_NAME,
-            PratilipiContract.CategoriesEntity.COLUMN_CREATION_DATE,
-    };
 
-    public static final int COL_CATEGORY_ID = 1;
-    public static final int COL_CATEGORY_NAME = 2;
-    public static final int COL_CREATION_DATE = 3;
-
-
-
-    public CategoryFragment() {
-        // Required empty public constructor
-    }
+    public CategoryFragment() { }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -77,8 +63,8 @@ public class CategoryFragment extends Fragment implements LoaderManager.LoaderCa
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
-                String categoryId = cursor.getString(COL_CATEGORY_ID);
-                String categoryName = cursor.getString(COL_CATEGORY_NAME);
+                String categoryId = cursor.getString(CategoryUtil.COL_CATEGORY_ID);
+                String categoryName = cursor.getString(CategoryUtil.COL_CATEGORY_NAME);
 
                 Intent intent = new Intent(getActivity(), CardListActivity.class);
                 intent.putExtra( CardListActivity.INTENT_EXTRA_LAUNCHER, CardListActivity.LAUNCHER_CATEGORY );
@@ -109,7 +95,7 @@ public class CategoryFragment extends Fragment implements LoaderManager.LoaderCa
         Uri categoryListUri =
                 PratilipiContract.CategoriesEntity
                         .getCategoryListUri(AppUtil.getPreferredLanguage(getActivity()), 0);
-        return new CursorLoader( getActivity(), categoryListUri, CATEGORY_COLUMNS, null, null, null );
+        return new CursorLoader( getActivity(), categoryListUri, CategoryUtil.CATEGORY_COLUMNS, null, null, null );
     }
 
     @Override
@@ -124,7 +110,8 @@ public class CategoryFragment extends Fragment implements LoaderManager.LoaderCa
 
     public void fetchData() {
         Uri uri = PratilipiContract.CategoriesEntity.getCategoryListUri(AppUtil.getPreferredLanguage(getActivity()), 0);
-        Cursor cursor = getActivity().getContentResolver().query(uri, CATEGORY_COLUMNS, null, null, null);
+//        Cursor cursor = getActivity().getContentResolver().query(uri, CATEGORY_COLUMNS, null, null, null);
+        Cursor cursor  = CategoryUtil.getCategoryList(getActivity(), 0);
 
         if (!cursor.moveToFirst()) {
             fetchDataFromServer();
@@ -133,7 +120,7 @@ public class CategoryFragment extends Fragment implements LoaderManager.LoaderCa
             mCategoryFragmentAdapter.swapCursor(cursor);
 
             int currentJulianDay = AppUtil.getCurrentJulianDay();
-            int lastDbUpdateJulianDay = cursor.getInt(COL_CREATION_DATE);
+            int lastDbUpdateJulianDay = cursor.getInt(CategoryUtil.COL_CREATION_DATE);
             if( currentJulianDay > lastDbUpdateJulianDay )
                 fetchDataFromServer();
         }
@@ -145,7 +132,7 @@ public class CategoryFragment extends Fragment implements LoaderManager.LoaderCa
         }
         mCategoryUtil = new CategoryUtil( getActivity(), mProgressBar );
         HashMap<String, String> params = new HashMap<>();
-        params.put(LANGUAGE_ID, String.valueOf(AppUtil.getPreferredLanguage(getActivity())));
+        params.put(LANGUAGE, String.valueOf(AppUtil.getPreferredLanguageName(getActivity())));
         mCategoryUtil.fetchCategories(params, new GetCallback() {
             @Override
             public void done(boolean isSuccessful, String data) {

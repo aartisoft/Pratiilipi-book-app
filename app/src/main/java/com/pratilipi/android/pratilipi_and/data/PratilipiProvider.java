@@ -1,15 +1,13 @@
 package com.pratilipi.android.pratilipi_and.data;
 
         import android.content.ContentProvider;
-        import android.content.ContentValues;
-        import android.content.UriMatcher;
-        import android.database.Cursor;
-        import android.database.sqlite.SQLiteDatabase;
-        import android.database.sqlite.SQLiteQueryBuilder;
-        import android.net.Uri;
-        import android.util.Log;
-
-        import com.pratilipi.android.pratilipi_and.CardListActivity;
+import android.content.ContentValues;
+import android.content.UriMatcher;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
+import android.net.Uri;
+import android.util.Log;
 
 /**
  * Created by Rahul Ranjan on 8/21/2015.
@@ -110,6 +108,21 @@ public class PratilipiProvider extends ContentProvider {
             case USER_BY_EMAIL :{
                 //NOT REQUIRED ACTUALLY AS WE ARE PLANNING TO USE IS_LOGGED_IN = TRUE FILTER IN FUTURE
                 retCursor = getUserByEmail(uri, projection);
+                break;
+            }
+            case CATEGORY :{
+                SQLiteQueryBuilder pratilipiQuery = new SQLiteQueryBuilder();
+                pratilipiQuery.setTables(PratilipiContract.CategoriesEntity.TABLE_NAME);
+
+                retCursor = pratilipiQuery.query(
+                        mOpenHelper.getReadableDatabase(),
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        null
+                );
                 break;
             }
             case CATEGORY_LIST :{
@@ -402,13 +415,13 @@ public class PratilipiProvider extends ContentProvider {
     }
 
     private Cursor getPratilipiListByCategory(Uri uri, int switchCase){
-        String categoryId = null;
+        String category = null;
         String tableName = null;
         String subQuery = null;
         switch (switchCase){
             case HOME_SCREEN_BRIDGE: {
                 tableName = PratilipiContract.HomeScreenBridgeEntity.TABLE_NAME;
-                categoryId = PratilipiContract.HomeScreenBridgeEntity.getCategoryIdFromUri(uri);
+                category = PratilipiContract.HomeScreenBridgeEntity.getCategoryIdFromUri(uri);
                 subQuery = "select " + PratilipiContract.HomeScreenBridgeEntity.COLUMN_PRATILIPI_ID
                         + " from " + tableName
                         + " where " + PratilipiContract.HomeScreenBridgeEntity.COLUMN_CATEGORY_ID + " = ?";
@@ -416,28 +429,31 @@ public class PratilipiProvider extends ContentProvider {
             }
             case CATEGORY_PRATILIPI: {
                 tableName = PratilipiContract.CategoriesPratilipiEntity.TABLE_NAME;
-                categoryId = PratilipiContract.PratilipiEntity.getCategoryIdFromUri(uri);
+                category = PratilipiContract.CategoriesPratilipiEntity.getCategoryNameFromUri(uri);
                 subQuery = "select " + PratilipiContract.CategoriesPratilipiEntity.COLUMN_PRATILIPI_ID
                         + " from " + tableName
-                        + " where " + PratilipiContract.CategoriesPratilipiEntity.COLUMN_CATEGORY_ID + " = ?";
+                        + " where " + PratilipiContract.CategoriesPratilipiEntity.COLUMN_CATEGORY_NAME + " = ?";
                 break;
             }
         }
 
-        Integer lowerLimit = uri.getQueryParameter(CardListActivity.LOWER_LIMIT) == null ? 0 : Integer.parseInt( uri.getQueryParameter( CardListActivity.LOWER_LIMIT ));
-        Integer upperLimit = uri.getQueryParameter(CardListActivity.UPPER_LIMIT) == null ? 50 : Integer.parseInt( uri.getQueryParameter( CardListActivity.UPPER_LIMIT ));
+//        Integer lowerLimit = uri.getQueryParameter(CardListActivity.LOWER_LIMIT) == null ? 0 : Integer.parseInt( uri.getQueryParameter( CardListActivity.LOWER_LIMIT ));
+//        Integer upperLimit = uri.getQueryParameter(CardListActivity.UPPER_LIMIT) == null ? 50 : Integer.parseInt( uri.getQueryParameter( CardListActivity.UPPER_LIMIT ));
 
 
         String rawQuery = "SELECT * FROM "
                 + PratilipiContract.PratilipiEntity.TABLE_NAME + " WHERE "
                 + PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID + " IN ( "
                 + subQuery
-                + " LIMIT "
-                + lowerLimit + ", " + upperLimit
+//                + " LIMIT "
+//                + lowerLimit + ", " + upperLimit
                 + " )";
 
-        return mOpenHelper.getReadableDatabase()
-                .rawQuery(rawQuery, new String[]{categoryId});
+        Log.e(LOG_TAG, "Raw Query : " + rawQuery);
+
+        Cursor returnCursor = mOpenHelper.getReadableDatabase()
+                .rawQuery(rawQuery, new String[]{category});
+        return returnCursor;
     }
 
     private Cursor getPratilipiListInShelf(Uri uri){

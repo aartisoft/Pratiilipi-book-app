@@ -26,12 +26,15 @@ import java.util.Vector;
 public class CategoryUtil {
 
     private static final String LOG_TAG = CategoryUtil.class.getSimpleName();
-    private static final String CATEGORIES_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/category";
+    private static final String CATEGORIES_ENDPOINT = "http://android.pratilipi.com/category/list";
 
     private static final String CATEGORY_DATA_LIST = "categoryDataList";
+    private static final String CATEGORY_LIST = "categoryList";
     private static final String CATEGORY_ID = "id";
-    private static final String CATEGORY_NAME = "plural";
+    private static final String CATEGORY_NAME = "name";
+    private static final String CATEGORY_PLURAL_NAME = "plural";
     private static final String SORT_ORDER = "serialNumber";
+    private static final String PRATILIPI_FILTER = "pratilipiFilter";
 
     public static final String[] CATEGORY_COLUMNS = {
             PratilipiContract.CategoriesEntity._ID,
@@ -107,15 +110,27 @@ public class CategoryUtil {
         Vector<ContentValues> cVVector = new Vector<ContentValues>();
 
         JSONObject apiResponseObject = new JSONObject(apiResponseString);
-        JSONArray categoryDataJSONArray = apiResponseObject.getJSONArray(CATEGORY_DATA_LIST);
+        JSONArray categoryDataJSONArray;
+        if(apiResponseObject.has(CATEGORY_DATA_LIST))
+            categoryDataJSONArray = apiResponseObject.getJSONArray(CATEGORY_DATA_LIST);
+        else
+            categoryDataJSONArray = apiResponseObject.getJSONArray(CATEGORY_LIST);
 
         int arraySize = categoryDataJSONArray.length();
         for(int i = 0; i < arraySize; ++i){
             JSONObject categoryData = categoryDataJSONArray.getJSONObject(i);
             ContentValues values = new ContentValues();
-            values.put(PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_ID, categoryData.getString(CATEGORY_ID));
-            values.put(PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_NAME, categoryData.getString(CATEGORY_NAME));
-            values.put(PratilipiContract.CategoriesEntity.COLUMN_SORT_ORDER, categoryData.getString(SORT_ORDER));
+            if(categoryData.has(CATEGORY_ID)) {
+                values.put(PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_ID, categoryData.getString(CATEGORY_ID));
+                values.put(PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_NAME, categoryData.getString(CATEGORY_PLURAL_NAME));
+                values.put(PratilipiContract.CategoriesEntity.COLUMN_SORT_ORDER, categoryData.getString(SORT_ORDER));
+            }
+
+            if(categoryData.has(PRATILIPI_FILTER)){
+                values.put(PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_NAME, categoryData.getString(CATEGORY_NAME));
+                values.put(PratilipiContract.CategoriesEntity.COLUMN_FILTERS, categoryData.getString(PRATILIPI_FILTER));
+                values.put(PratilipiContract.CategoriesEntity.COLUMN_SORT_ORDER, i);
+            }
             values.put(PratilipiContract.CategoriesEntity.COLUMN_LANGUAGE, AppUtil.getPreferredLanguage(context));
             values.put(PratilipiContract.CategoriesEntity.COLUMN_IS_ON_HOME_SCREEN, 0);
             values.put(PratilipiContract.CategoriesEntity.COLUMN_CREATION_DATE, AppUtil.getCurrentJulianDay());
@@ -157,6 +172,28 @@ public class CategoryUtil {
                 PratilipiContract.CategoriesEntity.CONTENT_URI,
                 selection,
                 selectionArgs);
+    }
+
+    public static JSONObject getFilters(Context context, String categoryName){
+        Uri uri = PratilipiContract.CategoriesEntity.getCategoryUri(categoryName);
+        String[] projection = new String[]{PratilipiContract.CategoriesEntity.COLUMN_FILTERS};
+        String selection = PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_NAME + "=? AND " +
+                PratilipiContract.CategoriesEntity.COLUMN_IS_ON_HOME_SCREEN + "=?";
+        String[] selectionArgs = new String[]{categoryName, String.valueOf(0)};
+        Cursor cursor =
+                context.getContentResolver()
+                .query(uri, projection, selection, selectionArgs, null);
+        if(cursor.moveToFirst()){
+            String filters = cursor.getString(0);
+            try{
+                JSONObject jsonObject = new JSONObject(filters);
+                return jsonObject;
+            } catch (JSONException e){
+                e.printStackTrace();
+                return null;
+            }
+        }else
+            return null;
     }
 
     public static boolean isTableEmpty(Context context){
