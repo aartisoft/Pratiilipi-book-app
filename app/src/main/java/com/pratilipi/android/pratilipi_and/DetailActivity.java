@@ -100,6 +100,8 @@ public class DetailActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent( DetailActivity.this, ReaderActivity.class );
+                i.putExtra(PRATILIPI, mPratilipi);
+                i.putExtra(PARENT_ACTIVITY_CLASS_NAME, mContext.getClass().getSimpleName());
                 startActivity(i);
             }
         });
