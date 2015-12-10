@@ -43,6 +43,9 @@ public class UserUtil {
 
 
     private static final String USER_NAME = "name";
+    private static final String PROFILE_IMAGE_OBJECT = "picture";
+    private static final String PROFILE_IMAGE_DATA = "data";
+    private static final String PROFILE_IMAGE_URL = "url";
     public static final String ACCESS_TOKEN_EXPIRY = "expiry";
     public static final String ACCESS_TOKEN = "accessToken";
 
@@ -87,6 +90,17 @@ public class UserUtil {
 
         ContentValues values = new ContentValues();
         values.put(PratilipiContract.UserEntity.COLUMN_DISPLAY_NAME, responseJson.getString(USER_NAME));
+        //When user logged in using facebook account
+        if(responseJson.has(PROFILE_IMAGE_OBJECT)){
+            try{
+                JSONObject profileImageObject = responseJson.getJSONObject(PROFILE_IMAGE_OBJECT);
+                JSONObject profileImageData = profileImageObject.getJSONObject(PROFILE_IMAGE_DATA);
+                String url = profileImageData.getString(PROFILE_IMAGE_URL);
+                values.put(PratilipiContract.UserEntity.COLUMN_PROFILE_IMAGE, url);
+            } catch(JSONException e){
+                e.printStackTrace();
+            }
+        }
         values.put(PratilipiContract.UserEntity.COLUMN_IS_LOGGED_IN, 1);
 
         String where = PratilipiContract.UserEntity.COLUMN_EMAIL + "=?";

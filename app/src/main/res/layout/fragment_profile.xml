@@ -32,6 +32,13 @@
                 android:layout_height="wrap_content"
                 android:text="SIGN UP"/>
 
+            <com.facebook.login.widget.LoginButton
+                android:id="@+id/profile_fb_login_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true" />
+
         </LinearLayout>
 
         <LinearLayout
