@@ -1,12 +1,11 @@
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/profile_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingTop="50dp"
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
+    android:paddingTop="50dp"
     tools:context="com.pratilipi.android.pratilipi_android.ProfileFragment">
 
     <LinearLayout
@@ -30,7 +29,7 @@
                 android:id="@+id/profile_register_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="SIGN UP"/>
+                android:text="SIGN UP" />
 
             <com.facebook.login.widget.LoginButton
                 android:id="@+id/profile_fb_login_button"
@@ -43,9 +42,9 @@
 
         <LinearLayout
             android:id="@+id/registered_user_profile"
-            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:visibility="gone">
 
             <LinearLayout
@@ -54,61 +53,59 @@
                 android:orientation="horizontal">
 
                 <ImageView
+                    android:id="@+id/imageView_profile"
                     android:layout_width="105dp"
                     android:layout_height="105dp"
-                    android:id="@+id/imageView_profile"
                     android:layout_centerHorizontal="true"
-                    android:adjustViewBounds="false"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginRight="10dp"
-                    android:layout_marginLeft="10dp"
                     android:layout_marginBottom="10dp"
-                    />
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="15dp"
+                    android:adjustViewBounds="false" />
 
                 <LinearLayout
-                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
+                    android:orientation="vertical"
                     android:paddingLeft="5dp">
 
                     <TextView
                         android:id="@+id/profile_name_textview"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textAppearance="?android:attr/textAppearanceLarge"
                         android:layout_gravity="left"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
                         android:textSize="22dp" />
 
                     <TextView
                         android:id="@+id/profile_shelf_count_textview"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:text="Test Duration"
                         android:layout_gravity="left"
-                        android:textSize="15dp"
-                        android:layout_marginTop="10dp" />
+                        android:layout_marginTop="10dp"
+                        android:text="Test Duration"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textSize="15dp" />
 
                     <TextView
                         android:id="@+id/profile_member_since_textview"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:text="Test Count"
+                        android:layout_gravity="left"
                         android:layout_marginTop="5dp"
-                        android:textSize="15dp"
-                        android:layout_gravity="left" />
+                        android:text="Test Count"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textSize="15dp" />
 
                 </LinearLayout>
             </LinearLayout>
-
 
             <Button
                 android:id="@+id/profile_logout_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="LOGOUT"/>
+                android:text="LOGOUT" />
 
         </LinearLayout>
     </LinearLayout>

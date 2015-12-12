@@ -8,15 +8,16 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
@@ -60,11 +61,13 @@ public class ProfileFragment extends Fragment {
     private final String PROFILE_FRAGMENT_TAG = "profileFragmentTag";
     private final String USER_EMAIL = "email";
 
-    private User mUser;
+    private User mUser,mUser2;
     private CallbackManager mCallbackManager;
     private ProgressDialog dialog;
+    private String accessTokenString;
 
-    public ProfileFragment() {}
+    public ProfileFragment() {
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -78,13 +81,13 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_profile, container, false);
+        final View rootView = inflater.inflate(R.layout.fragment_profile, container, false);
 
         getActivity().getSupportFragmentManager()
                 .beginTransaction()
                 .add(this, PROFILE_FRAGMENT_TAG);
 
-        if( mUser == null ) {
+        if (mUser == null) {
             final Button loginLink = (Button) rootView.findViewById(R.id.profile_login_button);
             Button registerButton = (Button) rootView.findViewById(R.id.profile_register_button);
             final LoginButton fbLoginButton = (LoginButton) rootView.findViewById(R.id.profile_fb_login_button);
@@ -113,7 +116,6 @@ public class ProfileFragment extends Fragment {
                     dialog.setMessage("Updating user details...");
                     dialog.show();
 
-
                     //GETTING PROFILE INFO
                     GraphRequest request = GraphRequest.newMeRequest(
                             loginResult.getAccessToken(),
@@ -125,54 +127,65 @@ public class ProfileFragment extends Fragment {
                                     // Application code
                                     Log.e(LOG_TAG, response.toString());
                                     final JSONObject responseObject = response.getJSONObject();
-                                    String accessTokenString = loginResult.getAccessToken().getToken();
+                                    accessTokenString = loginResult.getAccessToken().getToken();
                                     Log.e(LOG_TAG, "FB AccessToken : " + accessTokenString);
                                     HashMap<String, String> params = new HashMap<String, String>();
                                     params.put(FbLoginUtil.FB_ACCESS_TOKEN_PARAM, accessTokenString);
 
-                                    FbLoginUtil fbLoginUtil = new FbLoginUtil(getActivity());
+                                    final FbLoginUtil fbLoginUtil = new FbLoginUtil(getActivity());
                                     fbLoginUtil.fbUserLogin(params, new GetCallback() {
                                         @Override
                                         public void done(boolean isSuccessful, String data) {
 
                                             Log.e(LOG_TAG, "Fb login Async task callback");
-                                            try{
+                                            try {
                                                 Log.e(LOG_TAG, "Server Response : " + data);
                                                 JSONObject responseJson = new JSONObject(data);
-                                                if( !isSuccessful ) {
-                                                    FbLoginUtil.facebookLogout();
+                                                if (!isSuccessful) {
+                                                    fbLoginUtil.facebookLogout();
                                                     Toast.makeText(getActivity(),
                                                             responseJson.getString("message"), Toast.LENGTH_LONG)
                                                             .show();
                                                 } else {
+
+                                                    //TODO: Handle usecase when user gives e-mail permission
                                                     String serverEmail = responseJson.getString(USER_EMAIL);
                                                     String fbEmail = responseObject.getString(USER_EMAIL);
-                                                    if(serverEmail.equals(fbEmail)) {
+                                                    if (serverEmail.equals(fbEmail)) {
                                                         Log.e(LOG_TAG, "Server and fb login matches");
                                                         UserUtil userUtil = new UserUtil(getActivity(), null);
                                                         userUtil.updateUser(getActivity(), fbEmail, responseObject);
-                                                    } else{
+                                                    } else {
                                                         Log.e(LOG_TAG, "Server email and facebook email Id mismatch");
-                                                        FbLoginUtil.facebookLogout();
+                                                        fbLoginUtil.facebookLogout();
                                                         Toast.makeText(getActivity(),
                                                                 "Error while trying to login using facebook", Toast.LENGTH_LONG)
                                                                 .show();
                                                     }
                                                 }
-                                            } catch(JSONException e){
+                                            } catch (JSONException e) {
                                                 e.printStackTrace();
                                             }
-                                            Fragment currentFragment = getActivity().getSupportFragmentManager()
-                                                    .findFragmentByTag(PROFILE_FRAGMENT_TAG);
-                                            //Recreate fragment. - Below if block is doing no good
-                                            if(currentFragment instanceof ProfileFragment){
-                                                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                                                transaction.detach(currentFragment);
-                                                transaction.attach(currentFragment);
-                                                transaction.commit();
-                                            }
+
+                                            mUser2 = getLoggedInUser();
+
+                                            rootView.findViewById(R.id.guest_user_profile).setVisibility(View.GONE);
+                                            rootView.findViewById(R.id.registered_user_profile).setVisibility(View.VISIBLE);
+                                            ((TextView) rootView.findViewById(R.id.profile_name_textview)).setText(mUser2.getDisplayName());
+//                                            ((TextView) rootView.findViewById(R.id.profile_shelf_count_textview)).setText(String.valueOf(ShelfUtil.numberOfContentInShelf(getActivity(), mUser2.getEmail())));
+                                            Glide.with(getActivity()).load(mUser2.getProfileImageUrl()).into((ImageView) rootView.findViewById(R.id.imageView_profile));
+//                                            Fragment currentFragment = getActivity().getSupportFragmentManager()
+//                                                    .findFragmentByTag(PROFILE_FRAGMENT_TAG);
+//                                            //Recreate fragment. - Below if block is doing no good
+//                                            if(currentFragment instanceof ProfileFragment){
+//                                                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+//                                                transaction.detach(currentFragment);
+//                                                transaction.attach(currentFragment);
+//                                                transaction.commit();
+//                                            }
                                             dialog.hide();
                                             dialog.dismiss();
+
                                         }
                                     });
                                 }
@@ -198,7 +211,6 @@ public class ProfileFragment extends Fragment {
                 }
             });
 
-
         } else {
             rootView.findViewById(R.id.guest_user_profile).setVisibility(View.GONE);
             rootView.findViewById(R.id.registered_user_profile).setVisibility(View.VISIBLE);
@@ -207,6 +219,7 @@ public class ProfileFragment extends Fragment {
                     .setText(String.valueOf(ShelfUtil.numberOfContentInShelf(getActivity(), mUser.getEmail())));
 
             Button logoutButton = (Button) rootView.findViewById(R.id.profile_logout_button);
+            logoutButton.setVisibility(View.VISIBLE);
 
             logoutButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -217,7 +230,7 @@ public class ProfileFragment extends Fragment {
                     userUtil.userLogout(params, new GetCallback() {
                         @Override
                         public void done(boolean isSuccessful, String data) {
-                            if(isSuccessful)
+                            if (isSuccessful)
                                 onLogoutSuccess(data);
                             else
                                 onLogoutFail(data);
@@ -234,6 +247,7 @@ public class ProfileFragment extends Fragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         mUser = getLoggedInUser();
+
     }
 
     @Override
@@ -247,19 +261,20 @@ public class ProfileFragment extends Fragment {
         mCallbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
-    private User getLoggedInUser(){
+    private User getLoggedInUser() {
         Uri uri = PratilipiContract.UserEntity.CONTENT_URI;
         String selection = PratilipiContract.UserEntity.COLUMN_IS_LOGGED_IN + "=?";
         String[] selectionArgs = {"1"};
 
-        Cursor cursor = getActivity().getContentResolver().query(uri,USER_PROJECTION, selection, selectionArgs, null);
+        Cursor cursor = getActivity().getContentResolver().query(uri, USER_PROJECTION, selection, selectionArgs, null);
 
-        if( cursor.getCount() > 1 )
+        if (cursor.getCount() > 1)
             Log.e(LOG_TAG, "More than 1 user logged in at same time");
 
-        if( cursor.getCount() > 0 ) {
+        if (cursor.getCount() > 0) {
             cursor.moveToFirst();
             User user = new User();
+
             user.setDisplayName(cursor.getString(COL_DISPLAY_NAME));
             user.setContentsInShelf(cursor.getInt(COL_CONTENT_IN_SHELF));
             user.setProfileImageUrl(cursor.getString(COL_PROFILE_IMAGE));
@@ -269,7 +284,7 @@ public class ProfileFragment extends Fragment {
             return null;
     }
 
-    private int updateUserEntity(String email){
+    private int updateUserEntity(String email) {
         Uri uri = PratilipiContract.UserEntity.CONTENT_URI;
         String selection = PratilipiContract.UserEntity.COLUMN_EMAIL + "=?";
         String[] selectionArgs = {email};
@@ -280,35 +295,35 @@ public class ProfileFragment extends Fragment {
         return getActivity().getContentResolver().update(uri, values, selection, selectionArgs);
     }
 
-    private void onLogoutSuccess(String data){
-        try{
+    private void onLogoutSuccess(String data) {
+        try {
             JSONObject jsonObject = new JSONObject(data);
-            if(jsonObject.has(UserUtil.ACCESS_TOKEN)){
+            if (jsonObject.has(UserUtil.ACCESS_TOKEN)) {
                 UserUtil.saveAccessToken(getActivity(), jsonObject.getString(UserUtil.ACCESS_TOKEN), jsonObject.getLong(UserUtil.ACCESS_TOKEN_EXPIRY));
                 Intent intent = getActivity().getIntent();
                 int userLoggedOutCount = updateUserEntity(mUser.getEmail());
-                if( userLoggedOutCount == 1 ) {
+                if (userLoggedOutCount == 1) {
                     //Invalidate facebook session
+
                     FbLoginUtil.facebookLogout();
                     startActivity(intent);
-                }
-                else{
+                } else {
                     Log.e(LOG_TAG, "Error while updating user entity");
                 }
             } else {
                 Log.e(LOG_TAG, "Error while fetching access token from server");
             }
 
-        } catch (JSONException e){
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    private void onLogoutFail(String data){
+    private void onLogoutFail(String data) {
         try {
             JSONObject jsonObject = new JSONObject(data);
             Toast.makeText(getActivity(), jsonObject.getString("message"), Toast.LENGTH_LONG);
-        } catch ( JSONException e){
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }
