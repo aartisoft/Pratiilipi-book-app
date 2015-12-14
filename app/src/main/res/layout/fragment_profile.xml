@@ -37,7 +37,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
-                facebook:com_facebook_login_text="Sign up with Facebook"
+                facebook:com_facebook_login_text="@string/Sign_up_with_fb"
                 android:layout_centerHorizontal="true"
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp"

@@ -63,9 +63,10 @@ public class ShelfFragment extends Fragment implements LoaderManager.LoaderCallb
 
         Log.e(LOG_TAG, "onCreateView function of ShelfFragment");
         User user = UserUtil.getLoggedInUser(getActivity());
-        if(user != null)
-            rootView.findViewById(R.id.default_tv_shelf).setVisibility(View.GONE);
+        if(user != null) {
+            rootView.findViewById(R.id.shelf_default_tv).setVisibility(View.GONE);
             fetchData();
+        }
         return rootView;
     }
 
