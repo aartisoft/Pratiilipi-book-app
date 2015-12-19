@@ -37,6 +37,7 @@ public class SearchActivity extends ActionBarActivity {
 
         MenuItem searchItem = menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setFocusable(true);
         searchView.setQueryHint(getString(R.string.action_search_queryHint));
 
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
