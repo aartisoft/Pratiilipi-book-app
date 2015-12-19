@@ -78,6 +78,10 @@
             android:parentActivityName=".CardListActivity" >
         </activity>
 
+        <activity android:name=".SearchActivity"
+            android:windowSoftInputMode="stateVisible"
+            android:parentActivityName=".MainActivity"/>
+
         <provider
             android:name=".data.PratilipiProvider"
             android:authorities="@string/content_authority"
