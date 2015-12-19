@@ -39,11 +39,14 @@ public class SearchActivity extends ActionBarActivity {
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setFocusable(true);
         searchView.setQueryHint(getString(R.string.action_search_queryHint));
+        searchView.onActionViewExpanded();
+
 
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         if (null != searchView) {
             searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
             searchView.setIconifiedByDefault(false);
+            searchView.setFocusable(true);
         }
 
         SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
