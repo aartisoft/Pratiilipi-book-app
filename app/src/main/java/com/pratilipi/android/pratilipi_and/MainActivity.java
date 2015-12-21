@@ -55,40 +55,6 @@ public class MainActivity extends AppCompatActivity{
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-
-//        SearchView searchView =
-//                (SearchView) menu.findItem(R.id.action_search).getActionView();
-
-//        MenuItem searchItem = menu.findItem(R.id.action_search);
-//        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-//        searchView.setQueryHint(getString(R.string.action_search_queryHint));
-//
-//        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-//        if (null != searchView) {
-//            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-//            searchView.setIconifiedByDefault(false);
-//        }
-//
-//        SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
-//            public boolean onQueryTextChange(String newText) {
-//                // this is your adapter that will be filtered
-//                Log.e(LOG_TAG, "Search query : " + newText );
-//                return true;
-//            }
-//
-//            public boolean onQueryTextSubmit(String query) {
-//                //Here u can get the value "query" which is entered in the search box.
-//                Log.e(LOG_TAG, "Search query : " + query);
-//                Intent intent = new Intent(getApplicationContext(), CardListActivity.class);
-//                intent.putExtra(CardListActivity.INTENT_EXTRA_LAUNCHER, CardListActivity.LAUNCHER_SEARCH );
-//                intent.putExtra( CardListActivity.INTENT_EXTRA_SEARCH_QUERY, query );
-//                intent.putExtra( CardListActivity.INTENT_EXTRA_TITLE, query );
-//                startActivity(intent);
-//                return true;
-//            }
-//        };
-//        searchView.setOnQueryTextListener(queryTextListener);
-
         return true;
     }
 

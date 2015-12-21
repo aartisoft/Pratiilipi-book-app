@@ -56,7 +56,6 @@ public class SplashScreen extends Activity {
 
         Log.e("SplashScreen", "onDestroy function");
         unbindDrawables(findViewById(R.id.splashscreen_linear_layout));
-        System.gc();
     }
 
     private void unbindDrawables(View view) {
