@@ -55,6 +55,7 @@ public class FbLoginUtil {
 
     public static void facebookLogout(){
         LoginManager.getInstance().logOut();
+
     }
 
 }

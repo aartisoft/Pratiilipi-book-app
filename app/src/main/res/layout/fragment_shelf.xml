@@ -5,6 +5,15 @@
     android:layout_height="match_parent"
     tools:context="com.pratilipi.android.pratilipi_android.ShelfFragment">
 
+    <TextView
+        android:id="@+id/shelf_default_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Login_Shelf"
+        android:layout_gravity="center"
+        android:textSize="@dimen/abc_text_size_large_material"
+        android:visibility="visible"/>
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/shelf_recyclerview"
         android:layout_width="match_parent"

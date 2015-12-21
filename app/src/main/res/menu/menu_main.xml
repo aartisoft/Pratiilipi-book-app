@@ -6,8 +6,7 @@
         android:title="@string/action_search"
         yourapp:showAsAction="ifRoom|collapseActionView"
         android:enabled="true"
-        android:icon="@drawable/ic_search_icon"
-        yourapp:actionViewClass="android.support.v7.widget.SearchView"/>
+        android:icon="@drawable/ic_search_icon"/>
 
     <item
         android:id="@+id/action_change_content_language"

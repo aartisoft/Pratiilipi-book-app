@@ -1,10 +1,8 @@
 package com.pratilipi.android.pratilipi_and;
 
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -61,35 +59,35 @@ public class MainActivity extends AppCompatActivity{
 //        SearchView searchView =
 //                (SearchView) menu.findItem(R.id.action_search).getActionView();
 
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-        searchView.setQueryHint(getString(R.string.action_search_queryHint));
-
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        if (null != searchView) {
-            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-            searchView.setIconifiedByDefault(false);
-        }
-
-        SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
-            public boolean onQueryTextChange(String newText) {
-                // this is your adapter that will be filtered
-                Log.e(LOG_TAG, "Search query : " + newText );
-                return true;
-            }
-
-            public boolean onQueryTextSubmit(String query) {
-                //Here u can get the value "query" which is entered in the search box.
-                Log.e(LOG_TAG, "Search query : " + query);
-                Intent intent = new Intent(getApplicationContext(), CardListActivity.class);
-                intent.putExtra(CardListActivity.INTENT_EXTRA_LAUNCHER, CardListActivity.LAUNCHER_SEARCH );
-                intent.putExtra( CardListActivity.INTENT_EXTRA_SEARCH_QUERY, query );
-                intent.putExtra( CardListActivity.INTENT_EXTRA_TITLE, query );
-                startActivity(intent);
-                return true;
-            }
-        };
-        searchView.setOnQueryTextListener(queryTextListener);
+//        MenuItem searchItem = menu.findItem(R.id.action_search);
+//        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+//        searchView.setQueryHint(getString(R.string.action_search_queryHint));
+//
+//        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+//        if (null != searchView) {
+//            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+//            searchView.setIconifiedByDefault(false);
+//        }
+//
+//        SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
+//            public boolean onQueryTextChange(String newText) {
+//                // this is your adapter that will be filtered
+//                Log.e(LOG_TAG, "Search query : " + newText );
+//                return true;
+//            }
+//
+//            public boolean onQueryTextSubmit(String query) {
+//                //Here u can get the value "query" which is entered in the search box.
+//                Log.e(LOG_TAG, "Search query : " + query);
+//                Intent intent = new Intent(getApplicationContext(), CardListActivity.class);
+//                intent.putExtra(CardListActivity.INTENT_EXTRA_LAUNCHER, CardListActivity.LAUNCHER_SEARCH );
+//                intent.putExtra( CardListActivity.INTENT_EXTRA_SEARCH_QUERY, query );
+//                intent.putExtra( CardListActivity.INTENT_EXTRA_TITLE, query );
+//                startActivity(intent);
+//                return true;
+//            }
+//        };
+//        searchView.setOnQueryTextListener(queryTextListener);
 
         return true;
     }
@@ -110,6 +108,9 @@ public class MainActivity extends AppCompatActivity{
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_search) {
+            Intent search_intent = new Intent(this, SearchActivity.class);
+            startActivity(search_intent);
+            overridePendingTransition(0,0);
             return true;
         } else if(id == R.id.action_change_content_language){
             Log.e(LOG_TAG, "Change Content Language option is clicked");

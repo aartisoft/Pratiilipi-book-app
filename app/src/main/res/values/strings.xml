@@ -51,4 +51,7 @@
     <!-- Facebook appId -->
     <string name="app_id">293990794105516</string>
 
+    <string name="Login_Shelf">Please Login to access Shelf !!</string>
+    <string name="Sign_up_with_fb">Sign up with Facebook</string>
+
 </resources>
