@@ -481,31 +481,39 @@ public class PratilipiProvider extends ContentProvider {
 
         String selection = null;
         String[] selectionArgs = null;
+        String sortOrder = PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER +
+                ", " + PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER;
 
         if(chapterNumber != null){
+            //fetch 1 chapter.
             selection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=? AND "
                     + PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER + "=?";
             selectionArgs = new String[]{pratilipiId, chapterNumber};
         }
 
         if(pageNumber != null){
+            //fetch 1 page.
             selection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=? AND "
                     + PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER + "=?";
             selectionArgs = new String[]{pratilipiId, pageNumber};
         }
 
-        if(selectionArgs != null)
-            return pratilipiContent.query(
-                    mOpenHelper.getReadableDatabase(),
-                    null,
-                    selection,
-                    selectionArgs,
-                    null,
-                    null,
-                    null
-            );
-        else
-            return null;
+        //when chapter and page number both are null.
+        if(selectionArgs == null){
+            //fetch whole book at same time.
+            selection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=?";
+            selectionArgs = new String[]{pratilipiId};
+        }
+
+        return pratilipiContent.query(
+                mOpenHelper.getReadableDatabase(),
+                null,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
     }
 
 }

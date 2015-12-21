@@ -151,8 +151,8 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
                 PratilipiContract.ContentEntity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
 
                 PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + " TEXT NOT NULL, " +
-                PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER + " TEXT, " +
-                PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER + " TEXT, " +
+                PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER + " INTEGER, " +
+                PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER + " INTEGER, " +
                 PratilipiContract.ContentEntity.COLUMN_TEXT_CONTENT + " TEXT, " +
                 PratilipiContract.ContentEntity.COLUMN_IMAGE_CONTENT + " BLOB, " +
                 PratilipiContract.ContentEntity.COLUMN_LAST_ACCESSED_ON + " INTEGER, " +
