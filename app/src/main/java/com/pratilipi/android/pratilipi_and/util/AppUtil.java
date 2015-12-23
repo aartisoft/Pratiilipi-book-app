@@ -37,11 +37,15 @@ public class AppUtil {
     public static boolean isOnline(Context context) {
         ConnectivityManager cm =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-    if( netInfo != null )
-            Log.e(LOG_TAG, "Is Connected : " + netInfo.isConnectedOrConnecting());
-    return netInfo != null && netInfo.isConnectedOrConnecting();
-}
+        NetworkInfo netInfoMobile = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        NetworkInfo netInfoWifi = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        if (netInfoMobile != null && netInfoWifi != null) {
+            Log.e(LOG_TAG, "Is Connected : " + netInfoMobile.isConnectedOrConnecting());
+            Log.e(LOG_TAG, "Is Connected : " + netInfoWifi.isConnectedOrConnecting());
+        }
+
+        return (netInfoMobile != null && netInfoMobile.isConnectedOrConnecting()) && (netInfoWifi != null && netInfoWifi.isConnectedOrConnecting());
+    }
 
     public static void showNoConnectionDialog(Context ctx1) {
         final Context ctx = ctx1;
@@ -71,47 +75,47 @@ public class AppUtil {
         builder.show();
     }
 
-    public static Long getPreferredLanguage(Context context){
+    public static Long getPreferredLanguage(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String preferredLanguage =  prefs.getString(LanguageSelectionActivity.SELECTED_LANGUAGE,
+        String preferredLanguage = prefs.getString(LanguageSelectionActivity.SELECTED_LANGUAGE,
                 LanguageSelectionActivity.SELECTED_LANGUAGE_GUJARATI);
-        if( preferredLanguage.equals(GUJARATI_LOCALE))
+        if (preferredLanguage.equals(GUJARATI_LOCALE))
             return GUJARATI_LANGUAGE_ID;
-        else if ( preferredLanguage.equals(HINDI_LOCALE) )
+        else if (preferredLanguage.equals(HINDI_LOCALE))
             return HINDI_LANGUAGE_ID;
-        else if( preferredLanguage.equals(TAMIL_LOCALE))
+        else if (preferredLanguage.equals(TAMIL_LOCALE))
             return TAMIL_LANGUAGE_ID;
         else
             return 0L;
     }
 
-    public static String getPreferredLanguageName(Context context){
+    public static String getPreferredLanguageName(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String preferredLanguage =  prefs.getString(LanguageSelectionActivity.SELECTED_LANGUAGE,
+        String preferredLanguage = prefs.getString(LanguageSelectionActivity.SELECTED_LANGUAGE,
                 LanguageSelectionActivity.SELECTED_LANGUAGE_GUJARATI);
-        if( preferredLanguage.equals(GUJARATI_LOCALE))
+        if (preferredLanguage.equals(GUJARATI_LOCALE))
             return GUJARATI_LANGUAGE;
-        else if ( preferredLanguage.equals(HINDI_LOCALE) )
+        else if (preferredLanguage.equals(HINDI_LOCALE))
             return HINDI_LANGUAGE;
-        else if( preferredLanguage.equals(TAMIL_LOCALE))
+        else if (preferredLanguage.equals(TAMIL_LOCALE))
             return TAMIL_LANGUAGE;
         else
             return null;
     }
 
-    public static int getCurrentJulianDay(){
+    public static int getCurrentJulianDay() {
         Time t = new Time();
         t.setToNow();
         return Time.getJulianDay(System.currentTimeMillis(), t.gmtoff);
     }
 
-    public static int convertToJulianDay( long dateInMillis ){
+    public static int convertToJulianDay(long dateInMillis) {
         Time t = new Time();
         t.setToNow();
         return Time.getJulianDay(dateInMillis, t.gmtoff);
     }
 
-    public static void updateReaderFontSize(Context context, float fontSize){
+    public static void updateReaderFontSize(Context context, float fontSize) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(READER_FONT_SIZE, String.valueOf(fontSize));
@@ -119,9 +123,9 @@ public class AppUtil {
         Log.e(LOG_TAG, "Update reader font size");
     }
 
-    public static float getReaderFontSize(Context context){
+    public static float getReaderFontSize(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String readerFontSize =  prefs.getString(READER_FONT_SIZE, "30");
+        String readerFontSize = prefs.getString(READER_FONT_SIZE, "30");
         return Float.valueOf(readerFontSize);
     }
 
