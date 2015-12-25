@@ -46,6 +46,7 @@ public class ContentUtil {
 
     public static final String INDEX_PAGE_NO = "pageNo";
     public static final String INDEX_LEVEL = "level";
+    public static final String PAGELET_LIST = "pageletList";
 
 
     public static final String[] CONTENT_COLUMN = {
@@ -102,7 +103,7 @@ public class ContentUtil {
 
             String content = "";
             try{
-                JSONArray contentArray = object.getJSONArray("pageletList");
+                JSONArray contentArray = object.getJSONArray(PAGELET_LIST);
                 for(int i = 0;i < contentArray.length(); ++i){
                     JSONObject jsonObject = contentArray.getJSONObject(i);
                     content = content + jsonObject.getString("data");
@@ -366,6 +367,8 @@ public class ContentUtil {
         private int mCurrentPage;
         private int mLastPage;
 
+        private int mPostExecuteFunctionCounter;
+
         public ChapterDownloadAsyncTask(Context context, String pratilipiId, String chapterNo, int firstPage, int lastPage, GetCallback callback){
             this.mContext = context;
             this.mPratilipiId = pratilipiId;
@@ -373,6 +376,8 @@ public class ContentUtil {
             this.mCurrentPage = firstPage;
             this.mLastPage = lastPage;
             this.mCallback = callback;
+
+            mPostExecuteFunctionCounter=0;
         }
 
         @Override
@@ -389,15 +394,21 @@ public class ContentUtil {
 
         @Override
         protected void onPostExecute(String responseString) {
+            mPostExecuteFunctionCounter++;
             Log.e(LOG_TAG, "onPostExecute function. Current Page : " + mCurrentPage);
             if(mIsSuccessful) {
                 //UPDATE DATABASE
                 try{
                     JSONObject json = new JSONObject(responseString);
-                    insert(mContext, json.getJSONObject(PAGE_CONTENT), mPratilipiId, mChapterNo, null);
+                    if(json.has(PAGE_CONTENT))
+                        insert(mContext, json.getJSONObject(PAGE_CONTENT), mPratilipiId, mChapterNo, null);
+
                 } catch (JSONException e){
                     e.printStackTrace();
-                    onPostExecute(responseString);
+                    if(mPostExecuteFunctionCounter < 4)
+                        onPostExecute(responseString);
+                    else
+                        Toast.makeText(mContext, "Exception while processing server response", Toast.LENGTH_LONG);
                 }
 
                 if(mCurrentPage == mLastPage){
