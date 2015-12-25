@@ -51,7 +51,7 @@ public class ReaderPageFragment extends Fragment {
     @Override
     public void setArguments(Bundle args) {
         super.setArguments(args);
-        Log.e(LOG_TAG, "setArguments function");
+//        Log.e(LOG_TAG, "setArguments function");
         mLanguage = args.getString(LANGUAGE);
         mStartIndex = Integer.parseInt(args.getString(START_INDEX));
 //        getInt(END_INDEX) returns 0 instead of -1. Hence getString is used.
@@ -168,7 +168,6 @@ public class ReaderPageFragment extends Fragment {
         int startIndex = getLineStart(start);
         int endIndex = getLineEnd(end);
         String text = mTextView.getText().subSequence(startIndex, endIndex).toString();
-        Log.e(LOG_TAG, "Subsequence : " + text.substring(0, 20));
         return text;
     }
 
@@ -212,7 +211,6 @@ public class ReaderPageFragment extends Fragment {
     }
 
     private void setFont(String lan){
-        Log.e(LOG_TAG, "Setting Typeface");
         Typeface typeFace = null;
         if (lan.equalsIgnoreCase("hindi"))
             typeFace = Typeface.createFromAsset(mActivity.getAssets(), "fonts/devanagari.ttf");
