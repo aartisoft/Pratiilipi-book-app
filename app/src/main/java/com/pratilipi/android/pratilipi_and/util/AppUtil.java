@@ -40,11 +40,11 @@ public class AppUtil {
         NetworkInfo netInfoMobile = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
         NetworkInfo netInfoWifi = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         if (netInfoMobile != null && netInfoWifi != null) {
-            Log.e(LOG_TAG, "Is Connected : " + netInfoMobile.isConnectedOrConnecting());
-            Log.e(LOG_TAG, "Is Connected : " + netInfoWifi.isConnectedOrConnecting());
+            Log.e(LOG_TAG, "Is Connected Mobile : " + netInfoMobile.isConnectedOrConnecting());
+            Log.e(LOG_TAG, "Is Connected Wifi: " + netInfoWifi.isConnectedOrConnecting());
         }
 
-        return (netInfoMobile != null && netInfoMobile.isConnectedOrConnecting()) && (netInfoWifi != null && netInfoWifi.isConnectedOrConnecting());
+        return (netInfoMobile != null && netInfoMobile.isConnectedOrConnecting()) || (netInfoWifi != null && netInfoWifi.isConnectedOrConnecting());
     }
 
     public static void showNoConnectionDialog(Context ctx1) {
