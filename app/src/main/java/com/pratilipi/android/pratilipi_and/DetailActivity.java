@@ -21,6 +21,7 @@ import android.widget.Toast;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
+import com.pratilipi.android.pratilipi_and.data.PratilipiDbHelper;
 import com.pratilipi.android.pratilipi_and.datafiles.Pratilipi;
 import com.pratilipi.android.pratilipi_and.datafiles.User;
 import com.pratilipi.android.pratilipi_and.service.DownloadService;
@@ -45,6 +46,7 @@ public class DetailActivity extends AppCompatActivity {
     private int mChapterNumber;
     private int mPageCount;
     private int mPageNumber;
+    Button addToShelfButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +106,7 @@ public class DetailActivity extends AppCompatActivity {
             }
         });
 
-        Button addToShelfButton = (Button) findViewById(R.id.detail_add_to_shelf_button);
+        addToShelfButton = (Button) findViewById(R.id.detail_add_to_shelf_button);
         addToShelfButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -118,6 +120,7 @@ public class DetailActivity extends AppCompatActivity {
                             UserUtil.incrementContentInShelfCount(mContext, user.getEmail());
                             if(mPratilipi.getDownloadStatus() != 1){
                                 downloadContent(mPratilipiId);
+                                addToShelfButton.setVisibility(View.GONE);
                             }
                         }
                         Toast.makeText(getBaseContext(), "Is Add To shelf Successful : " + isSuccessful, Toast.LENGTH_LONG).show();
@@ -125,6 +128,29 @@ public class DetailActivity extends AppCompatActivity {
                 });
             }
         });
+
+        queryForBookId(mContext,mPratilipiId);
+    }
+
+    public int queryForBookId(Context context, String mPratilipiId){
+
+        String query = "SELECT * FROM " +
+                PratilipiContract.ShelfEntity.TABLE_NAME +
+                " WHERE " +
+                PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + " =?";
+        String[] selectionArgs = new String[]{mPratilipiId};
+
+        //TODO : FIND WORK AROUND FOR TO REPLACE rawQuery FUNCTION
+        Cursor cursor = new PratilipiDbHelper(context)
+                .getReadableDatabase()
+                .rawQuery(query, selectionArgs);
+
+        if( cursor != null && cursor.moveToFirst()){
+            addToShelfButton.setVisibility(View.GONE);
+            return cursor.getInt(0);
+        }
+
+        return 0;
     }
 
     @Nullable
