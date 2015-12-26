@@ -57,6 +57,8 @@ import java.util.Map;
 public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekBarChangeListener {
 
     private static final String LOG_TAG = ReaderActivity.class.getSimpleName();
+    public static final String PRATILIPI = "pratilipi";
+    public static final String PARENT_ACTIVITY_CLASS_NAME = "parentActivityClassName";
 
     private Context mContext;
     private List<int[]> pageFragmentInfoList; // List<[chapterNo, startIndex, endIndex]>
@@ -106,8 +108,8 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
             w.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         }
 
-        mPratilipi = (Pratilipi) getIntent().getSerializableExtra(DetailActivity.PRATILIPI);
-        mParentActivityClassName = getIntent().getStringExtra(DetailActivity.PARENT_ACTIVITY_CLASS_NAME);
+        mPratilipi = (Pratilipi) getIntent().getSerializableExtra(PRATILIPI);
+        mParentActivityClassName = getIntent().getStringExtra(PARENT_ACTIVITY_CLASS_NAME);
 
         setTitle(mPratilipi.getTitle());
 
@@ -129,7 +131,7 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
             for (int i = 0; i < mIndexSize; i++) {
                 JsonObject jsonObject = indexArr.get(i).getAsJsonObject();
                 String title = jsonObject.get("title").toString();
-                Log.d("TITLE", title);
+//                Log.d("TITLE", title);
                 mTitles.add(i, title.substring(1, title.length() - 1));
                 mTitleChapters.add(i, Integer.parseInt(jsonObject.get("pageNo").toString()));
             }
@@ -142,8 +144,7 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.e(LOG_TAG, "Chapter Clicked : " + mTitles.get(position));
-                Log.e(LOG_TAG, "Chapter Clicked : " + mTitleChapters.get(position));
+                Log.v(LOG_TAG, "Chapter Clicked : " + mTitles.get(position));
                 setContent(mTitleChapters.get(position));
             }
         });

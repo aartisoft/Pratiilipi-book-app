@@ -2,9 +2,9 @@ package com.pratilipi.android.pratilipi_and.adapter;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -21,6 +21,7 @@ import android.widget.Toast;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.pratilipi.android.pratilipi_and.AppController;
+import com.pratilipi.android.pratilipi_and.DetailActivity;
 import com.pratilipi.android.pratilipi_and.GetCallback;
 import com.pratilipi.android.pratilipi_and.R;
 import com.pratilipi.android.pratilipi_and.Widget.MySpinner;
@@ -29,6 +30,7 @@ import com.pratilipi.android.pratilipi_and.datafiles.Pratilipi;
 import com.pratilipi.android.pratilipi_and.util.AppUtil;
 import com.pratilipi.android.pratilipi_and.util.ContentUtil;
 import com.pratilipi.android.pratilipi_and.util.ShelfUtil;
+import com.pratilipi.android.reader.ReaderActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,9 +51,9 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
     private ImageLoader mImageLoader;
     private int mDeleteContentPosition = 1;
     private int mRemoveContentFromShelfPosition = 0;
+    private int mAboutContentPosition = 2;
 
     public ShelfAdapter(){
-        Log.e(LOG_TAG, "ShelfAdapter Constructor");
         mPratilipiList = new ArrayList<>();
         mImageLoader = AppController.getInstance().getImageLoader();
         this.notifyDataSetChanged();
@@ -64,7 +66,6 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
 
     @Override
     public DataViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Log.e(LOG_TAG, "onCreateViewHolder function");
         this.mViewGroup = parent;
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.shelf_cardview, parent, false);
         DataViewHolder dataViewHolder = new DataViewHolder(v);
@@ -74,7 +75,6 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
 
     @Override
     public void onBindViewHolder(DataViewHolder holder, int position) {
-        Log.e(LOG_TAG, "onBindViewHolder function");
         final Context context = mViewGroup.getContext();
         String lan = context.getSharedPreferences("PREFERENCE", Context.MODE_PRIVATE).getString("selectedLanguage", "");
         Typeface typeFace = null;
@@ -96,15 +96,12 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Intent i = new Intent(context, DetailActivity.class);
-//                i.putExtra(DetailActivity.PRATILIPI, pratilipi);
-//                i.putExtra(DetailActivity.PARENT_ACTIVITY_CLASS_NAME, context.getClass().getSimpleName());
-//                context.startActivity(i);
-                Uri uri = PratilipiContract.PratilipiEntity.getPratilipiByIdUri(pratilipi.getPratilipiId());
-                Log.e(LOG_TAG, "Pratilipi URI : " + uri);
-                Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
-                cursor.moveToFirst();
-                Toast.makeText(context, "Is Downloaded : " + cursor.getInt(cursor.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_DOWNLOAD_STATUS)), Toast.LENGTH_SHORT).show();
+
+                //STARTING READER ACTIVITY
+                Intent i = new Intent( context, ReaderActivity.class );
+                i.putExtra(ReaderActivity.PRATILIPI, pratilipi);
+                i.putExtra(ReaderActivity.PARENT_ACTIVITY_CLASS_NAME, context.getClass().getSimpleName());
+                context.startActivity(i);
             }
         });
 
@@ -116,6 +113,7 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
         else{
             menuItems.add("Delete Content");
         }
+        menuItems.add("About");
         // Creating adapter for spinner
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_dropdown_item, menuItems);
 
@@ -164,9 +162,8 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
                         AlertDialog alert = builder.create();
                         alert.show();
 
-                    }
-                    else if(position == mDeleteContentPosition) {AlertDialog.Builder builder = new AlertDialog.Builder(context);
-
+                    } else if(position == mDeleteContentPosition) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
                         builder.setTitle("Confirm");
                         builder.setMessage("Are you sure you want to delete " + pratilipi.getTitle() + " from phone memory?");
 
@@ -194,6 +191,12 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
 
                         AlertDialog alert = builder.create();
                         alert.show();
+                    } else if( position == mAboutContentPosition ){
+                        //Start Detail Activity
+                        Intent i = new Intent(context, DetailActivity.class);
+                        i.putExtra(ReaderActivity.PRATILIPI, pratilipi);
+                        i.putExtra(ReaderActivity.PARENT_ACTIVITY_CLASS_NAME, context.getClass().getSimpleName());
+                        context.startActivity(i);
                     }
                 }
             }
@@ -231,7 +234,6 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
     }
 
     public void swapCursor( Cursor c ){
-        Log.e(LOG_TAG, "swapCursor function");
         mPratilipiList.clear();
         if( c == null ) {
             notifyDataSetChanged();
@@ -288,13 +290,11 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
     }
 
     private void onSuccess(Context context, String data, Pratilipi pratilipi){
-        Log.e(LOG_TAG, "onSuccess function of ShelfFragment");
         //delete content
         deleteContent(context, pratilipi);
     }
 
     private void onFailed(Context context, String data){
-        Log.e(LOG_TAG, "onFailed function of ShelfFragment");
         try {
             JSONObject jsonObject = new JSONObject(data);
             Toast.makeText(context, jsonObject.getString("message"), Toast.LENGTH_LONG).show();

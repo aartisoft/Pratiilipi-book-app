@@ -21,6 +21,7 @@ import com.pratilipi.android.pratilipi_and.DetailActivity;
 import com.pratilipi.android.pratilipi_and.R;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
 import com.pratilipi.android.pratilipi_and.datafiles.Pratilipi;
+import com.pratilipi.android.reader.ReaderActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,8 +79,8 @@ public class CardListViewAdapter extends RecyclerView.Adapter<CardListViewAdapte
             @Override
             public void onClick(View view) {
                 Intent i = new Intent(context, DetailActivity.class);
-                i.putExtra(DetailActivity.PRATILIPI, pratilipi);
-                i.putExtra(DetailActivity.PARENT_ACTIVITY_CLASS_NAME, context.getClass().getSimpleName());
+                i.putExtra(ReaderActivity.PRATILIPI, pratilipi);
+                i.putExtra(ReaderActivity.PARENT_ACTIVITY_CLASS_NAME, context.getClass().getSimpleName());
                 context.startActivity(i);
                 Log.e(LOG_TAG, "Item clicked. Title : " + pratilipi.getTitle());
             }

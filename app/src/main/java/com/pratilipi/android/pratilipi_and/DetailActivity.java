@@ -35,8 +35,6 @@ import org.json.JSONException;
 public class DetailActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = DetailActivity.class.getSimpleName();
-    public static final String PRATILIPI = "pratilipi";
-    public static final String PARENT_ACTIVITY_CLASS_NAME = "parentActivityClassName";
 
     private Context mContext;
     private Pratilipi mPratilipi;
@@ -59,8 +57,8 @@ public class DetailActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setIcon(R.drawable.ic_logo);
 
-        mPratilipi = (Pratilipi) getIntent().getSerializableExtra(PRATILIPI);
-        mParentActivityClassName = getIntent().getStringExtra(PARENT_ACTIVITY_CLASS_NAME);
+        mPratilipi = (Pratilipi) getIntent().getSerializableExtra(ReaderActivity.PRATILIPI);
+        mParentActivityClassName = getIntent().getStringExtra(ReaderActivity.PARENT_ACTIVITY_CLASS_NAME);
         Log.e(LOG_TAG, "Parent Activity Class Name : " + mParentActivityClassName);
 
 
@@ -100,8 +98,8 @@ public class DetailActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent( DetailActivity.this, ReaderActivity.class );
-                i.putExtra(PRATILIPI, mPratilipi);
-                i.putExtra(PARENT_ACTIVITY_CLASS_NAME, mContext.getClass().getSimpleName());
+                i.putExtra(ReaderActivity.PRATILIPI, mPratilipi);
+                i.putExtra(ReaderActivity.PARENT_ACTIVITY_CLASS_NAME, mContext.getClass().getSimpleName());
                 startActivity(i);
             }
         });

@@ -98,7 +98,7 @@ public class ShelfFragment extends Fragment implements LoaderManager.LoaderCallb
     }
 
     private void fetchData(){
-        Log.e(LOG_TAG, "fetchData function of ShelfFragment");
+        Log.v(LOG_TAG, "fetchData function of ShelfFragment");
         User user = UserUtil.getLoggedInUser(getActivity());
         if(user == null)
             return;
