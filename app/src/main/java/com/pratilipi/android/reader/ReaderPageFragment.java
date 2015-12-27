@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.Html;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -183,7 +184,7 @@ public class ReaderPageFragment extends Fragment {
             }
         } else
             subString = mContentString;
-        mTextView.setText(subString);
+        mTextView.setText(Html.fromHtml(subString));
         if(mLoadingTextView.getVisibility() != View.GONE)
             mLoadingTextView.setVisibility(View.GONE);
         mTextView.setVisibility(View.VISIBLE);

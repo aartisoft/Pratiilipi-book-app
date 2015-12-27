@@ -375,7 +375,8 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
             for( Map.Entry<Integer, ReaderPageFragment> positionFragmentEntry : positionFragmentMap.entrySet() ) {
                 int[] pageFragmentInfo = pageFragmentInfoList.get(positionFragmentEntry.getKey());
                 int chapterNo = pageFragmentInfo[0];
-                String contentString = mContentList.get(chapterNo-1).getTextContent();
+                String title = "<br/><h1>" + mTitles.get(chapterNo-1) + "</h1><br/>";
+                String contentString = title + mContentList.get(chapterNo-1).getTextContent();
                 ReaderPageFragment pageFragment = positionFragmentEntry.getValue();
                 pageFragment.setPage(contentString, pageFragmentInfo[1], pageFragmentInfo[2]);
             }
@@ -470,10 +471,9 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
     }
 
     private List<Content> getContentFromDb(Integer chapterNo, Integer pageNo){
-        Log.e(LOG_TAG, "getContentFromDb() called");
+//        Log.e(LOG_TAG, "getContentFromDb() called");
         ContentUtil contentUtil = new ContentUtil();
         Cursor cursor = contentUtil.getContentfromDb(this, mPratilipi, chapterNo, pageNo);
-        Log.e(LOG_TAG, "Result Count : " + cursor.getCount());
         return contentUtil.createContentList(cursor);
     }
 
@@ -481,7 +481,7 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
         if(!AppUtil.isOnline(context))
             return;
 
-        Log.e(LOG_TAG, "getContentFromServer() called");
+//        Log.e(LOG_TAG, "getContentFromServer() called");
         ContentUtil contentUtil = new ContentUtil();
         contentUtil.fetchChapterFromServer(context, mPratilipi, chapterNo, new GetCallback() {
             @Override
@@ -521,7 +521,7 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
 
         List<Content> nextChapterContentList = getContentFromDb(chapter, null);
         if( nextChapterContentList != null && nextChapterContentList.size()>0){
-            Log.e(LOG_TAG, "Next chapter is present in database");
+//            Log.v(LOG_TAG, "Next chapter is present in database");
             Content content = nextChapterContentList.get(0);
             mContentList.add(mContentList.size(), content);
             pageFragmentInfoList.add(pageFragmentInfoList.size(), new int[]{chapter, 0, -1});
@@ -531,7 +531,7 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
             contentUtil.fetchChapterFromServer(context, mPratilipi, chapter, new GetCallback() {
                 @Override
                 public void done(boolean isSuccessful, String data) {
-                    Log.e(LOG_TAG, "Chapter is prefetched : " + isSuccessful);
+//                    Log.e(LOG_TAG, "Chapter is prefetched : " + isSuccessful);
                     if (isSuccessful) {
                         List<Content> nextChapterContent = getContentFromDb(chapter, null);
                         if(nextChapterContent != null && nextChapterContent.size()>0) {
