@@ -13,7 +13,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,7 +48,7 @@ public class DetailActivity extends AppCompatActivity {
     private int mChapterNumber;
     private int mPageCount;
     private int mPageNumber;
-    Button addToShelfButton;
+    Button addToShelfButton, readButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,7 +97,7 @@ public class DetailActivity extends AppCompatActivity {
             summaryTextView.setText(Html.fromHtml(mPratilipi.getSummary()));
         }
 
-        Button readButton = (Button) findViewById(R.id.detail_read_button);
+        readButton = (Button) findViewById(R.id.detail_read_button);
         readButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -121,7 +123,7 @@ public class DetailActivity extends AppCompatActivity {
                             if (mPratilipi.getDownloadStatus() != 1) {
                                 downloadContent(mPratilipiId);
                                 addToShelfButton.setVisibility(View.GONE);
-
+                                readButton.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
                             }
                         }
                         Toast.makeText(getBaseContext(), "Is Add To shelf Successful : " + isSuccessful, Toast.LENGTH_LONG).show();
@@ -154,6 +156,9 @@ public class DetailActivity extends AppCompatActivity {
 
         if( cursor != null && cursor.moveToFirst()){
             addToShelfButton.setVisibility(View.GONE);
+
+            readButton.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
             return cursor.getInt(0);
         }
 
