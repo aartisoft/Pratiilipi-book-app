@@ -103,8 +103,7 @@ tools:context="com.pratilipi.android.pratilipi_and.DetailActivity">
                             android:text="ADD TO SHELF"
                             android:background="@color/pratilipi_red"
                             android:textColor="@color/pratilipi_white"
-                            android:layout_marginLeft="2dp"
-                            android:visibility="visible"/>
+                            android:layout_marginLeft="2dp"/>
                         <!--<Button-->
                         <!--android:id="@+id/reviewButton"-->
                         <!--android:layout_height="40sp"-->

@@ -115,12 +115,13 @@ public class DetailActivity extends AppCompatActivity {
                     public void done(boolean isSuccessful, String data) {
                         Log.e(LOG_TAG, "Add To Shelf Callback");
                         Log.e(LOG_TAG, "Response Data : " + data);
-                        if(isSuccessful){
+                        if (isSuccessful) {
                             User user = UserUtil.getLoggedInUser(mContext);
                             UserUtil.incrementContentInShelfCount(mContext, user.getEmail());
-                            if(mPratilipi.getDownloadStatus() != 1){
+                            if (mPratilipi.getDownloadStatus() != 1) {
                                 downloadContent(mPratilipiId);
                                 addToShelfButton.setVisibility(View.GONE);
+
                             }
                         }
                         Toast.makeText(getBaseContext(), "Is Add To shelf Successful : " + isSuccessful, Toast.LENGTH_LONG).show();
@@ -129,7 +130,13 @@ public class DetailActivity extends AppCompatActivity {
             }
         });
 
-        queryForBookId(mContext,mPratilipiId);
+        User userLog = UserUtil.getLoggedInUser(mContext);
+        if(userLog == null) {
+            addToShelfButton.setVisibility(View.VISIBLE);
+        }else{
+            queryForBookId(mContext, mPratilipiId);
+        }
+
     }
 
     public int queryForBookId(Context context, String mPratilipiId){
