@@ -13,9 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -122,8 +120,7 @@ public class DetailActivity extends AppCompatActivity {
                             UserUtil.incrementContentInShelfCount(mContext, user.getEmail());
                             if (mPratilipi.getDownloadStatus() != 1) {
                                 downloadContent(mPratilipiId);
-                                addToShelfButton.setVisibility(View.GONE);
-                                readButton.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                                addToShelfButton.setVisibility(View.INVISIBLE);
                             }
                         }
                         Toast.makeText(getBaseContext(), "Is Add To shelf Successful : " + isSuccessful, Toast.LENGTH_LONG).show();
@@ -155,10 +152,7 @@ public class DetailActivity extends AppCompatActivity {
                 .rawQuery(query, selectionArgs);
 
         if( cursor != null && cursor.moveToFirst()){
-            addToShelfButton.setVisibility(View.GONE);
-
-            readButton.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
+            addToShelfButton.setVisibility(View.INVISIBLE);
             return cursor.getInt(0);
         }
 
