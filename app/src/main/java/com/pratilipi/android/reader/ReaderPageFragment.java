@@ -1,6 +1,7 @@
 package com.pratilipi.android.reader;
 
 import android.app.Activity;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -140,7 +141,9 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public int getLineBounds(int lineNumber){
-        return mTextView.getLineBounds(lineNumber, null);
+        Rect bounds = new Rect();
+        mTextView.getLineBounds(lineNumber, bounds);
+        return bounds.bottom;
     }
 
     public int getLineCount(){
@@ -158,7 +161,6 @@ public class ReaderPageFragment extends Fragment {
     }
 
     private int getLineEnd(int lineNumber){
-//        Log.e(LOG_TAG, "Line End : " + mTextView.getLayout().getLineEnd(lineNumber));
         if(mTextView.getLayout() == null)
             return -1;
         else
@@ -193,9 +195,7 @@ public class ReaderPageFragment extends Fragment {
     private int findEndIndex(){
         int endLine = 0;
         int totalLines = getLineCount();
-//        Log.e(LOG_TAG, "View height : " + view.getHeight());
         int screenBaseLine = view.getBottom() - view.getPaddingBottom() - view.getPaddingTop();
-//        Log.e(LOG_TAG, "View baseline : " + screenBaseLine);
         for(int i = 0; i<totalLines; ++i){
             endLine = i;
             int lineBase = getLineBounds(endLine);
@@ -204,8 +204,18 @@ public class ReaderPageFragment extends Fragment {
                 break;
             }
         }
-        if(getLineEnd(endLine) != -1)
-            mEndIndex = mStartIndex + getLineEnd(endLine);
+        if(getLineEnd(endLine) != -1) {
+            int lineEnd = mTextView.getLayout().getLineEnd(endLine);
+            if(endLine != totalLines-1) {
+                //when endLine is not last line, find last index of space to prevent word cutting.
+                String subString = mContentString.substring(mStartIndex, mStartIndex + lineEnd);
+                int lastSpaceIndex = subString.lastIndexOf(" ");
+                //neglect when no space is present.
+                if(lastSpaceIndex != -1)
+                    lineEnd = lastSpaceIndex;
+            }
+            mEndIndex = mStartIndex + lineEnd;
+        }
         else
             mEndIndex = -1;
         return mEndIndex;
