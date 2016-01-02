@@ -208,7 +208,7 @@ public class ContentUtil {
                 JSONObject jsonObject = contentArray.getJSONObject(i);
                 contentString = contentString + jsonObject.getString("data");
                 if(i < contentArray.length()-1)
-                    contentString = contentString + "\n";
+                    contentString = contentString + "</br>";
             }
         } catch(JSONException e){
             e.printStackTrace();
@@ -464,17 +464,18 @@ public class ContentUtil {
             JSONArray indexJson = new JSONArray(indexString);
             JSONObject chapterJson = indexJson.getJSONObject(chapterNo - 1);
             int firstPage = 1;
-            if(chapterNo > 1){
-                Log.e(LOG_TAG, "This is not first chapter");
-                firstPage = chapterJson.getInt(PAGE_NUMBER);
-            }
-            int lastPage = pratilipi.getPageCount();
-            if(chapterNo < indexJson.length()-1) {
-                Log.e(LOG_TAG, "This is not last chapter");
-                JSONObject nextChapterJson = indexJson.getJSONObject(chapterNo);
-                lastPage = nextChapterJson.getInt(PAGE_NUMBER)-1;
-            }
-            Log.e(LOG_TAG, "First Page / Last Page : " + firstPage + "/" + lastPage);
+//            if(chapterNo > 1){
+//                Log.e(LOG_TAG, "This is not first chapter");
+//                firstPage = chapterJson.getInt(PAGE_NUMBER);
+//            }
+            int lastPage = 1;
+//            int lastPage = pratilipi.getPageCount();
+//            if(chapterNo < indexJson.length()-1) {
+//                Log.e(LOG_TAG, "This is not last chapter");
+//                JSONObject nextChapterJson = indexJson.getJSONObject(chapterNo);
+//                lastPage = nextChapterJson.getInt(PAGE_NUMBER)-1;
+//            }
+//            Log.e(LOG_TAG, "First Page / Last Page : " + firstPage + "/" + lastPage);
             new ChapterDownloadAsyncTask(context, pratilipi.getPratilipiId(), String.valueOf(chapterNo), firstPage, lastPage, callback).execute();
         }  catch (JSONException e){
             e.printStackTrace();
