@@ -19,11 +19,6 @@ import java.util.HashMap;
 public class DownloadService extends IntentService {
 
     private static final String LOG_TAG = DownloadService.class.getSimpleName();
-    private static final String IMAGE_CONTENT_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/pratilipi/content/image";
-    private static final String TEXT_CONTENT_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/pratilipi/content";
-
-    private static final String PRATILIPI_ID = "pratilipiId";
-    private static final String PAGE_NUMBER = "pageNo";
 
     public static final String INTENT_EXTRA_CONTENT_TYPE = "contentType";
     public static final String INTENT_EXTRA_PAGE_NUMBER = "pageNumber";
@@ -43,31 +38,33 @@ public class DownloadService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         String contentType = intent.getStringExtra(INTENT_EXTRA_CONTENT_TYPE);
         String pratilipiId = intent.getStringExtra(INTENT_EXTRA_PRATILIPI_ID);
-        int pageNumber = intent.getIntExtra(INTENT_EXTRA_PAGE_NUMBER, 0);
-        int chapterNumber = intent.getIntExtra(INTENT_EXTRA_CHAPTER_NUMBER, 0);
+        int pageNumber = intent.getIntExtra(INTENT_EXTRA_PAGE_NUMBER, 1);
+        int chapterNumber = intent.getIntExtra(INTENT_EXTRA_CHAPTER_NUMBER, 1);
         ResultReceiver receiver = (ResultReceiver) intent.getParcelableExtra(INTENT_EXTRA_RECEIVER);
 
         String uriString;
         if(contentType.equals(IMAGE_COTENT_TYPE))
-            uriString = IMAGE_CONTENT_ENDPOINT;
+            uriString = ContentUtil.IMAGE_CONTENT_ENDPOINT;
         else
-            uriString = TEXT_CONTENT_ENDPOINT;
+            uriString = ContentUtil.TEXT_CONTENT_ENDPOINT;
 
         if(pageNumber == 0 ){
             Log.e(LOG_TAG, "Page Number : " + pageNumber);
             return;
         }
         HashMap<String, String> paramMap = new HashMap<>();
-        paramMap.put(PRATILIPI_ID, pratilipiId);
-        paramMap.put(PAGE_NUMBER, String.valueOf(pageNumber));
+        paramMap.put(ContentUtil.PRATILIPI_ID, pratilipiId);
+        paramMap.put(ContentUtil.CHAPTER_NUMBER, String.valueOf(chapterNumber));
+        paramMap.put(ContentUtil.PAGE_NUMBER, String.valueOf(pageNumber));
 
         HashMap<String, String> responseMap = HttpUtil.makeGETRequest(this, uriString, paramMap);
         if(Boolean.parseBoolean(responseMap.get(HttpUtil.IS_SUCCESSFUL))){
             try {
                 JSONObject responseJson = new JSONObject(responseMap.get(HttpUtil.RESPONSE_STRING));
-                Boolean isSuccessfullyUpdateDB = ContentUtil.insert(this, responseJson, pratilipiId, String.valueOf(chapterNumber), String.valueOf(pageNumber));
-                if( isSuccessfullyUpdateDB )
-                    receiver.send(STATUS_CODE_SUCCESS, null);
+                if( responseJson.has(ContentUtil.PAGE_CONTENT))
+                    ContentUtil.insert(this, responseJson.getJSONObject(ContentUtil.PAGE_CONTENT), pratilipiId, String.valueOf(chapterNumber), String.valueOf(pageNumber));
+
+                receiver.send(STATUS_CODE_SUCCESS, null);
             } catch (JSONException e){
                 e.printStackTrace();
                 receiver.send(STATUS_CODE_FAILURE, null);

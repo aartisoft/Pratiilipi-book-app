@@ -138,7 +138,23 @@ public class PratilipiProvider extends ContentProvider {
                 break;
             }
             case SHELF: {
-                retCursor = getPratilipiListInShelf(uri);
+                if(selection != null && selectionArgs != null) {
+                    //Used to check whether content is added to shelf or not.
+                    SQLiteQueryBuilder pratilipiQuery = new SQLiteQueryBuilder();
+                    pratilipiQuery.setTables(PratilipiContract.ShelfEntity.TABLE_NAME);
+                    retCursor = pratilipiQuery.query(
+                            mOpenHelper.getReadableDatabase(),
+                            projection,
+                            selection,
+                            selectionArgs,
+                            null,
+                            null,
+                            null
+                    );
+                } else {
+                    //Used to fetch content list present in shelf of logged in user.
+                    retCursor = getPratilipiListInShelf(uri);
+                }
                 break;
             }
             case CONTENT: {

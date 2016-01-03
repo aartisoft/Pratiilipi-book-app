@@ -204,10 +204,35 @@ public class ShelfUtil {
     }
 
     public static int delete(Context context, String pratilipiId){
+        //Delete Content
+        Uri contentUri = PratilipiContract.ContentEntity.CONTENT_URI;
+        String contentSelection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=?";
+        String[] contentSelectionArgs = new String[]{pratilipiId};
+        int rowCount = context.getContentResolver().delete(contentUri, contentSelection, contentSelectionArgs);
+        Log.i(LOG_TAG, "Deleting Content of " + pratilipiId);
+        Log.i(LOG_TAG, "Number of Rows Deleted : " + rowCount);
+        //Delete From Shelf
         Uri uri = PratilipiContract.ShelfEntity.CONTENT_URI;
         String selection = PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + "=?";
         String[] selectionArgs = new String[]{pratilipiId};
         return context.getContentResolver().delete(uri, selection, selectionArgs);
     }
 
+    public static Boolean isPratilipiInShelf(Context context, String pratilipiId){
+        User user = UserUtil.getLoggedInUser(context);
+        if(user == null)
+            return false;
+        Log.e(LOG_TAG, "Logged In User : " + user.getEmail());
+        Uri uri = PratilipiContract.ShelfEntity.CONTENT_URI;
+        String[] projection = new String[]{PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID};
+        String selection = PratilipiContract.ShelfEntity.COLUMN_USER_EMAIL + "=? AND "
+                + PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + "=?";
+        String[] selectionArgs = new String[]{user.getEmail(), pratilipiId};
+        Cursor cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
+        Log.e(LOG_TAG, "Cursor count : " + cursor.getCount());
+        if(cursor != null && cursor.moveToNext())
+            return true;
+
+        return false;
+    }
 }

@@ -28,18 +28,17 @@ public class ContentUtil {
 
     private static final String LOG_TAG = ContentUtil.class.getSimpleName();
 
-    private static final String IMAGE_CONTENT_ENDPOINT = "http://android.pratilipi.com/pratilipi/content/image";
-    private static final String TEXT_CONTENT_ENDPOINT = "http://android.pratilipi.com/pratilipi/content";
-    private static final String TEXT_CONTENT_ENDPOINT_OLD = "http://www.pratilipi.com/api.pratilipi/pratilipi/content";
+    public static final String IMAGE_CONTENT_ENDPOINT = "http://android.pratilipi.com/pratilipi/content/image";
+    public static final String TEXT_CONTENT_ENDPOINT = "http://android.pratilipi.com/pratilipi/content";
 
     private static final String TEXT_CONTENT = "pageContent";
     private static final String IMAGE_CONTENT = "data";
 
-    private static final String PRATILIPI_ID = "pratilipiId";
-    private static final String CHAPTER_NUMBER = "chapterNo";
-    private static final String PAGE_NUMBER = "pageNo";
-    private static final String PAGE_CONTENT = "pageContent";
-    private static final String CONTENT_TYPE = "contentType";
+    public static final String PRATILIPI_ID = "pratilipiId";
+    public static final String CHAPTER_NUMBER = "chapterNo";
+    public static final String PAGE_NUMBER = "pageNo";
+    public static final String PAGE_CONTENT = "pageContent";
+    public static final String CONTENT_TYPE = "contentType";
 
     public static final String TEXT_CONTENT_TYPE = "pratilipi";
     public static final String IMAGE_COTENT_TYPE = "image";
@@ -108,7 +107,7 @@ public class ContentUtil {
                     JSONObject jsonObject = contentArray.getJSONObject(i);
                     content = content + jsonObject.getString("data");
                     if(i < contentArray.length()-1)
-                        content = content + "\n";
+                        content = content + "</br>";
                 }
             }catch(JSONException e){
                 Log.e(LOG_TAG, "JSON Exception occurred");
@@ -119,12 +118,13 @@ public class ContentUtil {
 
 //            Log.e(LOG_TAG, "Content String : " + content);
             Uri uri = PratilipiContract.ContentEntity.getPratilipiContentByChapterUri(pratilipiId, chapterNumber);
-            Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
-            if (cursor.moveToFirst()) {
+            Cursor cursor = context.getContentResolver().query(uri, CONTENT_COLUMN, null, null, null);
+//            Log.e(LOG_TAG, "Cursor length : " + cursor.getCount());
+            if (cursor != null && cursor.moveToFirst()) {
                 //USED WHEN ONE CHAPTER IS CONTAINED IN MORE THAN 1 PAGE.
 //                Log.e(LOG_TAG, "DB entry already exist");
                 String existingContent = cursor.getString(cursor.getColumnIndex(PratilipiContract.ContentEntity.COLUMN_TEXT_CONTENT));
-                String updatedContent = existingContent + "\n" + content.trim();
+                String updatedContent = existingContent + "</br>" + content.trim();
                 ContentValues values = new ContentValues();
                 values.put(PratilipiContract.ContentEntity.COLUMN_TEXT_CONTENT, updatedContent);
                 String selection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=? AND "
