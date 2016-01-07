@@ -142,9 +142,12 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 removeContentFromShelf(context, pratilipi);
+
+                                notifyItemRemoved(position);
+
                                 //Update UI List
-                                Cursor cursor = context.getContentResolver().query(PratilipiContract.ShelfEntity.CONTENT_URI, null, null, null, null);
-                                swapCursor(cursor);
+//                                Cursor cursor = context.getContentResolver().query(PratilipiContract.ShelfEntity.CONTENT_URI, null, null, null, null);
+//                                swapCursor(cursor);
 
                                 dialog.dismiss();
                             }
@@ -236,7 +239,7 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
     public void swapCursor( Cursor c ){
         mPratilipiList.clear();
         if( c == null ) {
-            notifyDataSetChanged();
+            ShelfAdapter.this.notifyDataSetChanged();
             return;
         }
 
@@ -270,9 +273,9 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
             pratilipi.setCreationDate(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_CREATION_DATE)));
 
             mPratilipiList.add(pratilipi);
+            ShelfAdapter.this.notifyDataSetChanged();
         }
 
-        notifyDataSetChanged();
         return;
     }
 
