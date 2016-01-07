@@ -88,6 +88,7 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
         holder.bookTitle.setTypeface(typeFace);
         holder.authorName.setTypeface(typeFace);
         final Pratilipi pratilipi = mPratilipiList.get(position);
+        final int currentPosition = position;
         holder.bookTitle.setText(pratilipi.getTitle());
         holder.authorName.setText(pratilipi.getAuthorName());
         holder.bookCover.setImageUrl("http:" + pratilipi.getCoverImageUrl(), mImageLoader);
@@ -127,8 +128,11 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
             int mCount = 0;
 
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemSelected(AdapterView<?> parent, View view, final int position, long id) {
                 mCount = mCount + 1;
+
+
+
                 if(mCount > 1){
                     // On selecting a spinner item
                     String item = parent.getItemAtPosition(position).toString();
@@ -143,7 +147,9 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
                             public void onClick(DialogInterface dialog, int which) {
                                 removeContentFromShelf(context, pratilipi);
 
-                                notifyItemRemoved(position);
+                                mPratilipiList.remove(currentPosition);
+
+                                notifyItemRemoved(currentPosition);
 
                                 //Update UI List
 //                                Cursor cursor = context.getContentResolver().query(PratilipiContract.ShelfEntity.CONTENT_URI, null, null, null, null);
@@ -174,10 +180,15 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 deleteContent(context, pratilipi);
+
+                                mPratilipiList.remove(currentPosition);
+
+                                notifyItemRemoved(currentPosition);
+
                                 //COULDN'T UPDATE SPECIFIC PRATILIPI OBJECT'S DOWNLOAD_STATUS. SO FETCHED WHOLE LIST FROM DATABASE
                                 //TODO : FIND PROPER SOLUTION FOR THIS HACK
-                                Cursor cursor = context.getContentResolver().query(PratilipiContract.ShelfEntity.CONTENT_URI, null, null, null, null);
-                                swapCursor(cursor);
+//                                Cursor cursor = context.getContentResolver().query(PratilipiContract.ShelfEntity.CONTENT_URI, null, null, null, null);
+//                                swapCursor(cursor);
 
                                 dialog.dismiss();
                             }
