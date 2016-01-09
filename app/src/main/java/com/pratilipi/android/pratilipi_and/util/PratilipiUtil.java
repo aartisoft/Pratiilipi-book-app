@@ -1,7 +1,6 @@
 package com.pratilipi.android.pratilipi_and.util;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.ContentValues;
 import android.content.Context;
@@ -68,17 +67,12 @@ public class PratilipiUtil {
 
     private Context mContext;
     private boolean mIsSuccessful;
-    private ProgressDialog mProgressDialog;
 
     public PratilipiUtil(Context context, String processMesssage){
         mContext = context;
-        mProgressDialog = new ProgressDialog(context);
-        mProgressDialog.setCancelable(false);
-        mProgressDialog.setMessage(processMesssage);
     }
 
     public void fetchPratilipiList(HashMap<String, String> requestParams, GetCallback callback){
-        mProgressDialog.show();
         new PratilipiListAsyncTask(callback).execute(requestParams);
     }
 
@@ -113,8 +107,6 @@ public class PratilipiUtil {
 
         @Override
         protected void onPostExecute(String responseString) {
-            mProgressDialog.hide();
-            mProgressDialog.dismiss();
             callback.done(mIsSuccessful, responseString);
             super.onPostExecute(responseString);
         }

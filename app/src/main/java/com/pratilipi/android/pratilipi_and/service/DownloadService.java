@@ -2,6 +2,7 @@ package com.pratilipi.android.pratilipi_and.service;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.util.Log;
 
@@ -64,7 +65,10 @@ public class DownloadService extends IntentService {
                 if( responseJson.has(ContentUtil.PAGE_CONTENT))
                     ContentUtil.insert(this, responseJson.getJSONObject(ContentUtil.PAGE_CONTENT), pratilipiId, String.valueOf(chapterNumber), String.valueOf(pageNumber));
 
-                receiver.send(STATUS_CODE_SUCCESS, null);
+                Bundle bundle = new Bundle();
+                bundle.putString(INTENT_EXTRA_PRATILIPI_ID, pratilipiId);
+                bundle.putString(INTENT_EXTRA_CHAPTER_NUMBER, String.valueOf(chapterNumber));
+                receiver.send(STATUS_CODE_SUCCESS, bundle);
             } catch (JSONException e){
                 e.printStackTrace();
                 receiver.send(STATUS_CODE_FAILURE, null);

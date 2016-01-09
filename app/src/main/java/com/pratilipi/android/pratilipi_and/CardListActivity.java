@@ -120,8 +120,8 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
                 int totalItemCount = mLayoutManager.getItemCount();
                 int lastVisibleItem = mLayoutManager.findLastVisibleItemPosition();
                 if ( !mLoadingFinished && totalItemCount <= ( lastVisibleItem + VISIBLE_THRESHOLD )) {
-                    Log.e(LOG_TAG, "End is reached");
                     if ( mLauncher.equals( LAUNCHER_CATEGORY )) {
+                        mProgressBar.setVisibility(View.VISIBLE);
                         fetchDataFromServer( mCursorString );
                     } else if ( mLauncher.equals( LAUNCHER_SEARCH )) {
                         fetchSearchData( mCursorString );
@@ -176,6 +176,7 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
 
     public void fetchData() {
         if( mLauncher.equals( LAUNCHER_CATEGORY )) {
+            mProgressBar.setVisibility(View.VISIBLE);
             Uri uri = PratilipiContract.PratilipiEntity.getPratilipiListByCategoryUri(mId, mTitle);
             Cursor cursor = this.getContentResolver().query(uri, null, null, null, null);
 
@@ -183,6 +184,7 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
                 fetchDataFromServer(null);
             } else {
                 mCardListViewAdapter.swapCursor(cursor);
+                mProgressBar.setVisibility(View.GONE);
 //                mCardListViewAdapter.notifyDataSetChanged();
 
                 int currentJulianDay = AppUtil.getCurrentJulianDay();
@@ -220,7 +222,7 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
         if(!AppUtil.isOnline(this)){
             return;
         }
-        mPratilipiUtil = new PratilipiUtil(this, "Loading...");
+        mPratilipiUtil = new PratilipiUtil(this, null);
         HashMap<String, String> params = new HashMap<>();
         if(mId != null) {
             params.put(LANGUAGE_ID, String.valueOf(AppUtil.getPreferredLanguage(this)));
@@ -232,7 +234,7 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
             while(filterKeys.hasNext()){
                 String key = (String) filterKeys.next();
                 try {
-                    Log.e(LOG_TAG, "Key / Value : " + key + "/" + filtersJson.getString(key));
+//                    Log.e(LOG_TAG, "Key / Value : " + key + "/" + filtersJson.getString(key));
                     params.put(key, filtersJson.getString(key));
                 } catch (JSONException e){
                     e.printStackTrace();
@@ -249,6 +251,7 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
                     onSuccess(data);
                 } else
                     onFailed(data);
+                mProgressBar.setVisibility(View.GONE);
             }
         });
     }

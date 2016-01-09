@@ -5,6 +5,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Typeface;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -27,11 +31,14 @@ import com.pratilipi.android.pratilipi_and.R;
 import com.pratilipi.android.pratilipi_and.Widget.MySpinner;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
 import com.pratilipi.android.pratilipi_and.datafiles.Pratilipi;
+import com.pratilipi.android.pratilipi_and.service.DownloadService;
 import com.pratilipi.android.pratilipi_and.util.AppUtil;
 import com.pratilipi.android.pratilipi_and.util.ContentUtil;
+import com.pratilipi.android.pratilipi_and.util.PratilipiUtil;
 import com.pratilipi.android.pratilipi_and.util.ShelfUtil;
 import com.pratilipi.android.reader.ReaderActivity;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -46,12 +53,18 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
     private static final String LOG_TAG = ShelfAdapter.class.getSimpleName();
 
 
+    private Context mContext;
     private List<Pratilipi> mPratilipiList;
     private ViewGroup mViewGroup;
     private ImageLoader mImageLoader;
-    private int mDeleteContentPosition = 1;
-    private int mRemoveContentFromShelfPosition = 0;
-    private int mAboutContentPosition = 2;
+    private Integer mChapterCount;
+    private Integer mChapterNumber;
+    private JSONArray mIndexJsonArray;
+
+    private final String REMOVE_FROM_SHELF = "Remove From Shelf";
+    private final String DOWNLOAD_CONTENT = "Download Content";
+    private final String DELETE_CONTENT = "Delete Content";
+    private final String ABOUT = "About";
 
     public ShelfAdapter(){
         mPratilipiList = new ArrayList<>();
@@ -107,14 +120,14 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
         });
 
 
-        List<String> menuItems = new ArrayList<>();
-        menuItems.add("Remove From Shelf");
+        final List<String> menuItems = new ArrayList<>();
+        menuItems.add(REMOVE_FROM_SHELF);
         if(pratilipi.getDownloadStatus() == PratilipiContract.PratilipiEntity.CONTENT_NOT_DOWNLOADED)
-            menuItems.add("Download");
+            menuItems.add(DOWNLOAD_CONTENT);
         else{
-            menuItems.add("Delete Content");
+            menuItems.add(DELETE_CONTENT);
         }
-        menuItems.add("About");
+        menuItems.add(ABOUT);
         // Creating adapter for spinner
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_dropdown_item, menuItems);
 
@@ -128,15 +141,14 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
             int mCount = 0;
 
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, final int position, long id) {
+            public void onItemSelected(AdapterView<?> parent, View view,final int position, long id) {
                 mCount = mCount + 1;
-
-
-
+                String selectedItemTitle = parent.getSelectedItem().toString();
+                Log.e(LOG_TAG, "View CLicked : " + parent.getSelectedItem().toString());
                 if(mCount > 1){
                     // On selecting a spinner item
-                    String item = parent.getItemAtPosition(position).toString();
-                    if(position == mRemoveContentFromShelfPosition) {
+//                    String item = parent.getItemAtPosition(position).toString();
+                    if(selectedItemTitle.equals(REMOVE_FROM_SHELF)) {
                         AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
                         builder.setTitle("Confirm");
@@ -171,7 +183,7 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
                         AlertDialog alert = builder.create();
                         alert.show();
 
-                    } else if(position == mDeleteContentPosition) {
+                    } else if(selectedItemTitle.equals(DELETE_CONTENT)) {
                         AlertDialog.Builder builder = new AlertDialog.Builder(context);
                         builder.setTitle("Confirm");
                         builder.setMessage("Are you sure you want to delete " + pratilipi.getTitle() + " from phone memory?");
@@ -180,15 +192,9 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 deleteContent(context, pratilipi);
-
-                                mPratilipiList.remove(currentPosition);
-
-                                notifyItemRemoved(currentPosition);
-
-                                //COULDN'T UPDATE SPECIFIC PRATILIPI OBJECT'S DOWNLOAD_STATUS. SO FETCHED WHOLE LIST FROM DATABASE
-                                //TODO : FIND PROPER SOLUTION FOR THIS HACK
-//                                Cursor cursor = context.getContentResolver().query(PratilipiContract.ShelfEntity.CONTENT_URI, null, null, null, null);
-//                                swapCursor(cursor);
+                                //Change dropdown item
+                                menuItems.remove(position);
+                                menuItems.add(position, DOWNLOAD_CONTENT);
 
                                 dialog.dismiss();
                             }
@@ -205,7 +211,15 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
 
                         AlertDialog alert = builder.create();
                         alert.show();
-                    } else if( position == mAboutContentPosition ){
+                    } else if(selectedItemTitle.equals(DOWNLOAD_CONTENT)){
+                        //DOWNLOAD CONTENT TO PHONE MEMORY
+                        downloadContent(context,pratilipi);
+
+                        //Change dropdown item
+                        menuItems.remove(position);
+                        menuItems.add(position, DELETE_CONTENT);
+
+                    } else if(selectedItemTitle.equals(ABOUT)){
                         //Start Detail Activity
                         Intent i = new Intent(context, DetailActivity.class);
                         i.putExtra(ReaderActivity.PRATILIPI, pratilipi);
@@ -323,5 +337,110 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
             return;
         }
         ContentUtil.delete(context, pratilipi);
+    }
+
+    /**
+     * FOLLOWING FUNCTIONS ARE USED TO DOWNLOAD CONTENT. AND ARE DUPLICATE OF FUNCTIONS PRESENT IN
+     * DetailActivity.
+     * TODO : Move these functions to ContentUtil to remove duplicate code.
+     */
+
+    private boolean downloadContent(Context context, Pratilipi pratilipi){
+        mContext = context;
+        String pratilipiId = pratilipi.getPratilipiId();
+        Uri uri = PratilipiContract.PratilipiEntity.getPratilipiByIdUri(pratilipiId);
+//        Log.e(LOG_TAG, "Get Pratilipi By Id URI : " + uri.toString());
+        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+        if(cursor.moveToFirst()){
+            String contentType = cursor.getString(cursor.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_CONTENT_TYPE));
+            if(contentType.equalsIgnoreCase(DownloadService.TEXT_CONTENT_TYPE)) {
+                String indexString = cursor.getString(cursor.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_INDEX));
+                if (indexString == null || indexString.isEmpty()) {
+                    //WHEN INDEX IS NULL WHOLE CONTENT SHOULD BE UNDER CHAPTER 1
+                    mChapterCount = 1;
+                    mChapterNumber = 1;
+                } else{
+                    //WHEN INDEX IS NOT NULL
+                    try {
+                        mIndexJsonArray = new JSONArray(indexString);
+                        mChapterCount = mIndexJsonArray.length();
+                        mChapterNumber = 1;
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                startDownloadService(context, DownloadService.TEXT_CONTENT_TYPE, pratilipi);
+            } else{
+                //CONTENT_TYPE = IMAGE
+//                mIndexJsonArray = null;
+//                mChapterCount = 0;
+//                startDownloadService( DownloadService.TEXT_CONTENT_TYPE, pratilipiId);
+            }
+
+        }
+
+        return false;
+    }
+
+    private class DownloadReceiver extends ResultReceiver {
+        public DownloadReceiver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+            super.onReceiveResult(resultCode, resultData);
+            if (resultCode == DownloadService.STATUS_CODE_SUCCESS) {
+                //Make request for next page
+                String pratilipiId = resultData.getString(DownloadService.INTENT_EXTRA_PRATILIPI_ID);
+                Pratilipi pratilipi = PratilipiUtil.getPratilipiById(mContext, pratilipiId);
+                if( mChapterCount > mChapterNumber ){
+                    //Show download status
+                    String message = mChapterNumber + " out of " + mChapterCount + " chapters downloaded";
+                    Toast.makeText(mContext, message, Toast.LENGTH_SHORT)
+                            .show();
+                    //Start downloading next chapter;
+                    mChapterNumber++;
+                    startDownloadService(mContext, DownloadService.TEXT_CONTENT_TYPE, pratilipi);
+
+                } else{
+                    //UPDATE PRATILIPI ENTITY is_downloaded = true
+                    PratilipiUtil.updatePratilipiDownloadStatus(
+                            mContext,
+                            pratilipiId,
+                            PratilipiContract.PratilipiEntity.CONTENT_DOWNLOADED
+                    );
+                    Toast.makeText(mContext, "Download Completed", Toast.LENGTH_LONG)
+                            .show();
+                }
+            } else{
+                Toast.makeText(mContext, "Error Occurred while downloading file.", Toast.LENGTH_LONG);
+            }
+        }
+    }
+
+    private void startDownloadService(Context context, String contentType, Pratilipi pratilipi){
+
+        //CHECK WHETHER CONTENT IS PRESENT IN DB OR NOT.
+        ContentUtil contentUtil = new ContentUtil();
+        Cursor cursor = contentUtil.getContentfromDb(context, pratilipi, mChapterNumber, null);
+        if(cursor != null && cursor.moveToNext()) {
+            //if last chapter then do nothing
+            if(mChapterCount == mChapterNumber)
+                return;
+            //Else start downloading next chapter.
+            mChapterNumber++;
+            startDownloadService(context, contentType, pratilipi);
+        } else {
+            Intent intent = new Intent(context, DownloadService.class);
+            intent.putExtra(DownloadService.INTENT_EXTRA_CONTENT_TYPE, contentType);
+            intent.putExtra(DownloadService.INTENT_EXTRA_CHAPTER_NUMBER, mChapterNumber);
+            intent.putExtra(DownloadService.INTENT_EXTRA_PRATILIPI_ID, pratilipi.getPratilipiId());
+            //All chapter contains only one page.
+            intent.putExtra(DownloadService.INTENT_EXTRA_PAGE_NUMBER, 1);
+            intent.putExtra(DownloadService.INTENT_EXTRA_RECEIVER, new DownloadReceiver(new Handler()));
+            context.startService(intent);
+        }
     }
 }
