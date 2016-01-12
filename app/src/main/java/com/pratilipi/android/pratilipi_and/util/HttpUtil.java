@@ -4,6 +4,8 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
+import org.apache.http.conn.ConnectTimeoutException;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -11,6 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +25,7 @@ import java.util.Random;
 public class HttpUtil {
 
     public static final String IS_SUCCESSFUL = "isSuccessful";
+    public static final String RESPSONE_CODE = "resposneCode";
     public static final String RESPONSE_STRING = "responseString";
 
     private static final String ACCESS_TOKEN = "accessToken";
@@ -90,13 +94,19 @@ public class HttpUtil {
             if( buffer.length() == 0 )
                 sResponseString = null;
 
-            Log.e(LOG_TAG, "Api response : " + buffer.toString());
+            Log.i(LOG_TAG, "Api response : " + buffer.toString());
             sResponseString = buffer.toString();
             HashMap<String, String> returnMap = new HashMap<>(2);
             returnMap.put(IS_SUCCESSFUL, String.valueOf(isSuccessful));
             returnMap.put(RESPONSE_STRING, sResponseString);
             return returnMap;
 
+        } catch (SocketTimeoutException e){
+            Log.e(LOG_TAG, "Error ", e);
+            return createConnectionTimeoutResponse();
+        } catch (ConnectTimeoutException e) {
+            Log.e(LOG_TAG, "Error ", e);
+            return createConnectionTimeoutResponse();
         } catch (IOException e){
             Log.e(LOG_TAG, "Error ", e);
         }
@@ -264,5 +274,13 @@ public class HttpUtil {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private static HashMap<String, String> createConnectionTimeoutResponse(){
+        HashMap<String, String> returnMap = new HashMap<>();
+        returnMap.put(IS_SUCCESSFUL, String.valueOf(false));
+        returnMap.put(RESPSONE_CODE, String.valueOf(408));
+        returnMap.put(RESPONSE_STRING, "Connection Timeout. Please Try Again");
+        return returnMap;
     }
 }

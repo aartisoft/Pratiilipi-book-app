@@ -40,8 +40,8 @@ public class AppUtil {
         NetworkInfo netInfoMobile = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
         NetworkInfo netInfoWifi = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         if (netInfoMobile != null && netInfoWifi != null) {
-            Log.e(LOG_TAG, "Is Connected Mobile : " + netInfoMobile.isConnectedOrConnecting());
-            Log.e(LOG_TAG, "Is Connected Wifi: " + netInfoWifi.isConnectedOrConnecting());
+//            Log.e(LOG_TAG, "Is Connected Mobile : " + netInfoMobile.isConnectedOrConnecting());
+//            Log.e(LOG_TAG, "Is Connected Wifi: " + netInfoWifi.isConnectedOrConnecting());
         }
 
         return (netInfoMobile != null && netInfoMobile.isConnectedOrConnecting()) || (netInfoWifi != null && netInfoWifi.isConnectedOrConnecting());
@@ -120,7 +120,6 @@ public class AppUtil {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(READER_FONT_SIZE, String.valueOf(fontSize));
         editor.commit();
-        Log.e(LOG_TAG, "Update reader font size");
     }
 
     public static float getReaderFontSize(Context context) {
