@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.TouchDelegate;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -87,7 +89,7 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
     }
 
     @Override
-    public void onBindViewHolder(DataViewHolder holder, int position) {
+    public void onBindViewHolder(final DataViewHolder holder, int position) {
         final Context context = mViewGroup.getContext();
         String lan = context.getSharedPreferences("PREFERENCE", Context.MODE_PRIVATE).getString("selectedLanguage", "");
         Typeface typeFace = null;
@@ -131,6 +133,7 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
         // Creating adapter for spinner
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_dropdown_item, menuItems);
 
+        final View parent = (View) holder.dropdown.getParent();
         // Drop down layout style - list view with radio button
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
@@ -232,6 +235,20 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
         });
+
+        parent.post(new Runnable() {
+            @Override
+            public void run() {
+                final Rect hitRect = new Rect();
+                parent.getHitRect(hitRect);
+                hitRect.right = hitRect.right - hitRect.left;
+                hitRect.bottom = hitRect.bottom - hitRect.top;
+                hitRect.top = 0;
+                hitRect.left = 0;
+                parent.setTouchDelegate(new TouchDelegate(hitRect, holder.dropdown));
+            }
+        });
+
     }
 
     public class DataViewHolder extends RecyclerView.ViewHolder{
@@ -260,7 +277,6 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
             dropdown = (MySpinner) itemView.findViewById(R.id.shelf_dropdown_menu);
         }
     }
-
     public void swapCursor( Cursor c ){
         mPratilipiList.clear();
         if( c == null ) {
