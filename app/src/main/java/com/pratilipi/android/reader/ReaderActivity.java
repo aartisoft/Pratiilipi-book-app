@@ -538,6 +538,8 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
 //        Log.e(LOG_TAG, "getContentFromDb() called");
         ContentUtil contentUtil = new ContentUtil();
         Cursor cursor = contentUtil.getContentfromDb(this, mPratilipi, chapterNo, pageNo);
+        if(!cursor.moveToFirst())
+            return null;
         List<Content> contentList = contentUtil.createContentList(cursor);
         //ASSUMING contentList SIZE = 1
         Content tempContent = contentList.get(0);

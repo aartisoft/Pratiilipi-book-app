@@ -11,6 +11,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+
 /**
  * Created by MOHIT KHAITAN on 18-12-2015.
  */
@@ -52,16 +55,21 @@ public class SearchActivity extends ActionBarActivity {
         SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
             public boolean onQueryTextChange(String newText) {
                 // this is your adapter that will be filtered
-                Log.e(LOG_TAG, "Search query : " + newText);
                 return true;
             }
 
             public boolean onQueryTextSubmit(String query) {
                 //Here u can get the value "query" which is entered in the search box.
-                Log.e(LOG_TAG, "Search query : " + query);
+                String urlEncodedQuery = query.trim();
+                try {
+                    urlEncodedQuery = URLEncoder.encode(query, "UTF-8");
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+                Log.i(LOG_TAG, "URL Encoded query : " + urlEncodedQuery);
                 Intent intent = new Intent(getApplicationContext(), CardListActivity.class);
                 intent.putExtra(CardListActivity.INTENT_EXTRA_LAUNCHER, CardListActivity.LAUNCHER_SEARCH );
-                intent.putExtra( CardListActivity.INTENT_EXTRA_SEARCH_QUERY, query );
+                intent.putExtra( CardListActivity.INTENT_EXTRA_SEARCH_QUERY, urlEncodedQuery );
                 intent.putExtra( CardListActivity.INTENT_EXTRA_TITLE, query );
                 startActivity(intent);
                 return true;
@@ -75,7 +83,7 @@ public class SearchActivity extends ActionBarActivity {
     @Override
     public boolean onSearchRequested() {
         String searchQuery = (String) mSearchView.getQuery();
-        Log.v(LOG_TAG, "Search Query : " + searchQuery);
+        Log.i(LOG_TAG, "Search Query : " + searchQuery);
         return true;
     }
 
