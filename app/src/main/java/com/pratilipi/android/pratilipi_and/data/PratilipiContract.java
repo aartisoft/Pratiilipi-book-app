@@ -28,6 +28,7 @@ public class PratilipiContract {
     public static final String PATH_PRATILIPI = "pratilipi";
     public static final String PATH_SHELF = "shelf";
     public static final String PATH_CONTENT = "content";
+    public static final String PATH_CURSOR = "cursor";
 
     // To make it easy to query for the exact date, we normalize all dates that go into
     // the database to the start of the the Julian day at UTC.
@@ -175,6 +176,29 @@ public class PratilipiContract {
 
     }
 
+    /**
+     * CursorEntity table is used to store database cursors returned by the server which will be
+     * used to fetch content from server on scroll event. Without this table, first scroll event
+     * always start fetching data from start of the list resulting in duplicate addition in
+     * CardListActivity.
+     */
+    public static final class CursorEntity implements BaseColumns {
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_CURSOR).build();
+
+        public static final String TABLE_NAME = "cursor";
+
+        //Foreign key from category table or author table.
+        public static final String COLUMN_LIST_NAME = "list_id";
+        public static final String COLUMN_CURSOR = "cursor";
+        public static final String COLUMN_CREATION_DATE = "creation_date";
+
+        public static Uri getCursorUri(String string) {
+            return CONTENT_URI.buildUpon().appendPath(string)
+                    .build();
+        }
+    }
+
     public static final class HomeScreenBridgeEntity implements BaseColumns {
 
         public static final Uri CONTENT_URI =
@@ -287,6 +311,7 @@ public class PratilipiContract {
         public static final String COLUMN_PRATILIPI_ID = "pratilipi_id";
         public static final String COLUMN_CREATION_DATE = "creation_date";
         public static final String COLUMN_LAST_ACCESSED_DATE = "last_accessed_date";
+//        public static final String COLUMN_IS_CONTENT_DOWNLOADED = "is_content_downloaded";
 
         public static Uri getShelfEntityUri( String id ){
             return CONTENT_URI.buildUpon().appendPath( id ).build();

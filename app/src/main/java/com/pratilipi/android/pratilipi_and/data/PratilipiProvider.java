@@ -31,6 +31,7 @@ public class PratilipiProvider extends ContentProvider {
     static final int CATEGORY_PRATILIPI = 500;
     static final int SHELF = 600;
     static final int CONTENT = 700;
+    static final int CURSOR = 800;
 
     static UriMatcher buildUriMatcher(){
         final UriMatcher uriMatcher = new UriMatcher( UriMatcher.NO_MATCH );
@@ -46,6 +47,7 @@ public class PratilipiProvider extends ContentProvider {
         uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_CATEGORY_PRATILIPI, CATEGORY_PRATILIPI);
         uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_SHELF, SHELF);
         uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_CONTENT, CONTENT);
+        uriMatcher.addURI( pratilipiAuthority, PratilipiContract.PATH_CURSOR, CURSOR);
 
         return uriMatcher;
     }
@@ -83,6 +85,10 @@ public class PratilipiProvider extends ContentProvider {
                 break;
             }
             case CONTENT: {
+                rowsDeleted = db.delete(PratilipiContract.ContentEntity.TABLE_NAME, selection, selectionArgs);
+                break;
+            }
+            case CURSOR: {
                 rowsDeleted = db.delete(PratilipiContract.ContentEntity.TABLE_NAME, selection, selectionArgs);
                 break;
             }
@@ -159,6 +165,20 @@ public class PratilipiProvider extends ContentProvider {
             }
             case CONTENT: {
                 retCursor = getPratilipiContent( uri );
+                break;
+            }
+            case CURSOR: {
+                SQLiteQueryBuilder pratilipiQuery = new SQLiteQueryBuilder();
+                pratilipiQuery.setTables(PratilipiContract.CursorEntity.TABLE_NAME);
+                retCursor = pratilipiQuery.query(
+                        mOpenHelper.getReadableDatabase(),
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        null
+                );
                 break;
             }
             default:
@@ -238,6 +258,14 @@ public class PratilipiProvider extends ContentProvider {
                     returnUri = PratilipiContract.PratilipiEntity.getPratilipiEntityUri(String.valueOf(id));
                 } else
                     Log.e(LOG_TAG, "Content Insert Failed");
+                break;
+            }
+            case CURSOR: {
+                long id = db.insert(PratilipiContract.CursorEntity.TABLE_NAME, null, values);
+                if( id > 0 ){
+                    returnUri = PratilipiContract.CursorEntity.getCursorUri(String.valueOf(id));
+                } else
+                    Log.e(LOG_TAG, "Cursor Insert Failed");
                 break;
             }
             default:
@@ -357,6 +385,10 @@ public class PratilipiProvider extends ContentProvider {
                 rowsUpdated = db.update( PratilipiContract.ContentEntity.TABLE_NAME, values, selection, selectionArgs );
                 break;
             }
+            case CURSOR:{
+                rowsUpdated = db.update( PratilipiContract.CursorEntity.TABLE_NAME, values, selection, selectionArgs );
+                break;
+            }
             default: throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
         return rowsUpdated;
@@ -463,7 +495,9 @@ public class PratilipiProvider extends ContentProvider {
                 + subQuery
 //                + " LIMIT "
 //                + lowerLimit + ", " + upperLimit
-                + " )";
+                + " )"
+                //To fetch data from database in order they are inserted.
+                + "ORDER BY " + PratilipiContract.PratilipiEntity._ID;
 
         Log.e(LOG_TAG, "Raw Query : " + rawQuery);
 

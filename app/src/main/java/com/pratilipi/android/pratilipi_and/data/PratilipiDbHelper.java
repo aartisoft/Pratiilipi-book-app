@@ -25,7 +25,6 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
 
                 PratilipiContract.CategoriesEntity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
 
-                // the ID of the location entry associated with this weather data
                 PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_ID + " INTEGER, " +
                 PratilipiContract.CategoriesEntity.COLUMN_CATEGORY_NAME + " TEXT, " +
                 PratilipiContract.CategoriesEntity.COLUMN_LANGUAGE + " TEXT NOT NULL, " +
@@ -45,7 +44,6 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
 
                 PratilipiContract.CategoriesEntity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
 
-                // the ID of the location entry associated with this weather data
                 PratilipiContract.CategoriesPratilipiEntity.COLUMN_CATEGORY_ID + " TEXT, " +
                 PratilipiContract.CategoriesPratilipiEntity.COLUMN_CATEGORY_NAME + " TEXT, " +
                 PratilipiContract.CategoriesPratilipiEntity.COLUMN_PRATILIPI_ID + " TEXT NOT NULL, " +
@@ -67,7 +65,6 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
 
                 PratilipiContract.HomeScreenBridgeEntity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
 
-                // the ID of the location entry associated with this weather data
                 PratilipiContract.HomeScreenBridgeEntity.COLUMN_CATEGORY_ID + " TEXT NOT NULL, " +
                 PratilipiContract.HomeScreenBridgeEntity.COLUMN_PRATILIPI_ID + " TEXT NOT NULL, " +
                 PratilipiContract.HomeScreenBridgeEntity.COLUMN_CREATION_DATE + " INTEGER NOT NULL, " +
@@ -85,7 +82,6 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
 
                 PratilipiContract.UserEntity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
 
-                // the ID of the location entry associated with this weather data
                 PratilipiContract.UserEntity.COLUMN_DISPLAY_NAME + " TEXT NOT NULL, " +
                 PratilipiContract.UserEntity.COLUMN_EMAIL + " TEXT NOT NULL UNIQUE, " +
                 PratilipiContract.UserEntity.COLUMN_CONTENTS_IN_SHELF + " INTEGER DEFAULT 0, " +
@@ -97,7 +93,6 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
 
                 PratilipiContract.CategoriesEntity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
 
-                // the ID of the location entry associated with this weather data
                 PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID + " TEXT NOT NULL, " +
                 PratilipiContract.PratilipiEntity.COLUMN_TITLE + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_TITLE_EN + " TEXT, " +
@@ -162,13 +157,25 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
                 PratilipiContract.ContentEntity.COLUMN_PAGE_NUMBER + ") ON CONFLICT REPLACE" +
                 ")";
 
+        final String SQL_CREATE_CURSOR_TABLE = "CREATE TABLE " + PratilipiContract.CursorEntity.TABLE_NAME + " (" +
+
+                PratilipiContract.UserEntity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+
+                // the ID of the location entry associated with this weather data
+                PratilipiContract.CursorEntity.COLUMN_LIST_NAME + " TEXT NOT NULL, " +
+                PratilipiContract.CursorEntity.COLUMN_CURSOR + " TEXT, " +
+                PratilipiContract.CursorEntity.COLUMN_CREATION_DATE + " INTEGER, " +
+                " UNIQUE (" + PratilipiContract.CursorEntity.COLUMN_LIST_NAME + ") ON CONFLICT REPLACE" +
+                ")";
+
         sqLiteDatabase.execSQL(SQL_CREATE_CATEGORY_PRATILIPI_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_HOME_SCREEN_BRIDGE_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_USER_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_CATEGORY_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_PRATILIPI_TABLE);
-        sqLiteDatabase.execSQL( SQL_CREATE_SHELF_TABLE );
+        sqLiteDatabase.execSQL(SQL_CREATE_SHELF_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_CONTENT_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_CURSOR_TABLE);
     }
 
     @Override
