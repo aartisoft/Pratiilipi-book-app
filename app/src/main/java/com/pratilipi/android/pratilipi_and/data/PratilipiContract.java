@@ -258,14 +258,6 @@ public class PratilipiContract {
         public static final String COLUMN_LISTING_DATE = "listing_date";
         public static final String COLUMN_LAST_UPDATED_DATE = "last_updated_date";
         public static final String COLUMN_CREATION_DATE = "creation_date";
-        /**
-         * Value of following column can be 0, 1 or 2 depending on download status
-         */
-        public static final String COLUMN_DOWNLOAD_STATUS = "status";
-
-        public static final int CONTENT_NOT_DOWNLOADED = 0;
-        public static final int CONTENT_DOWNLOADED = 1;
-        public static final int CONTENT_DOWNLOADING = 2;
 
         public static final String COLUMN_LAST_ACCESSED_ON = "last_accessed_on";
 
@@ -311,7 +303,14 @@ public class PratilipiContract {
         public static final String COLUMN_PRATILIPI_ID = "pratilipi_id";
         public static final String COLUMN_CREATION_DATE = "creation_date";
         public static final String COLUMN_LAST_ACCESSED_DATE = "last_accessed_date";
-//        public static final String COLUMN_IS_CONTENT_DOWNLOADED = "is_content_downloaded";
+        /**
+         * Value of following column can be 0, 1 or 2 depending on download status
+         */
+        public static final String COLUMN_DOWNLOAD_STATUS = "status";
+
+        public static final int CONTENT_NOT_DOWNLOADED = 0;
+        public static final int CONTENT_DOWNLOADED = 1;
+        public static final int CONTENT_DOWNLOADING = 2;
 
         public static Uri getShelfEntityUri( String id ){
             return CONTENT_URI.buildUpon().appendPath( id ).build();

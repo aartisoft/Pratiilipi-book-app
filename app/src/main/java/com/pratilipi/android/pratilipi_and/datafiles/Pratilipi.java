@@ -29,7 +29,7 @@ public class Pratilipi implements Serializable {
     private String coverImageUrl;
     private String genreList;
     private int creationDate;
-    private int downloadStatus;
+//    private int downloadStatus;
 
 
     public String getPratilipiId() {
@@ -120,9 +120,9 @@ public class Pratilipi implements Serializable {
         return creationDate;
     }
 
-    public int getDownloadStatus(){
-        return downloadStatus;
-    }
+//    public int getDownloadStatus(){
+//        return downloadStatus;
+//    }
 
 
     //SETTERS
@@ -214,7 +214,7 @@ public class Pratilipi implements Serializable {
         this.creationDate = creationDate;
     }
 
-    public void setDownloadStatus(int downloadStatus){
-        this.downloadStatus = downloadStatus;
-    }
+//    public void setDownloadStatus(int downloadStatus){
+//        this.downloadStatus = downloadStatus;
+//    }
 }

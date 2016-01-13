@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class PratilipiDbHelper extends SQLiteOpenHelper {
 
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     static final String DATABASE_NAME = "pratilipi.db";
 
@@ -119,7 +119,7 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
                 PratilipiContract.PratilipiEntity.COLUMN_LISTING_DATE + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_LAST_UPDATED_DATE + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_CREATION_DATE + " INTEGER NOT NULL, " +
-                PratilipiContract.PratilipiEntity.COLUMN_DOWNLOAD_STATUS + " INTEGER NOT NULL, " +
+
                 PratilipiContract.PratilipiEntity.COLUMN_LAST_ACCESSED_ON + " INTEGER NOT NULL, " +
 
                 //To make sure all entries are unique.
@@ -134,6 +134,7 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
                 PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + " TEXT NOT NULL, " +
                 PratilipiContract.ShelfEntity.COLUMN_CREATION_DATE + " INTEGER NOT NULL, " +
                 PratilipiContract.ShelfEntity.COLUMN_LAST_ACCESSED_DATE + " INTEGER NOT NULL, " +
+                PratilipiContract.ShelfEntity.COLUMN_DOWNLOAD_STATUS + " INTEGER, " +
 
                 // Set up the pratilipi_id column as a foreign key to pratilipi table.
                 " FOREIGN KEY (" + PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + ") REFERENCES " +
@@ -193,6 +194,7 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.PratilipiEntity.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.ShelfEntity.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.UserEntity.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.CursorEntity.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
 }

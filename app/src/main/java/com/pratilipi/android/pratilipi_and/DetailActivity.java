@@ -25,7 +25,6 @@ import com.pratilipi.android.pratilipi_and.datafiles.Pratilipi;
 import com.pratilipi.android.pratilipi_and.datafiles.User;
 import com.pratilipi.android.pratilipi_and.service.DownloadService;
 import com.pratilipi.android.pratilipi_and.util.ContentUtil;
-import com.pratilipi.android.pratilipi_and.util.PratilipiUtil;
 import com.pratilipi.android.pratilipi_and.util.ShelfUtil;
 import com.pratilipi.android.pratilipi_and.util.UserUtil;
 import com.pratilipi.android.reader.ReaderActivity;
@@ -118,10 +117,8 @@ public class DetailActivity extends AppCompatActivity {
                             if (isSuccessful) {
                                 User user = UserUtil.getLoggedInUser(mContext);
                                 UserUtil.incrementContentInShelfCount(mContext, user.getEmail());
-                                if (mPratilipi.getDownloadStatus() != 1) {
-                                    downloadContent(mPratilipiId);
-                                    addToShelfButton.setVisibility(View.INVISIBLE);
-                                }
+                                downloadContent(mPratilipiId);
+                                addToShelfButton.setVisibility(View.INVISIBLE);
                             }
                             Toast.makeText(getBaseContext(), "Successfully Added to Your Shelf. Downloading Content For Offline Uses", Toast.LENGTH_LONG).show();
                         }
@@ -160,8 +157,13 @@ public class DetailActivity extends AppCompatActivity {
 
     private boolean downloadContent(String pratilipiId){
         mPratilipiId = pratilipiId;
+        //Set content_download_status to CONTENT_DOWNLOADING
+        new ShelfUtil().updateContentDownloadStatus(
+                mContext,
+                mPratilipiId,
+                PratilipiContract.ShelfEntity.CONTENT_DOWNLOADING
+        );
         Uri uri = PratilipiContract.PratilipiEntity.getPratilipiByIdUri(pratilipiId);
-//        Log.e(LOG_TAG, "Get Pratilipi By Id URI : " + uri.toString());
         Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
          if(cursor.moveToFirst()){
             String contentType = cursor.getString(cursor.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_CONTENT_TYPE));
@@ -169,7 +171,6 @@ public class DetailActivity extends AppCompatActivity {
                 String indexString = cursor.getString(cursor.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_INDEX));
                 mPageCount = cursor.getInt(cursor.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_PAGE_COUNT));
                 mPageNumber = 1;
-//                Log.e(LOG_TAG, "Is index present : " + (indexString));
                 if (indexString == null || indexString.isEmpty()) {
                     //WHEN INDEX IS NULL WHOLE CONTENT SHOULD BE UNDER CHAPTER 1
                     mChapterCount = 1;
@@ -188,9 +189,9 @@ public class DetailActivity extends AppCompatActivity {
                 startDownloadService( DownloadService.TEXT_CONTENT_TYPE, pratilipiId);
             } else{
                 //CONTENT_TYPE = IMAGE
-                mIndexJsonArray = null;
-                mChapterCount = 0;
-                startDownloadService( DownloadService.TEXT_CONTENT_TYPE, pratilipiId);
+//                mIndexJsonArray = null;
+//                mChapterCount = 0;
+//                startDownloadService( DownloadService.TEXT_CONTENT_TYPE, pratilipiId);
             }
 
         }
@@ -207,6 +208,13 @@ public class DetailActivity extends AppCompatActivity {
         protected void onReceiveResult(int resultCode, Bundle resultData) {
             super.onReceiveResult(resultCode, resultData);
             if (resultCode == DownloadService.STATUS_CODE_SUCCESS) {
+                //check content_download_status. If User cancelled download
+                int downloadStatus = new ShelfUtil().getContentDownloadStatus(mContext, mPratilipiId);
+                if(downloadStatus == PratilipiContract.ShelfEntity.CONTENT_NOT_DOWNLOADED) {
+                    Log.i(LOG_TAG, "Download cancelled by user");
+                    return;
+                }
+
                 //Make request for next page
                 if( mChapterCount > mChapterNumber ){
                     //Show download status
@@ -219,10 +227,10 @@ public class DetailActivity extends AppCompatActivity {
 
                 } else{
                     //UPDATE PRATILIPI ENTITY is_downloaded = true
-                    PratilipiUtil.updatePratilipiDownloadStatus(
+                    new ShelfUtil().updateContentDownloadStatus(
                             mContext,
                             mPratilipiId,
-                            PratilipiContract.PratilipiEntity.CONTENT_DOWNLOADED
+                            PratilipiContract.ShelfEntity.CONTENT_DOWNLOADED
                     );
                     Toast.makeText(mContext, "Download Completed", Toast.LENGTH_LONG)
                             .show();
