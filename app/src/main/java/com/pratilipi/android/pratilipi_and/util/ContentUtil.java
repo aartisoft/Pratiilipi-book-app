@@ -188,13 +188,19 @@ public class ContentUtil {
             Log.e(LOG_TAG, "Content Deletion failed");
             Toast.makeText(context, "Content Deletion failed. Try again later", Toast.LENGTH_LONG).show();
         } else {
+            ShelfUtil shelfUtil = new ShelfUtil();
+            //GET CURRENT CONTENT_DOWNLOADED_STATUS
+            int downloadStatus = shelfUtil.getContentDownloadStatus(context, pratilipi.getPratilipiId());
+
             //UPDATE DOWNLOAD_STATUS
-            PratilipiUtil.updatePratilipiDownloadStatus(
+            shelfUtil.updateContentDownloadStatus(
                     context,
                     pratilipi.getPratilipiId(),
-                    PratilipiContract.PratilipiEntity.CONTENT_NOT_DOWNLOADED);
-//            pratilipi.setDownloadStatus(PratilipiContract.PratilipiEntity.CONTENT_NOT_DOWNLOADED);
-            Toast.makeText(context, "Content Deleted", Toast.LENGTH_LONG).show();
+                    PratilipiContract.ShelfEntity.CONTENT_NOT_DOWNLOADED);
+            if(downloadStatus == PratilipiContract.ShelfEntity.CONTENT_DOWNLOADING)
+                Toast.makeText(context, "Download Cancelled", Toast.LENGTH_LONG).show();
+            else
+                Toast.makeText(context, "Content Deleted", Toast.LENGTH_LONG).show();
         }
     }
 

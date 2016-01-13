@@ -182,7 +182,6 @@ public class PratilipiUtil {
                 if(pratilipiObject.has(PRATILIPI_LISTING_DATE))
                     values.put(PratilipiContract.PratilipiEntity.COLUMN_LISTING_DATE, pratilipiObject.getString(PRATILIPI_LISTING_DATE));
                 values.put(PratilipiContract.PratilipiEntity.COLUMN_CREATION_DATE, AppUtil.getCurrentJulianDay());
-                values.put(PratilipiContract.PratilipiEntity.COLUMN_DOWNLOAD_STATUS, PratilipiContract.PratilipiEntity.CONTENT_NOT_DOWNLOADED);
                 values.put(PratilipiContract.PratilipiEntity.COLUMN_LAST_ACCESSED_ON, AppUtil.getCurrentJulianDay());
 
                 pratilipiVector.add(values);
@@ -300,7 +299,6 @@ public class PratilipiUtil {
             values.put(PratilipiContract.PratilipiEntity.COLUMN_GENRE_NAME_LIST, pratilipiObject.getString(PRATILIPI_GENRE_LIST));
             values.put(PratilipiContract.PratilipiEntity.COLUMN_LISTING_DATE, pratilipiObject.getString(PRATILIPI_LISTING_DATE));
             values.put(PratilipiContract.PratilipiEntity.COLUMN_CREATION_DATE, AppUtil.getCurrentJulianDay());
-            values.put(PratilipiContract.PratilipiEntity.COLUMN_DOWNLOAD_STATUS, PratilipiContract.PratilipiEntity.CONTENT_NOT_DOWNLOADED);
             values.put(PratilipiContract.PratilipiEntity.COLUMN_LAST_ACCESSED_ON, AppUtil.getCurrentJulianDay());
 
             Uri uri = context.getContentResolver().insert(PratilipiContract.PratilipiEntity.CONTENT_URI, values);
@@ -400,29 +398,11 @@ public class PratilipiUtil {
             pratilipi.setCurrentPage(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_CURRENT_PAGE)));
             pratilipi.setCoverImageUrl(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_COVER_IMAGE_URL)));
             pratilipi.setGenreList(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_GENRE_NAME_LIST)));
-            pratilipi.setDownloadStatus(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_DOWNLOAD_STATUS)));
             pratilipi.setCreationDate(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_CREATION_DATE)));
 
             pratilipiList.add(pratilipi);
         }
         return pratilipiList;
-    }
-
-    public static boolean updatePratilipiDownloadStatus(Context context, String pratilipiId, int downloadStatus){
-        ContentValues values = new ContentValues();
-        values.put(PratilipiContract.PratilipiEntity.COLUMN_DOWNLOAD_STATUS, downloadStatus);
-        String selection = PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID + "=?";
-        String[] selectionArgs = new String[]{pratilipiId};
-        int updatedRows = context.getContentResolver().update(
-                PratilipiContract.PratilipiEntity.CONTENT_URI,
-                values,
-                selection,
-                selectionArgs
-        );
-        if(updatedRows ==1){
-            return true;
-        }
-        return false;
     }
 
     public static Pratilipi getPratilipiById(Context context, String pratilipiId){

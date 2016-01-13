@@ -235,4 +235,44 @@ public class ShelfUtil {
 
         return false;
     }
+
+    public int getContentDownloadStatus(Context context, String pratilipiId){
+        Uri uri = PratilipiContract.ShelfEntity.CONTENT_URI;
+        String[] projection = new String[]{PratilipiContract.ShelfEntity.COLUMN_DOWNLOAD_STATUS};
+        String selection = PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + "=?";
+        String[] selectionArgs = new String[]{pratilipiId};
+
+        Cursor cursor = context.getContentResolver().query(
+                uri,
+                projection,
+                selection,
+                selectionArgs,
+                null
+        );
+        if(cursor == null || !cursor.moveToFirst()){
+            Log.e(LOG_TAG, "Checking content download status of content not added to shelf");
+        } else{
+            String downloadStatus = cursor.getString(0);
+            return downloadStatus == null ? 0 : Integer.valueOf(downloadStatus);
+        }
+        return 0;
+    }
+
+    public int updateContentDownloadStatus(Context context, String pratilipi, int downloadStatus){
+        User user = UserUtil.getLoggedInUser(context);
+        if(user == null){
+            Log.e(LOG_TAG, "Unable to update content status. User is null");
+            return 0;
+        }
+
+        ContentValues values = new ContentValues();
+        values.put(PratilipiContract.ShelfEntity.COLUMN_DOWNLOAD_STATUS, downloadStatus);
+
+        Uri uri = PratilipiContract.ShelfEntity.CONTENT_URI;
+        String selection = PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + "=?"
+                + " AND " + PratilipiContract.ShelfEntity.COLUMN_USER_EMAIL + "=?";
+        String[] selectionArgs = new String[]{pratilipi, user.getEmail()};
+
+        return context.getContentResolver().update(uri, values, selection,selectionArgs);
+    }
 }
