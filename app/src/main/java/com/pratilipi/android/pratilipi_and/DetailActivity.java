@@ -98,10 +98,14 @@ public class DetailActivity extends AppCompatActivity {
         readButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent( DetailActivity.this, ReaderActivity.class );
-                i.putExtra(ReaderActivity.PRATILIPI, mPratilipi);
-                i.putExtra(ReaderActivity.PARENT_ACTIVITY_CLASS_NAME, mContext.getClass().getSimpleName());
-                startActivity(i);
+                if(mPratilipi.getContentType().toLowerCase().equals(DownloadService.IMAGE_COTENT_TYPE)){
+                    Toast.makeText(DetailActivity.this, "Development is not complete for this type of content", Toast.LENGTH_SHORT).show();
+                } else {
+                    Intent i = new Intent(DetailActivity.this, ReaderActivity.class);
+                    i.putExtra(ReaderActivity.PRATILIPI, mPratilipi);
+                    i.putExtra(ReaderActivity.PARENT_ACTIVITY_CLASS_NAME, mContext.getClass().getSimpleName());
+                    startActivity(i);
+                }
             }
         });
 
@@ -192,6 +196,7 @@ public class DetailActivity extends AppCompatActivity {
 //                mIndexJsonArray = null;
 //                mChapterCount = 0;
 //                startDownloadService( DownloadService.TEXT_CONTENT_TYPE, pratilipiId);
+                Toast.makeText(DetailActivity.this, "Development is not complete yet", Toast.LENGTH_SHORT).show();
             }
 
         }

@@ -113,11 +113,15 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
             @Override
             public void onClick(View view) {
 
-                //STARTING READER ACTIVITY
-                Intent i = new Intent( context, ReaderActivity.class );
-                i.putExtra(ReaderActivity.PRATILIPI, pratilipi);
-                i.putExtra(ReaderActivity.PARENT_ACTIVITY_CLASS_NAME, context.getClass().getSimpleName());
-                context.startActivity(i);
+                if(pratilipi.getContentType().toLowerCase().equals(DownloadService.IMAGE_COTENT_TYPE)){
+                    Toast.makeText(context, "Development is not complete for this type of content", Toast.LENGTH_SHORT).show();
+                } else {
+                    //STARTING READER ACTIVITY
+                    Intent i = new Intent(context, ReaderActivity.class);
+                    i.putExtra(ReaderActivity.PRATILIPI, pratilipi);
+                    i.putExtra(ReaderActivity.PARENT_ACTIVITY_CLASS_NAME, context.getClass().getSimpleName());
+                    context.startActivity(i);
+                }
             }
         });
 
@@ -397,6 +401,7 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
 //                mIndexJsonArray = null;
 //                mChapterCount = 0;
 //                startDownloadService( DownloadService.TEXT_CONTENT_TYPE, pratilipiId);
+                Toast.makeText(context, "Development is not complete for this type of content", Toast.LENGTH_SHORT).show();
             }
 
         }
