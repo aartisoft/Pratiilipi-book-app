@@ -1,4 +1,4 @@
-<FrameLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,13 +10,48 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/Login_Shelf"
-        android:layout_gravity="center"
         android:textSize="@dimen/abc_text_size_large_material"
-        android:visibility="visible"/>
+        android:visibility="visible"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Sign_In"
+        android:id="@+id/shelf_sign_in"
+        android:layout_below="@+id/shelf_default_tv"
+        android:layout_alignLeft="@+id/shelf_default_tv"
+        android:layout_alignStart="@+id/shelf_default_tv"
+        android:textColor="#0000FF"
+        android:visibility="visible"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="35dp"
+        android:background="@android:color/transparent"
+        android:textStyle="italic"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sign Up"
+        android:id="@+id/shelf_sign_up"
+        android:layout_alignTop="@+id/shelf_sign_in"
+        android:layout_toRightOf="@+id/shelf_sign_in"
+        android:layout_toEndOf="@+id/shelf_sign_in"
+        android:layout_marginLeft="50dp"
+        android:textColor="#0000FF"
+        android:visibility="visible"
+        android:background="@android:color/transparent"
+        android:textStyle="italic"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/shelf_recyclerview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_gravity="left|center_vertical"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
-</FrameLayout>
+
+</RelativeLayout>

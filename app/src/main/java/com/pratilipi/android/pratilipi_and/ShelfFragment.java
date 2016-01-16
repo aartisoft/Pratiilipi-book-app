@@ -1,7 +1,9 @@
 package com.pratilipi.android.pratilipi_and;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -15,6 +17,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.pratilipi.android.pratilipi_and.adapter.ShelfAdapter;
@@ -34,6 +37,8 @@ public class ShelfFragment extends Fragment implements LoaderManager.LoaderCallb
     private static final String LOG_TAG = ShelfFragment.class.getSimpleName();
     private static int SHELF_LOADER = 0;
     private ShelfAdapter mShelfAdapter;
+    Button shelfSignIn;
+    Button shelfSignUp;
 
 
 
@@ -58,6 +63,11 @@ public class ShelfFragment extends Fragment implements LoaderManager.LoaderCallb
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_shelf, container, false);
 
+        shelfSignIn = (Button)rootView.findViewById(R.id.shelf_sign_in);
+        shelfSignUp = (Button)rootView.findViewById(R.id.shelf_sign_up);
+
+        shelfSignIn.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
+        shelfSignUp.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
 
         mShelfAdapter = new ShelfAdapter();
 
@@ -77,8 +87,27 @@ public class ShelfFragment extends Fragment implements LoaderManager.LoaderCallb
         User user = UserUtil.getLoggedInUser(getActivity());
         if(user != null) {
             rootView.findViewById(R.id.shelf_default_tv).setVisibility(View.GONE);
+            rootView.findViewById(R.id.shelf_sign_in).setVisibility(View.GONE);
+            rootView.findViewById(R.id.shelf_sign_up).setVisibility(View.GONE);
             fetchData();
+        }else{
+            shelfSignIn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent signInIntent = new Intent(getActivity(), UserLoginActivity.class);
+                    startActivity(signInIntent);
+                }
+            });
+
+            shelfSignUp.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent signUpIntent = new Intent(getActivity(), UserRegisterActivity.class);
+                    startActivity(signUpIntent);
+                }
+            });
         }
+
         return rootView;
     }
 

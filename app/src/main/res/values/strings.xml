@@ -54,4 +54,6 @@
     <string name="Login_Shelf">Please Login to access Shelf !!</string>
     <string name="Sign_up_with_fb">Sign up with Facebook</string>
 
+    <string name="Sign_In"><u><i>Sign In</i></u></string>
+
 </resources>
