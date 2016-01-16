@@ -33,7 +33,7 @@ public class UserUtil {
 
     private static final String LOG_TAG = UserUtil.class.getSimpleName();
 
-    private static final String ACCESS_TOKEN_ENDPOINT = "http://android.pratilipi.com//user/accesstoken";
+    public static final String ACCESS_TOKEN_ENDPOINT = "http://android.pratilipi.com//user/accesstoken";
     private final String REGISTER_ENDPOINT = "http://android.pratilipi.com/user/register";
     private final String LOGIN_ENDPOINT = "http://android.pratilipi.com/user/login";
     private final String LOGOUT_ENDPOINT = "http://android.pratilipi.com/user/logout";
@@ -42,11 +42,11 @@ public class UserUtil {
     public static String ANDROID_APP_SOURCE = "ANDROID_APP";
 
 
-    private static final String USER_NAME = "name";
+    private static final String USER_NAME = "displayName";
     private static final String PROFILE_IMAGE_OBJECT = "picture";
     private static final String PROFILE_IMAGE_DATA = "data";
     private static final String PROFILE_IMAGE_URL = "url";
-    public static final String ACCESS_TOKEN_EXPIRY = "expiry";
+    public static final String ACCESS_TOKEN_EXPIRY = "expiryMills";
     public static final String ACCESS_TOKEN = "accessToken";
 
     private Context mContext;
@@ -89,7 +89,8 @@ public class UserUtil {
             throws JSONException {
 
         ContentValues values = new ContentValues();
-        values.put(PratilipiContract.UserEntity.COLUMN_DISPLAY_NAME, responseJson.getString(USER_NAME));
+        if(responseJson.has(USER_NAME))
+            values.put(PratilipiContract.UserEntity.COLUMN_DISPLAY_NAME, responseJson.getString(USER_NAME));
         //When user logged in using facebook account
         if(responseJson.has(PROFILE_IMAGE_OBJECT)){
             try{

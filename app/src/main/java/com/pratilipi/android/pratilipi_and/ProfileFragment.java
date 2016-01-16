@@ -215,6 +215,7 @@ public class ProfileFragment extends Fragment {
             rootView.findViewById(R.id.guest_user_profile).setVisibility(View.GONE);
             rootView.findViewById(R.id.registered_user_profile).setVisibility(View.VISIBLE);
             ((TextView) rootView.findViewById(R.id.profile_name_textview)).setText(mUser.getDisplayName());
+            ((TextView) rootView.findViewById(R.id.profile_email_textview)).setText(mUser.getEmail());
             ((TextView) rootView.findViewById(R.id.profile_shelf_count_textview))
                     .setText(String.valueOf(ShelfUtil.numberOfContentInShelf(getActivity(), mUser.getEmail())));
 

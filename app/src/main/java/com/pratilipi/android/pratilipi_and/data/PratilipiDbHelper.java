@@ -82,7 +82,7 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
 
                 PratilipiContract.UserEntity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
 
-                PratilipiContract.UserEntity.COLUMN_DISPLAY_NAME + " TEXT NOT NULL, " +
+                PratilipiContract.UserEntity.COLUMN_DISPLAY_NAME + " TEXT, " +
                 PratilipiContract.UserEntity.COLUMN_EMAIL + " TEXT NOT NULL UNIQUE, " +
                 PratilipiContract.UserEntity.COLUMN_CONTENTS_IN_SHELF + " INTEGER DEFAULT 0, " +
                 PratilipiContract.UserEntity.COLUMN_IS_LOGGED_IN + " INTEGER DEFAULT 0, " +
