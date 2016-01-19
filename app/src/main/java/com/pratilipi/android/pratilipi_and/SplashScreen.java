@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.pratilipi.android.pratilipi_and.util.AppUtil;
 import com.pratilipi.android.pratilipi_and.util.UserUtil;
@@ -28,19 +29,23 @@ public class SplashScreen extends Activity {
                 Context context = getBaseContext();
                 @Override
                 public void done(boolean isSuccessful, String data) {
-                    try{
-                        JSONObject jsonObject = new JSONObject(data);
-                        if(isSuccessful){
-                            UserUtil.saveAccessToken(context,
-                                    jsonObject.getString(UserUtil.ACCESS_TOKEN),
-                                    jsonObject.getLong(UserUtil.ACCESS_TOKEN_EXPIRY));
+                    if(data == null){
+                        Toast.makeText(context, "Unable to reach server. Please check network connection", Toast.LENGTH_LONG).show();
+                    } else {
+                        try {
+                            JSONObject jsonObject = new JSONObject(data);
+                            if (isSuccessful) {
+                                UserUtil.saveAccessToken(context,
+                                        jsonObject.getString(UserUtil.ACCESS_TOKEN),
+                                        jsonObject.getLong(UserUtil.ACCESS_TOKEN_EXPIRY));
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                    } catch (JSONException e){
-                        e.printStackTrace();
+                        Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                        startActivity(i);
+                        finish();
                     }
-                    Intent i = new Intent(getApplicationContext(), MainActivity.class);
-                    startActivity(i);
-                    finish();
                 }
             });
         } else{

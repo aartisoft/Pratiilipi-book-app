@@ -3,8 +3,11 @@ package com.pratilipi.android.pratilipi_and.util;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.apache.http.conn.ConnectTimeoutException;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -58,6 +61,19 @@ public class HttpUtil {
             String accessToken = UserUtil.getAccessToken(context);
             if(accessToken != null)
                 query.append(ACCESS_TOKEN + "=" + accessToken);
+            else{
+                //FETCH FRESH ACCESS TOKEN FROM SERVER AND APPEND IN QUERY
+                String token = fetchAccessToken(context);
+                Log.v(LOG_TAG, "Fresh Access Token fetched : " + token);
+                if(token == null) {
+                    Log.e(LOG_TAG, "Unable to fetch fresh access token from server");
+                    HashMap<String, String> returnMap = new HashMap<>(2);
+                    returnMap.put(IS_SUCCESSFUL, String.valueOf(false));
+                    returnMap.put(RESPONSE_STRING, null);
+                    return returnMap;
+                } else
+                    query.append(ACCESS_TOKEN + "=" + token);
+            }
 
             Log.e(LOG_TAG, "URL : " + apiEndpoint + query);
 
@@ -143,6 +159,16 @@ public class HttpUtil {
                 String accessToken = UserUtil.getAccessToken(context);
                 if(accessToken != null)
                     payload += ACCESS_TOKEN + "=" + accessToken;
+                else{
+                    //FETCH FRESH ACCESS TOKEN FROM SERVER AND APPEND IN QUERY
+                    String token = fetchAccessToken(context);
+                    Log.v(LOG_TAG, "Fresh Access Token fetched : " + token);
+                    if(token == null) {
+                        Toast.makeText(context, "Unable to fetch access token from server. Please contact admin", Toast.LENGTH_SHORT).show();
+                        return null;
+                    } else
+                        payload += ACCESS_TOKEN + "=" + token;
+                }
 
                 DataOutputStream wr = new DataOutputStream(
                         connection.getOutputStream());
@@ -212,6 +238,15 @@ public class HttpUtil {
             }
 
             String accessToken = UserUtil.getAccessToken(context);
+            if(accessToken == null){
+                //FETCH FRESH ACCESS TOKEN FROM SERVER AND APPEND IN QUERY
+                accessToken = fetchAccessToken(context);
+                Log.v(LOG_TAG, "Fresh Access Token fetched : " + accessToken);
+                if(accessToken == null) {
+                    Toast.makeText(context, "Unable to fetch access token from server. Please contact admin", Toast.LENGTH_SHORT).show();
+                    return null;
+                }
+            }
             rawFormat += "\"" + ACCESS_TOKEN + "\":\"" + accessToken + "\"";
             rawFormat += "}";
 
@@ -283,4 +318,61 @@ public class HttpUtil {
         returnMap.put(RESPONSE_STRING, "Connection Timeout. Please Try Again");
         return returnMap;
     }
+
+    private static String fetchAccessToken(Context context){
+        HttpURLConnection connection = null;
+        BufferedReader bufferedReader = null;
+
+        try {
+            URL url = new URL(UserUtil.ACCESS_TOKEN_ENDPOINT);
+
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            int status = connection.getResponseCode();
+            Log.e(LOG_TAG, "Response Code : " + status);
+            InputStream inputStream;
+            if(status >= 400){
+                Log.e(LOG_TAG, "Error Returned");
+                return null;
+            } else{
+                inputStream = connection.getInputStream();
+            }
+
+            StringBuffer buffer = new StringBuffer();
+            if( inputStream == null ){
+                sResponseString = null;
+            }
+
+            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            String line;
+            while ((line = bufferedReader.readLine()) != null){
+                buffer.append(line + "\n");
+            }
+
+            bufferedReader.close();
+
+            if( buffer.length() == 0 )
+                sResponseString = null;
+
+            Log.e(LOG_TAG, "Access Token response : " + buffer.toString());
+            sResponseString = buffer.toString();
+
+            JSONObject jsonObject = new JSONObject(sResponseString);
+            Log.e(LOG_TAG, "Access Token : " + jsonObject.getString(UserUtil.ACCESS_TOKEN));
+            UserUtil.saveAccessToken(
+                    context,
+                    jsonObject.getString(UserUtil.ACCESS_TOKEN),
+                    jsonObject.getLong(UserUtil.ACCESS_TOKEN_EXPIRY)
+            );
+            return jsonObject.getString(UserUtil.ACCESS_TOKEN);
+        } catch (JSONException e){
+            Log.e(LOG_TAG, "JSON Exception");
+            e.printStackTrace();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
