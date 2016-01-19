@@ -68,7 +68,19 @@ public class CardListViewAdapter extends RecyclerView.Adapter<CardListViewAdapte
         final Pratilipi pratilipi = mPratilipiList.get(position);
         holder.bookTitle.setText(pratilipi.getTitle());
         holder.authorName.setText(pratilipi.getAuthorName());
-        holder.bookCover.setImageUrl("http:" + pratilipi.getCoverImageUrl(), imageLoader);
+
+        //Hack to handle 2 different types of Url returned by different APIs.
+        if(pratilipi.getCoverImageUrl().contains("http:")) {
+            String coverUrl = pratilipi.getCoverImageUrl();
+            if(coverUrl.contains("?"))
+                coverUrl = coverUrl + "&" + "width=150";
+            else
+                coverUrl = coverUrl + "?" + "width=150";
+            holder.bookCover.setImageUrl(coverUrl, imageLoader);
+        } else
+            //TODO : Remove this when Shelf and mobileInit API calls are made to Android module.
+            holder.bookCover.setImageUrl("http:" + pratilipi.getCoverImageUrl(), imageLoader);
+
         holder.ratingBar.setRating(pratilipi.getAverageRating());
         if( pratilipi.getPrice() == 0 )
             holder.price.setText(R.string.string_free);

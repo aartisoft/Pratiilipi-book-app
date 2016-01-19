@@ -64,56 +64,38 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.DataVi
         final Context context = mViewGroup.getContext();
         final Homescreen homescreenObject = mHomescreenList.get(position);
         dateViewHolder.bookTitle.setText(homescreenObject.getTitle());
-        dateViewHolder.bookCover.setImageUrl("http:" + homescreenObject.getCoverImageUrl(), mImageLoader);
+        //Hack to handle 2 different types of Url returned by different APIs.
+        if(homescreenObject.getCoverImageUrl().contains("http:")) {
+            String coverUrl = homescreenObject.getCoverImageUrl();
+            if(coverUrl.contains("?"))
+                coverUrl = coverUrl + "&" + "width=150";
+            else
+                coverUrl = coverUrl + "?" + "width=150";
+            dateViewHolder.bookCover.setImageUrl(coverUrl, mImageLoader);
+        } else
+            //TODO : Remove this when Shelf and mobileInit API calls are made to Android module.
+            dateViewHolder.bookCover.setImageUrl("http:" + homescreenObject.getCoverImageUrl(), mImageLoader);
 
         if( homescreenObject.getPrice() == 0f) {
             dateViewHolder.freeButton.setText("FREE!");
         }
-//        else {
-//            holder.freeButton.setText("\u20B9"+ "100");
-//            holder.freeButton.setTextColor(Color.GRAY);
-//            holder.freeButton.setPaintFlags(holder.freeButton.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-//            holder.priceText.setText(" \u20B9" + "20");
-//        }
-//        random =!random;
-
-
-//        if (homescreenObject.get_ratingCount() > 0) {
-//
-//            float val = (float) homescreenObject.get_starCount() / homescreenObject.get_ratingCount();
-//            if (val != 0.0) {
-////                holder.mRatingBar.setRating(val);
-//
-//                NumberFormat numberformatter = NumberFormat.getNumberInstance();
-//                numberformatter.setMaximumFractionDigits(1);
-//                numberformatter.setMinimumFractionDigits(1);
-//                String rating = numberformatter.format(val);
-//
-////                holder.ratingCount.setText(String.valueOf("("+metadataObj.get_ratingCount() + " ratings)"));
-////                holder.avgeragerating.setText("Average rating: " + rating + "/5");
-//
-//            }else{
-//                Log.d("Val is Null", "");
-//            }
-//        }
 
         dateViewHolder.mHomeCardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
+                Log.e(LOG_TAG, "Item clicked. Title : " + homescreenObject.getTitle());
                 Pratilipi pratilipi = PratilipiUtil.getPratilipiById(context, homescreenObject.getPratilipiId());
                 Intent i = new Intent(context, DetailActivity.class);
                 i.putExtra(ReaderActivity.PRATILIPI, pratilipi);
                 i.putExtra(ReaderActivity.PARENT_ACTIVITY_CLASS_NAME, context.getClass().getSimpleName());
                 context.startActivity(i);
-                Log.e(LOG_TAG, "Item clicked. Title : " + homescreenObject.getTitle());
             }
         });
     }
 
     @Override
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
-        Log.e(LOG_TAG, "onAttachedToRecycleView function called");
         super.onAttachedToRecyclerView(recyclerView);
     }
 
@@ -146,7 +128,6 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.DataVi
     }
 
     public void swapCursor( Cursor cursor ){
-        Log.e(LOG_TAG, "swapCursor() function called");
         if( cursor == null ) {
             mHomescreenList = new ArrayList<>();
             this.notifyDataSetChanged();

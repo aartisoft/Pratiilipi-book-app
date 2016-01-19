@@ -76,7 +76,17 @@ public class DetailActivity extends AppCompatActivity {
 
         ImageLoader imageLoader = AppController.getInstance().getImageLoader();
         NetworkImageView imageView = (NetworkImageView) findViewById(R.id.detail_cover_image);
-        imageView.setImageUrl("http:" + mPratilipi.getCoverImageUrl(), imageLoader);
+        //Hack to handle 2 different types of Url returned by different APIs.
+        if(mPratilipi.getCoverImageUrl().contains("http:")) {
+            String coverUrl = mPratilipi.getCoverImageUrl();
+            if(coverUrl.contains("?"))
+                coverUrl = coverUrl + "&" + "width=150";
+            else
+                coverUrl = coverUrl + "?" + "width=150";
+            imageView.setImageUrl(coverUrl, imageLoader);
+        } else
+            //TODO : Remove this when Shelf and mobileInit API calls are made to Android module.
+            imageView.setImageUrl("http:" + mPratilipi.getCoverImageUrl(), imageLoader);
 
         TextView title = (TextView) findViewById(R.id.detail_title_textview);
         title.setTypeface(typeFace);
