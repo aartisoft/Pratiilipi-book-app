@@ -84,6 +84,7 @@ public class ReaderPageFragment extends Fragment {
                 setFont(mLanguage);
                 if (mEndIndex == -1) {
 //                    Log.e(LOG_TAG, "Calculating mEndIndex");
+//                    Log.e(LOG_TAG, "mStartIndex : " + mStartIndex);
                     mEndIndex = findEndIndex();
                     setPage();
                 }
@@ -100,6 +101,7 @@ public class ReaderPageFragment extends Fragment {
         mContentString = contentString;
         mStartIndex = startIndex;
         mEndIndex = endIndex;
+//        Log.e(LOG_TAG, "End Index in setPage function : " + endIndex);
         setPage();
     }
 
@@ -118,7 +120,6 @@ public class ReaderPageFragment extends Fragment {
 
         mLoadingTextView = (TextView) view.findViewById(R.id.reader_fragment_loading_textview);
         mTextView = (TextView) view.findViewById(R.id.reader_fragment_content_textview);
-
         if(mContentString != null && !mContentString.isEmpty() ) {
             setPage();
         } else
@@ -196,9 +197,11 @@ public class ReaderPageFragment extends Fragment {
         int endLine = 0;
         int totalLines = getLineCount();
         int screenBaseLine = view.getBottom() - view.getPaddingBottom() - view.getPaddingTop();
+//        Log.e(LOG_TAG, "Screen Base Line : " + screenBaseLine);
         for(int i = 0; i<totalLines; ++i){
             endLine = i;
             int lineBase = getLineBounds(endLine);
+//            Log.e(LOG_TAG, "Line Number / Line Base : " + i + "/" + lineBase);
             if(lineBase >= screenBaseLine ) {
                 endLine -= 1;
                 break;
@@ -222,12 +225,17 @@ public class ReaderPageFragment extends Fragment {
     }
 
     private void setFont(String lan){
+        if(lan == null){
+            Log.e(LOG_TAG, "Language is not set for content ");
+            return;
+        }
         Typeface typeFace = null;
-        if (lan.equalsIgnoreCase("hindi"))
+        //Old api sends languageId and new API sends language. Hence both are used.
+        if (lan.equalsIgnoreCase("hindi") || lan.equals(AppUtil.HINDI_LANGUAGE_ID))
             typeFace = Typeface.createFromAsset(mActivity.getAssets(), "fonts/devanagari.ttf");
-        else if (lan.equalsIgnoreCase("tamil"))
+        else if (lan.equalsIgnoreCase("tamil") || lan.equals(AppUtil.TAMIL_LANGUAGE_ID))
             typeFace = Typeface.createFromAsset(mActivity.getAssets(), "fonts/tamil.ttf");
-        else if (lan.equalsIgnoreCase("gujarati"))
+        else if (lan.equalsIgnoreCase("gujarati") || lan.equals(AppUtil.GUJARATI_LANGUAGE_ID))
             typeFace = Typeface.createFromAsset(mActivity.getAssets(), "fonts/gujarati.ttf");
 
         mTextView.setTypeface(typeFace);

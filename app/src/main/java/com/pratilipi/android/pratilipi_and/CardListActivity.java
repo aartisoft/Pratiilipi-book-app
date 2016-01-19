@@ -229,10 +229,11 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
         mPratilipiUtil = new PratilipiUtil(this, null);
         HashMap<String, String> params = new HashMap<>();
         if(mId != null) {
+            //Used when 'View All' button on home screen is clicked
             params.put(LANGUAGE_ID, String.valueOf(AppUtil.getPreferredLanguage(this)));
             params.put(CATEGORY_ID, mId);
-            params.put(STATE, STATE_PUBLISHED);
         } else{
+            //Used when any category is clicked in category list.
             JSONObject filtersJson = CategoryUtil.getFilters(this, mTitle);
             Iterator<?> filterKeys = filtersJson.keys();
             while(filterKeys.hasNext()){
@@ -245,6 +246,7 @@ public class CardListActivity extends AppCompatActivity implements LoaderManager
                 }
             }
         }
+        params.put(STATE, STATE_PUBLISHED);
         params.put(RESULT_COUNT_STRING, String.valueOf(RESULT_COUNT));
         if( cursorString != null )
             params.put(CURSOR, cursorString);

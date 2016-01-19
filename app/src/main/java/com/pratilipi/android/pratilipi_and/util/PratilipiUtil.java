@@ -32,38 +32,38 @@ public class PratilipiUtil {
     private static final String LOG_TAG = PratilipiUtil.class.getSimpleName();
 
     private static final String PRATILIPI_LIST_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/pratilipi/list";
-    private static final String PRATILIPI_LIST_ENDPOINT_NEW = "http://android.pratilipi.com/pratilipi/list";
+    private static final String PRATILIPI_LIST_ENDPOINT_NEW = "http://android.pratilipi.com/pratilipi/list?includeSummaryAndIndex=true";
 
     public static final String PRATILIPI_LIST = "pratilipiList";
 
     private static final String ID = "id";
     private static final String PRATILIPI_ID = "pratilipiId";
     private static final String PRATILIPI_TITLE = "title";
-    private static final String PRATILIPI_TITLE_EN = "titleEn";
-    private static final String PRATILIPI_TYPE = "type";
-    private static final String PRATILIPI_AUTHOR_ID = "authorId";
+//    private static final String PRATILIPI_TITLE_EN = "titleEn";
+//    private static final String PRATILIPI_TYPE = "type";
+//    private static final String PRATILIPI_AUTHOR_ID = "authorId";
     private static final String PRATILIPI_AUTHOR_OBJECT = "author";
     private static final String PRATILIPI_AUTHOR_NAME = "name";
-    private static final String PRATILIPI_AUTHOR_NAME_EN = "nameEn";
+//    private static final String PRATILIPI_AUTHOR_NAME_EN = "nameEn";
     private static final String PRATILIPI_LANGUAGE = "language";
     private static final String PRATILIPI_LANGUAGE_ID = "languageId";
-    private static final String PRATILIPI_LANGUAGE_OBJECT = "language";
-    private static final String PRATILIPI_LANGUAGE_NAME = "name";
-    private static final String PRATILIPI_STATE = "state";
+//    private static final String PRATILIPI_LANGUAGE_OBJECT = "language";
+//    private static final String PRATILIPI_LANGUAGE_NAME = "name";
+//    private static final String PRATILIPI_STATE = "state";
     private static final String PRATILIPI_SUMMARY = "summary";
     private static final String PRATILIPI_INDEX = "index";
     private static final String PRATILIPI_CONTENT_TYPE = "contentType";
-    private static final String PRATILIPI_PAGE_COUNT = "pageCount";
-    private static final String PRATILIPI_READ_COUNT = "readCount";
+//    private static final String PRATILIPI_PAGE_COUNT = "pageCount";
+//    private static final String PRATILIPI_READ_COUNT = "readCount";
     private static final String PRATILIPI_RATING_COUNT = "ratingCount";
     private static final String PRATILIPI_STAR_COUNT = "starCount";
     private static final String PRATILIPI_AVERAGE_RATING = "averageRating";
-    private static final String PRATILIPI_PRICE = "price";
-    private static final String PRATILIPI_DISCOUNTED_PRICE = "discountedPrice";
+//    private static final String PRATILIPI_PRICE = "price";
+//    private static final String PRATILIPI_DISCOUNTED_PRICE = "discountedPrice";
     private static final String PRATILIPI_COVER_IMAGE_URL = "coverImageUrl";
-    private static final String PRATILIPI_GENRE_LIST = "genreNameList";
-    private static final String PRATILIPI_CATEGORY_LIST = "categoryNameList";
-    private static final String PRATILIPI_LISTING_DATE = "listingDate";
+//    private static final String PRATILIPI_GENRE_LIST = "genreNameList";
+//    private static final String PRATILIPI_CATEGORY_LIST = "categoryNameList";
+//    private static final String PRATILIPI_LISTING_DATE = "listingDate";
 
     private Context mContext;
     private boolean mIsSuccessful;
@@ -92,11 +92,9 @@ public class PratilipiUtil {
 
             if(params[0].containsKey(CardListActivity.LANGUAGE_ID)) {
                 apiEndPoint = PRATILIPI_LIST_ENDPOINT;
-                Log.e(LOG_TAG, "Pratilipi List End Point : " + apiEndPoint);
             }
             else {
                 apiEndPoint = PRATILIPI_LIST_ENDPOINT_NEW;
-                Log.e(LOG_TAG, "Pratilipi List End Point : " + apiEndPoint);
             }
             HashMap<String, String> responseMap = HttpUtil.makeGETRequest(mContext, apiEndPoint, params[0]);
             if( responseMap == null )
@@ -120,36 +118,24 @@ public class PratilipiUtil {
             for( int i = 0; i < length; ++i ){
                 JSONObject pratilipiObject = pratilipiListArray.getJSONObject(i);
                 ContentValues values = new ContentValues();
-                if(pratilipiObject.has(ID))
+                if(pratilipiObject.has(ID)) {
                     values.put(PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID, pratilipiObject.getString(ID));
-                else
-                    values.put(PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID, pratilipiObject.getString(PRATILIPI_ID));
-                values.put(PratilipiContract.PratilipiEntity.COLUMN_TITLE, pratilipiObject.getString(PRATILIPI_TITLE));
-                if( pratilipiObject.has(PRATILIPI_TITLE_EN )) {
-                    values.put(PratilipiContract.PratilipiEntity.COLUMN_TITLE_EN, pratilipiObject.getString(PRATILIPI_TITLE_EN));
                 }
-                values.put(PratilipiContract.PratilipiEntity.COLUMN_TYPE, pratilipiObject.getString(PRATILIPI_TYPE));
-                values.put(PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_ID, pratilipiObject.getString(PRATILIPI_AUTHOR_ID));
-
+                else {
+                    values.put(PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID, pratilipiObject.getString(PRATILIPI_ID));
+                }
+                values.put(PratilipiContract.PratilipiEntity.COLUMN_TITLE, pratilipiObject.getString(PRATILIPI_TITLE));
                 if( pratilipiObject.has(PRATILIPI_AUTHOR_OBJECT)) {
                     JSONObject author = pratilipiObject.getJSONObject(PRATILIPI_AUTHOR_OBJECT);
-                    if ( !author.has(PRATILIPI_AUTHOR_NAME) || author.getString(PRATILIPI_AUTHOR_NAME).isEmpty())
-                        values.put(PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_NAME, author.getString(PRATILIPI_AUTHOR_NAME_EN));
-                    else
+                    if(author.has(PRATILIPI_AUTHOR_NAME)) {
                         values.put(PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_NAME, author.getString(PRATILIPI_AUTHOR_NAME));
-                }
-
-                if(pratilipiObject.has(PRATILIPI_LANGUAGE_ID)) {
-                    values.put(PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_ID, pratilipiObject.getString(PRATILIPI_LANGUAGE_ID));
-                    if( pratilipiObject.has(PRATILIPI_LANGUAGE_OBJECT)) {
-                        JSONObject language = pratilipiObject.getJSONObject(PRATILIPI_LANGUAGE_OBJECT);
-                        values.put(PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_NAME, language.getString(PRATILIPI_LANGUAGE_NAME));
                     }
                 }
-                else
-                    values.put(PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_NAME, pratilipiObject.getString(PRATILIPI_LANGUAGE));
 
-                values.put(PratilipiContract.PratilipiEntity.COLUMN_STATE, pratilipiObject.getString(PRATILIPI_STATE));
+                if(pratilipiObject.has(PRATILIPI_LANGUAGE_ID))
+                    values.put(PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_ID, pratilipiObject.getString(PRATILIPI_LANGUAGE_ID));
+                if(pratilipiObject.has(PRATILIPI_LANGUAGE))
+                    values.put(PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_NAME, pratilipiObject.getString(PRATILIPI_LANGUAGE));
                 if(pratilipiObject.has(PRATILIPI_SUMMARY))
                     values.put(PratilipiContract.PratilipiEntity.COLUMN_SUMMARY, pratilipiObject.getString(PRATILIPI_SUMMARY));
                 if(pratilipiObject.has(PRATILIPI_INDEX))
@@ -161,29 +147,10 @@ public class PratilipiUtil {
 
                 if(pratilipiObject.has(PRATILIPI_AVERAGE_RATING))
                     values.put(PratilipiContract.PratilipiEntity.COLUMN_AVERAGE_RATING, pratilipiObject.getInt(PRATILIPI_AVERAGE_RATING));
-                else {
-                    double averageRating = 0;
-                    if (pratilipiObject.getDouble(PRATILIPI_RATING_COUNT) > 0)
-                        averageRating = pratilipiObject.getDouble(PRATILIPI_STAR_COUNT) / pratilipiObject.getDouble(PRATILIPI_RATING_COUNT);
-                    values.put(PratilipiContract.PratilipiEntity.COLUMN_AVERAGE_RATING, averageRating);
-                }
-
-                if(pratilipiObject.has(PRATILIPI_PRICE))
-                    values.put(PratilipiContract.PratilipiEntity.COLUMN_PRICE, pratilipiObject.getDouble(PRATILIPI_PRICE));
-                if(pratilipiObject.has(PRATILIPI_DISCOUNTED_PRICE))
-                    values.put(PratilipiContract.PratilipiEntity.COLUMN_DISCOUNTED_PRICE, pratilipiObject.getDouble(PRATILIPI_DISCOUNTED_PRICE));
-                values.put(PratilipiContract.PratilipiEntity.COLUMN_PAGE_COUNT, pratilipiObject.getInt(PRATILIPI_PAGE_COUNT));
-                values.put(PratilipiContract.PratilipiEntity.COLUMN_READ_COUNT, pratilipiObject.getInt(PRATILIPI_READ_COUNT));
-                values.put(PratilipiContract.PratilipiEntity.COLUMN_COVER_IMAGE_URL, pratilipiObject.getString(PRATILIPI_COVER_IMAGE_URL));
-                if(pratilipiObject.has(PRATILIPI_GENRE_LIST))
-                    values.put(PratilipiContract.PratilipiEntity.COLUMN_GENRE_NAME_LIST, pratilipiObject.getString(PRATILIPI_GENRE_LIST));
-                else
-                    values.put(PratilipiContract.PratilipiEntity.COLUMN_GENRE_NAME_LIST, pratilipiObject.getString(PRATILIPI_CATEGORY_LIST));
-                if(pratilipiObject.has(PRATILIPI_LISTING_DATE))
-                    values.put(PratilipiContract.PratilipiEntity.COLUMN_LISTING_DATE, pratilipiObject.getString(PRATILIPI_LISTING_DATE));
+                if(pratilipiObject.has(PRATILIPI_COVER_IMAGE_URL))
+                    values.put(PratilipiContract.PratilipiEntity.COLUMN_COVER_IMAGE_URL, pratilipiObject.getString(PRATILIPI_COVER_IMAGE_URL));
                 values.put(PratilipiContract.PratilipiEntity.COLUMN_CREATION_DATE, AppUtil.getCurrentJulianDay());
                 values.put(PratilipiContract.PratilipiEntity.COLUMN_LAST_ACCESSED_ON, AppUtil.getCurrentJulianDay());
-
                 pratilipiVector.add(values);
 
             }
@@ -253,32 +220,21 @@ public class PratilipiUtil {
     }
 
     public static Uri insert(Context context, JSONObject pratilipiObject){
-
         try {
             ContentValues values = new ContentValues();
             values.put(PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID, pratilipiObject.getString(ID));
             values.put(PratilipiContract.PratilipiEntity.COLUMN_TITLE, pratilipiObject.getString(PRATILIPI_TITLE));
-            if (pratilipiObject.has(PRATILIPI_TITLE_EN)) {
-                values.put(PratilipiContract.PratilipiEntity.COLUMN_TITLE_EN, pratilipiObject.getString(PRATILIPI_TITLE_EN));
-            }
-            values.put(PratilipiContract.PratilipiEntity.COLUMN_TYPE, pratilipiObject.getString(PRATILIPI_TYPE));
-            values.put(PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_ID, pratilipiObject.getString(PRATILIPI_AUTHOR_ID));
 
             if (pratilipiObject.has(PRATILIPI_AUTHOR_OBJECT)) {
                 JSONObject author = pratilipiObject.getJSONObject(PRATILIPI_AUTHOR_OBJECT);
-                if (!author.has(PRATILIPI_AUTHOR_NAME) || author.getString(PRATILIPI_AUTHOR_NAME).isEmpty())
-                    values.put(PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_NAME, author.getString(PRATILIPI_AUTHOR_NAME_EN));
-                else
+                if(author.has(PRATILIPI_AUTHOR_NAME))
                     values.put(PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_NAME, author.getString(PRATILIPI_AUTHOR_NAME));
             }
 
-            values.put(PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_ID, pratilipiObject.getString(PRATILIPI_LANGUAGE_ID));
-            if (pratilipiObject.has(PRATILIPI_LANGUAGE_OBJECT)) {
-                JSONObject language = pratilipiObject.getJSONObject(PRATILIPI_LANGUAGE_OBJECT);
-                values.put(PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_NAME, language.getString(PRATILIPI_LANGUAGE_NAME));
-            }
-
-            values.put(PratilipiContract.PratilipiEntity.COLUMN_STATE, pratilipiObject.getString(PRATILIPI_STATE));
+            if(pratilipiObject.has(PRATILIPI_LANGUAGE_ID))
+                values.put(PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_ID, pratilipiObject.getString(PRATILIPI_LANGUAGE_ID));
+            if(pratilipiObject.has(PRATILIPI_LANGUAGE))
+                values.put(PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_NAME, pratilipiObject.getString(PRATILIPI_LANGUAGE));
             if (pratilipiObject.has(PRATILIPI_SUMMARY))
                 values.put(PratilipiContract.PratilipiEntity.COLUMN_SUMMARY, pratilipiObject.getString(PRATILIPI_SUMMARY));
             if (pratilipiObject.has(PRATILIPI_INDEX))
@@ -286,18 +242,18 @@ public class PratilipiUtil {
             values.put(PratilipiContract.PratilipiEntity.COLUMN_CONTENT_TYPE, pratilipiObject.getString(PRATILIPI_CONTENT_TYPE));
             values.put(PratilipiContract.PratilipiEntity.COLUMN_RATING_COUNT, pratilipiObject.getInt(PRATILIPI_RATING_COUNT));
 
-            double averageRating = 0;
-            if (pratilipiObject.getDouble(PRATILIPI_RATING_COUNT) > 0)
-                averageRating = pratilipiObject.getDouble(PRATILIPI_STAR_COUNT) / pratilipiObject.getDouble(PRATILIPI_RATING_COUNT);
-            values.put(PratilipiContract.PratilipiEntity.COLUMN_AVERAGE_RATING, averageRating);
+            if(pratilipiObject.has(PRATILIPI_AVERAGE_RATING)) {
+                values.put(PratilipiContract.PratilipiEntity.COLUMN_AVERAGE_RATING, pratilipiObject.getInt(PRATILIPI_AVERAGE_RATING));
+            }
+            else {
+                double averageRating = 0;
+                if (pratilipiObject.getDouble(PRATILIPI_RATING_COUNT) > 0)
+                    averageRating = pratilipiObject.getDouble(PRATILIPI_STAR_COUNT) / pratilipiObject.getDouble(PRATILIPI_RATING_COUNT);
+                values.put(PratilipiContract.PratilipiEntity.COLUMN_AVERAGE_RATING, averageRating);
+            }
 
-            values.put(PratilipiContract.PratilipiEntity.COLUMN_PRICE, pratilipiObject.getDouble(PRATILIPI_PRICE));
-            values.put(PratilipiContract.PratilipiEntity.COLUMN_DISCOUNTED_PRICE, pratilipiObject.getDouble(PRATILIPI_DISCOUNTED_PRICE));
-            values.put(PratilipiContract.PratilipiEntity.COLUMN_PAGE_COUNT, pratilipiObject.getInt(PRATILIPI_PAGE_COUNT));
-            values.put(PratilipiContract.PratilipiEntity.COLUMN_READ_COUNT, pratilipiObject.getInt(PRATILIPI_READ_COUNT));
-            values.put(PratilipiContract.PratilipiEntity.COLUMN_COVER_IMAGE_URL, pratilipiObject.getString(PRATILIPI_COVER_IMAGE_URL));
-            values.put(PratilipiContract.PratilipiEntity.COLUMN_GENRE_NAME_LIST, pratilipiObject.getString(PRATILIPI_GENRE_LIST));
-            values.put(PratilipiContract.PratilipiEntity.COLUMN_LISTING_DATE, pratilipiObject.getString(PRATILIPI_LISTING_DATE));
+            if(pratilipiObject.has(PRATILIPI_COVER_IMAGE_URL))
+                values.put(PratilipiContract.PratilipiEntity.COLUMN_COVER_IMAGE_URL, pratilipiObject.getString(PRATILIPI_COVER_IMAGE_URL));
             values.put(PratilipiContract.PratilipiEntity.COLUMN_CREATION_DATE, AppUtil.getCurrentJulianDay());
             values.put(PratilipiContract.PratilipiEntity.COLUMN_LAST_ACCESSED_ON, AppUtil.getCurrentJulianDay());
 
@@ -314,45 +270,29 @@ public class PratilipiUtil {
         Pratilipi pratilipi = new Pratilipi();
         try {
             pratilipi.setPratilipiId(pratilipiObject.getString(ID));
-            if( pratilipiObject.has( PRATILIPI_TITLE )) {
+            if( pratilipiObject.has( PRATILIPI_TITLE ))
                 pratilipi.setTitle( pratilipiObject.getString( PRATILIPI_TITLE ) );
-            } else if( pratilipiObject.has( PRATILIPI_TITLE_EN ) )
-                pratilipi.setTitle(pratilipiObject.getString(PRATILIPI_TITLE_EN));
-            pratilipi.setType(pratilipiObject.getString(PRATILIPI_TYPE));
-            pratilipi.setAuthorId(pratilipiObject.getString(PRATILIPI_AUTHOR_ID));
 
             if( pratilipiObject.has( PRATILIPI_AUTHOR_OBJECT )){
                 JSONObject author = pratilipiObject.getJSONObject( PRATILIPI_AUTHOR_OBJECT );
                 if( author.has( PRATILIPI_AUTHOR_NAME ))
                     pratilipi.setAuthorName( author.getString( PRATILIPI_AUTHOR_NAME ));
-                else if( author.has( PRATILIPI_AUTHOR_NAME_EN ))
-                    pratilipi.setAuthorName( author.getString( PRATILIPI_AUTHOR_NAME_EN ));
             }
 
-            pratilipi.setLanguageId(pratilipiObject.getString(PRATILIPI_LANGUAGE_ID));
-            if( pratilipiObject.has(PRATILIPI_LANGUAGE_OBJECT)) {
-                JSONObject language = pratilipiObject.getJSONObject(PRATILIPI_LANGUAGE_OBJECT);
-                pratilipi.setLanguageName( language.getString(PRATILIPI_LANGUAGE_NAME) );
-            }
+            if(pratilipiObject.has(PRATILIPI_LANGUAGE_ID))
+                pratilipi.setLanguageId(pratilipiObject.getString(PRATILIPI_LANGUAGE_ID));
+            if(pratilipiObject.has(PRATILIPI_LANGUAGE))
+            pratilipi.setLanguageName(pratilipiObject.getString(PRATILIPI_LANGUAGE) );
 
-            pratilipi.setState(pratilipiObject.getString(PRATILIPI_STATE));
             if( pratilipiObject.has(PRATILIPI_SUMMARY) )
                 pratilipi.setSummary( pratilipiObject.getString(PRATILIPI_SUMMARY) );
             if( pratilipiObject.has( PRATILIPI_INDEX ))
                 pratilipi.setIndex( pratilipiObject.getString( PRATILIPI_INDEX ));
             pratilipi.setContentType(pratilipiObject.getString(PRATILIPI_CONTENT_TYPE));
             pratilipi.setRatingCount(pratilipiObject.getLong(PRATILIPI_RATING_COUNT));
+            pratilipi.setRatingCount(pratilipiObject.getLong(PRATILIPI_AVERAGE_RATING));
 
-            double averageRating = 0;
-            if( pratilipiObject.getDouble(PRATILIPI_RATING_COUNT) > 0 )
-                averageRating = pratilipiObject.getDouble(PRATILIPI_STAR_COUNT) / pratilipiObject.getDouble(PRATILIPI_RATING_COUNT);
-            pratilipi.setAverageRating((float) averageRating);
-
-            pratilipi.setPrice(pratilipiObject.getDouble(PRATILIPI_PRICE));
-            pratilipi.setDiscountedPrice(pratilipiObject.getDouble(PRATILIPI_DISCOUNTED_PRICE));
-            pratilipi.setPageCount(pratilipiObject.getInt(PRATILIPI_PAGE_COUNT));
             pratilipi.setCoverImageUrl(pratilipiObject.getString(PRATILIPI_COVER_IMAGE_URL));
-            pratilipi.setGenreList(pratilipiObject.getString(PRATILIPI_GENRE_LIST));
         } catch ( JSONException e ){
             e.printStackTrace();
         }

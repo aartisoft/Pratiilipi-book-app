@@ -49,7 +49,7 @@ public class HomeFragmentAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, final Context context, final Cursor cursor) {
-        Log.e( LOG_TAG, "bindView() function");
+//        Log.e( LOG_TAG, "bindView() function");
         mCardViewAdapter = new CardViewAdapter();
 
         TextView title = (TextView) view.findViewById(R.id.homescreen_list_item_title_textview);

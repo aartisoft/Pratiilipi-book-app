@@ -96,23 +96,23 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
                 PratilipiContract.PratilipiEntity.COLUMN_PRATILIPI_ID + " TEXT NOT NULL, " +
                 PratilipiContract.PratilipiEntity.COLUMN_TITLE + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_TITLE_EN + " TEXT, " +
-                PratilipiContract.PratilipiEntity.COLUMN_TYPE + " TEXT NOT NULL, " +
-                PratilipiContract.PratilipiEntity.COLUMN_COVER_IMAGE_URL + " TEXT NOT NULL, " +
+                PratilipiContract.PratilipiEntity.COLUMN_TYPE + " TEXT, " +
+                PratilipiContract.PratilipiEntity.COLUMN_COVER_IMAGE_URL + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_ID + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_NAME + " TEXT, " +
-                PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_ID + " TEXT NOT NULL, " +
+                PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_ID + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_AUTHOR_NAME + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_PRICE + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_DISCOUNTED_PRICE + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_SUMMARY + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_INDEX + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_CONTENT_TYPE + " TEXT, " +
-                PratilipiContract.PratilipiEntity.COLUMN_STATE + " TEXT NOT NULL, " +
+                PratilipiContract.PratilipiEntity.COLUMN_STATE + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_GENRE_NAME_LIST + " TEXT, " +
-                PratilipiContract.PratilipiEntity.COLUMN_PAGE_COUNT + " INTEGER NOT NULL, " +
-                PratilipiContract.PratilipiEntity.COLUMN_READ_COUNT + " INTEGER NOT NULL, " +
-                PratilipiContract.PratilipiEntity.COLUMN_RATING_COUNT + " INTEGER NOT NULL, " +
-                PratilipiContract.PratilipiEntity.COLUMN_AVERAGE_RATING + " REAL NOT NULL, " +
+                PratilipiContract.PratilipiEntity.COLUMN_PAGE_COUNT + " INTEGER, " +
+                PratilipiContract.PratilipiEntity.COLUMN_READ_COUNT + " INTEGER, " +
+                PratilipiContract.PratilipiEntity.COLUMN_RATING_COUNT + " INTEGER, " +
+                PratilipiContract.PratilipiEntity.COLUMN_AVERAGE_RATING + " REAL, " +
                 PratilipiContract.PratilipiEntity.COLUMN_CURRENT_CHAPTER + " INTEGER DEFAULT 1, " +
                 PratilipiContract.PratilipiEntity.COLUMN_CURRENT_PAGE + " INTEGER DEFAULT 1, " +
                 PratilipiContract.PratilipiEntity.COLUMN_FONT_SIZE + " TEXT DEFAULT '12dp', " +
