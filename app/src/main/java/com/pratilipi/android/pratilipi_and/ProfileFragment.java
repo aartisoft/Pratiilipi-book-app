@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -148,7 +149,7 @@ public class ProfileFragment extends Fragment {
                                                             .show();
                                                 } else {
 
-                                                    //TODO: Handle usecase when user gives e-mail permission
+                                                    //TODO: Handle use case when user gives e-mail permission
                                                     String serverEmail = responseJson.getString(USER_EMAIL);
                                                     String fbEmail = responseObject.getString(USER_EMAIL);
                                                     if (serverEmail.equals(fbEmail)) {
@@ -167,22 +168,16 @@ public class ProfileFragment extends Fragment {
                                                 e.printStackTrace();
                                             }
 
-                                            mUser2 = getLoggedInUser();
-
-                                            rootView.findViewById(R.id.guest_user_profile).setVisibility(View.GONE);
-                                            rootView.findViewById(R.id.registered_user_profile).setVisibility(View.VISIBLE);
-                                            ((TextView) rootView.findViewById(R.id.profile_name_textview)).setText(mUser2.getDisplayName());
-//                                            ((TextView) rootView.findViewById(R.id.profile_shelf_count_textview)).setText(String.valueOf(ShelfUtil.numberOfContentInShelf(getActivity(), mUser2.getEmail())));
-                                            Glide.with(getActivity()).load(mUser2.getProfileImageUrl()).into((ImageView) rootView.findViewById(R.id.imageView_profile));
-//                                            Fragment currentFragment = getActivity().getSupportFragmentManager()
-//                                                    .findFragmentByTag(PROFILE_FRAGMENT_TAG);
-//                                            //Recreate fragment. - Below if block is doing no good
-//                                            if(currentFragment instanceof ProfileFragment){
-//                                                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-//                                                transaction.detach(currentFragment);
-//                                                transaction.attach(currentFragment);
-//                                                transaction.commit();
-//                                            }
+                                            //Restart Main Activity to refresh views.
+                                            int sdkVersion = Integer.valueOf(Build.VERSION.SDK_INT);
+                                            //Activity.recreate() is applicable from api level 11.
+                                            if(  sdkVersion >=11 ){
+                                                getActivity().recreate();
+                                            } else {
+                                                Intent intent = getActivity().getIntent();
+                                                getActivity().finish();
+                                                startActivity(intent);
+                                            }
                                             dialog.hide();
                                             dialog.dismiss();
 
@@ -214,6 +209,7 @@ public class ProfileFragment extends Fragment {
         } else {
             rootView.findViewById(R.id.guest_user_profile).setVisibility(View.GONE);
             rootView.findViewById(R.id.registered_user_profile).setVisibility(View.VISIBLE);
+            Glide.with(getActivity()).load(mUser.getProfileImageUrl()).into((ImageView) rootView.findViewById(R.id.imageView_profile));
             ((TextView) rootView.findViewById(R.id.profile_name_textview)).setText(mUser.getDisplayName());
             ((TextView) rootView.findViewById(R.id.profile_email_textview)).setText(mUser.getEmail());
             ((TextView) rootView.findViewById(R.id.profile_shelf_count_textview))
