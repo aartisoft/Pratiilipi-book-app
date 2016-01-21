@@ -9,7 +9,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.text.format.Time;
-import android.util.Log;
 
 import com.pratilipi.android.pratilipi_and.LanguageSelectionActivity;
 import com.pratilipi.android.pratilipi_and.R;
@@ -21,9 +20,9 @@ public class AppUtil {
 
     private static final String LOG_TAG = AppUtil.class.getSimpleName();
 
-    private static final long GUJARATI_LANGUAGE_ID = 5965057007550464L;
-    private static final long HINDI_LANGUAGE_ID = 5130467284090880L;
-    private static final long TAMIL_LANGUAGE_ID = 6319546696728576L;
+    public static final long GUJARATI_LANGUAGE_ID = 5965057007550464L;
+    public static final long HINDI_LANGUAGE_ID = 5130467284090880L;
+    public static final long TAMIL_LANGUAGE_ID = 6319546696728576L;
 
     private static final String GUJARATI_LANGUAGE = "GUJARATI";
     private static final String HINDI_LANGUAGE = "HINDI";
