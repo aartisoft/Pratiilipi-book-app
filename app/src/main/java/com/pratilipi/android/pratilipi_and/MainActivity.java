@@ -3,52 +3,72 @@ package com.pratilipi.android.pratilipi_and;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.pratilipi.android.pratilipi_and.adapter.ViewPagerAdapter;
+import com.pratilipi.android.pratilipi_and.adapter.ViewPagerAdapterNew;
 
 public class MainActivity extends AppCompatActivity{
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
-    private ViewPager mViewPager;
-    private ViewPagerAdapter mViewPageradapter;
+    ViewPager mViewPagerNew;
+    ViewPagerAdapterNew mViewPageradapter;
     private SlidingTabLayout mTabs;
     private CharSequence mTitles[] = {"HOME","CATEGORIES","SHELF","PROFILE"};
     private int mNumbOfTabs = 4;
     private int mTabPosition;
     private SearchView  mSearchView;
+    TabLayout mTabLayout;
+    Toolbar mToolBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 //        getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mToolBar = (Toolbar)findViewById(R.id.toolbar);
+        setSupportActionBar(mToolBar);
         getSupportActionBar().setElevation(0f);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        mViewPageradapter = new ViewPagerAdapter(getSupportFragmentManager(), mTitles, mNumbOfTabs);
+        mViewPagerNew = (ViewPager) findViewById(R.id.viewpager_activity);
+        setupViewpager(mViewPagerNew);
 
-        mViewPager = (ViewPager) findViewById(R.id.pager_main_activity);
-        mViewPager.setAdapter(mViewPageradapter);
+        mTabLayout = (TabLayout)findViewById(R.id.tabs_new);
+        mTabLayout.setupWithViewPager(mViewPagerNew);
 
-        mTabs = (SlidingTabLayout) findViewById(R.id.tabs_main_activity);
-        mTabs.setCustomTabColorizer(new SlidingTabLayout.TabColorizer() {
-            @Override
-            public int getIndicatorColor(int position) {
-                return getResources().getColor(R.color.tabsScrollColor);
-            }
-        });
-        mTabs.setViewPager(mViewPager);
-        mViewPager.setCurrentItem(getIntent().getFlags());
+
+//
+//        mTabs = (SlidingTabLayout) findViewById(R.id.tabs_main_activity);
+//        mTabs.setCustomTabColorizer(new SlidingTabLayout.TabColorizer() {
+//            @Override
+//            public int getIndicatorColor(int position) {
+//                return getResources().getColor(R.color.tabsScrollColor);
+//            }
+//        });
+//        mTabs.setViewPager(mViewPager);
+//        mViewPager.setCurrentItem(getIntent().getFlags());
 
         //TODO : SCHEDULE SERVICE. RIGHT NOW THIS IS CALLED EVERY TIME MAIN ACTIVITY IS STARTED OR RESUMED
 //        Intent serviceIntent = new Intent(this, PratilipiService.class);
 //        startService(serviceIntent);
+    }
+
+    private void setupViewpager(ViewPager viewPager){
+        mViewPageradapter = new ViewPagerAdapterNew(getSupportFragmentManager());
+        mViewPageradapter.addFragment(new HomeFragment(),"HOME");
+        mViewPageradapter.addFragment(new CategoryFragment(),"GENRE");
+        mViewPageradapter.addFragment(new ShelfFragment(),"SHELF");
+        mViewPageradapter.addFragment(new ProfileFragment(), "PROFILE");
+        viewPager.setAdapter(mViewPageradapter);
     }
 
     @Override

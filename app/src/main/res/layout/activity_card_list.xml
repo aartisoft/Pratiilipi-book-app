@@ -27,6 +27,7 @@
         android:layout_centerInParent="true"
         android:layout_centerVertical="true"
         android:visibility="invisible"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"
+        android:indeterminateDrawable="@drawable/custom_progress_dialog"/>
 
 </FrameLayout>
