@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="primaryColor">#F5F5F5</color>
-    <color name="primaryDarkColor">#D32F2F</color>
-    <color name="colorAccent">#F5F5F5</color>
-
+    <color name="primaryDarkColor">#80999999</color>
     <color name="tabsScrollColor">#8a140e</color>
 
     <color name="pratilipi_white">#FFFFFF</color>

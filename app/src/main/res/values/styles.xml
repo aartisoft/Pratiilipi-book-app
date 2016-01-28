@@ -12,18 +12,6 @@
         <item name="colorPrimaryDark">@color/primaryDarkColor</item>
     </style>
 
-    <!--NEW APP THEME FOR RED ACTION BAR-->
-
-    <style name="AppTheme.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-    </style>
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
-
-    <!-- END OF NEW APP THEME-->
-
-
     <!-- Main activity theme -->
     <style name="PratilipiTheme" parent="@style/AppTheme">
         <item name="actionBarStyle">@style/PratilipiTheme.ActionBar</item>

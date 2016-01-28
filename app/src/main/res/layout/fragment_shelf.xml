@@ -12,7 +12,6 @@
         android:text="@string/Login_Shelf"
         android:textSize="@dimen/abc_text_size_large_material"
         android:visibility="visible"
-        android:gravity="center"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
 

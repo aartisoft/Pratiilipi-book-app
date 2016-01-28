@@ -17,7 +17,6 @@
     <application
         android:name=".AppController"
         android:allowBackup="true"
-        android:supportsRtl="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
@@ -40,12 +39,12 @@
         <activity
             android:name=".LanguageSelectionActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
         </activity>
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/PratilipiTheme" >
         </activity>
         <activity
             android:name=".UserLoginActivity"
