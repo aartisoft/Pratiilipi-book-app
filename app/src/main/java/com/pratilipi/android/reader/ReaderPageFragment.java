@@ -203,12 +203,12 @@ public class ReaderPageFragment extends Fragment {
             int lineBase = getLineBounds(endLine);
 //            Log.e(LOG_TAG, "Line Number / Line Base : " + i + "/" + lineBase);
             if(lineBase >= screenBaseLine ) {
-                endLine -= 1;
+//                endLine -= 1;
                 break;
             }
         }
         if(getLineEnd(endLine) != -1) {
-            int lineEnd = mTextView.getLayout().getLineEnd(endLine);
+            int lineEnd = mTextView.getLayout().getLineStart(endLine);
             if(endLine != totalLines-1) {
                 //when endLine is not last line, find last index of space to prevent word cutting.
                 String subString = mContentString.substring(mStartIndex, mStartIndex + lineEnd);

@@ -51,7 +51,6 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -159,6 +158,7 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
 
         // ViewPager & PagerAdapter
         viewPager = (MyViewPager) findViewById( R.id.viewPager );
+        pageFragmentInfoList = new ArrayList<>();
         mPagerAdapter = new PagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(mPagerAdapter);
 
@@ -210,7 +210,7 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
                         break;
                     }
                     case MotionEvent.ACTION_UP: {
-                        Log.e(LOG_TAG, "Current Item : " + viewPager.getCurrentItem());
+//                        Log.e(LOG_TAG, "Current Item : " + viewPager.getCurrentItem());
                         if(performClick){
                             if (actionBar.isShowing())
                                 hideActionBar();
@@ -228,7 +228,7 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
 
         // SeekBar
         seekBar = (SeekBar) findViewById( R.id.seekBar );
-        seekBar.setMax( getChapterCount()-1 );
+        seekBar.setMax(getChapterCount() - 1);
         seekBar.setOnSeekBarChangeListener( this );
     }
 
@@ -364,10 +364,10 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
 
         @Override
         public Fragment getItem( int position ) {
-            ReaderPageFragment pageFragment = positionFragmentMap.get( position );
+            ReaderPageFragment pageFragment = positionFragmentMap.get(position);
 
-            if( pageFragment == null ) {
-                int[] pageFragmentInfo = pageFragmentInfoList.get( position );
+            if (pageFragment == null) {
+                int[] pageFragmentInfo = pageFragmentInfoList.get(position);
                 String language =
                         mPratilipi.getLanguageName() != null ? mPratilipi.getLanguageName() : mPratilipi.getLanguageId();
                 pageFragment = ReaderPageFragment.newInstance(
@@ -377,26 +377,28 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
                         -1
                 );
 
-                positionFragmentMap.put( position, pageFragment );
+                positionFragmentMap.put(position, pageFragment);
             }
             return pageFragment;
         }
 
         @Override
         public void startUpdate( ViewGroup container ) {
-            int currentItem = viewPager.getCurrentItem();
-            if(pageFragmentInfoList.size() == 1 && currentItem > 0) {
-                /**
-                 * This is hack to remove indexOutOfBound exception which system was throwing when
-                 * and drawer item is clicked. mPagerAdapter is reset but viewPager views are not
-                 * refreshed.
-                 * TODO: FIND PROPER WAY TO DEAL WITH THIS PROBLEM.
-                 */
-                currentItem = 0;
+            if(pageFragmentInfoList != null && pageFragmentInfoList.size() > 0) {
+                int currentItem = viewPager.getCurrentItem();
+                if (pageFragmentInfoList.size() == 1 && currentItem > 0) {
+                    /**
+                     * This is hack to remove indexOutOfBound exception which system was throwing when
+                     * and drawer item is clicked. mPagerAdapter is reset but viewPager views are not
+                     * refreshed.
+                     * TODO: FIND PROPER WAY TO DEAL WITH THIS PROBLEM.
+                     */
+                    currentItem = 0;
+                }
+                int chapterNo = pageFragmentInfoList.get(currentItem)[0];
+                if (seekBar.getProgress() != chapterNo - 1)
+                    seekBar.setProgress(chapterNo - 1);
             }
-            int chapterNo = pageFragmentInfoList.get(currentItem)[0];
-            if( seekBar.getProgress() != chapterNo-1 )
-                seekBar.setProgress( chapterNo-1 );
         }
 
 
@@ -405,6 +407,9 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
 
             ViewPager viewPager = (ViewPager) container;
             int position = viewPager.getCurrentItem();
+
+            if(pageFragmentInfoList == null || pageFragmentInfoList.size() ==0)
+                return;
 
             ReaderPageFragment fragment = (ReaderPageFragment) getItem( position );
             LinearLayout view = (LinearLayout) fragment.getView();
@@ -546,7 +551,8 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
         if(mContentList == null || mContentList.size() == 0)
             getContentFromServer(this, chapterNo);
         else{
-            pageFragmentInfoList = new LinkedList<>();
+//            pageFragmentInfoList = new LinkedList<>();
+            pageFragmentInfoList.clear();
             pageFragmentInfoList.add(new int[]{chapterNo, 0, -1, 0});
             mPagerAdapter.refreshAdapter(); //This is not used when reader is loading for first time.
             mPagerAdapter.notifyDataSetChanged();
@@ -597,7 +603,7 @@ public class ReaderActivity extends ActionBarActivity implements SeekBar.OnSeekB
                         return;
                     }
 
-                    pageFragmentInfoList = new LinkedList<>();
+                    pageFragmentInfoList.clear();
                     pageFragmentInfoList.add(new int[]{chapterNo, 0, -1, 0});
                     mPagerAdapter.refreshAdapter();
                     mPagerAdapter.notifyDataSetChanged();
