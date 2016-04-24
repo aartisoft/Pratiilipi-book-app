@@ -17,6 +17,10 @@ public class ReaderTextView extends TextView {
     private int mViewWidth;
     private int mLeftPadding;
 
+    public ReaderTextView(Context context){
+        super(context, null );
+    }
+
     public ReaderTextView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -43,7 +47,9 @@ public class ReaderTextView extends TextView {
             String line = text.substring(lineStart, lineEnd);
 
             float width = StaticLayout.getDesiredWidth(text, lineStart, lineEnd, getPaint());
-            if (needScale(line)) {
+            //Used to identify when end of paragraph is end of screen.
+            boolean isLastLine = i == layout.getLineCount()-1 ? true : false;
+            if (needScale(isLastLine, line)) {
                 drawScaledText(canvas, lineStart, line, width);
             } else {
                 canvas.drawText(line, mLeftPadding, mLineY, paint);
@@ -81,11 +87,20 @@ public class ReaderTextView extends TextView {
         return line.length() > 3 && line.charAt(0) == ' ' && line.charAt(1) == ' ';
     }
 
-    private boolean needScale(String line) {
+    private boolean isLastLineOfParagraph(int lineNo){
+
+        return false;
+    }
+
+    private boolean needScale(boolean isLastLine, String line) {
         if (line.length() == 0) {
             return false;
         } else {
-            return line.charAt(line.length() - 1) != '\n';
+            /**
+             * Below logic does not align last line of the screen.
+             * TODO : Align last line of screen when it is not end of paragraph.
+             */
+            return line.charAt(line.length() - 1) != '\n' && !isLastLine;
         }
     }
 }

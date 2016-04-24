@@ -68,19 +68,18 @@
         </activity>
         <activity
             android:name=".DetailActivity"
-            android:theme="@style/PratilipiTheme"
-            android:parentActivityName=".CardListActivity" >
+            android:parentActivityName=".CardListActivity"
+            android:theme="@style/PratilipiTheme" >
         </activity>
-
         <activity
             android:name="com.pratilipi.android.reader.ReaderActivity"
-            android:theme="@style/ReaderTheme"
-            android:parentActivityName=".CardListActivity" >
+            android:parentActivityName=".CardListActivity"
+            android:theme="@style/ReaderTheme" >
         </activity>
-
-        <activity android:name=".SearchActivity"
-            android:windowSoftInputMode="stateVisible"
-            android:parentActivityName=".MainActivity"/>
+        <activity
+            android:name=".SearchActivity"
+            android:parentActivityName=".MainActivity"
+            android:windowSoftInputMode="stateVisible" />
 
         <provider
             android:name=".data.PratilipiProvider"
@@ -118,10 +117,10 @@
         <!-- android:resource="@xml/syncadapter" /> -->
         <!-- </service> -->
 
-
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="95afa3a96271386948b61e17a96acd48679fb6ef" />
+
     </application>
 
 </manifest>

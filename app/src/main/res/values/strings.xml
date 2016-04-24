@@ -55,5 +55,6 @@
     <string name="Sign_up_with_fb">Sign up with Facebook</string>
 
     <string name="Sign_In"><u><i>Sign In</i></u></string>
+    <string name="title_activity_reader">ReaderActivity</string>
 
 </resources>
