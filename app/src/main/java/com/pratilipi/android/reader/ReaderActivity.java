@@ -25,6 +25,7 @@ import com.pratilipi.android.pratilipi_and.R;
 import com.pratilipi.android.pratilipi_and.Widget.MyViewPager;
 import com.pratilipi.android.pratilipi_and.datafiles.Pratilipi;
 import com.pratilipi.android.pratilipi_and.util.AppUtil;
+import com.pratilipi.android.pratilipi_and.util.ShelfUtil;
 
 /**
  * Created by Rahul Ranjan on 2/29/2016.
@@ -98,7 +99,7 @@ public class ReaderActivity extends AppCompatActivity implements SeekBar.OnSeekB
         mActionBar.setIcon(R.drawable.ic_logo);
 
         mMyViewPage = (MyViewPager) findViewById(R.id.reader_viewPager);
-        mReaderAdapter = new ReaderAdapter(getSupportFragmentManager(), mContext, mPratilipi, 1);
+        mReaderAdapter = new ReaderAdapter(getSupportFragmentManager(), mContext);
         mMyViewPage.setAdapter(mReaderAdapter);
 
         //SWIPE LEFT AND RIGHT
@@ -166,6 +167,21 @@ public class ReaderActivity extends AppCompatActivity implements SeekBar.OnSeekB
     }
 
     @Override
+    protected void onResume() {
+        int[] readingLocation = ShelfUtil.getReadingLocation(mContext, mPratilipi.getPratilipiId());
+        if(readingLocation == null){
+            mReaderAdapter.setContent(mPratilipi, 1);
+            mMyViewPage.setCurrentItem(0);
+        } else {
+            int currentChapter = readingLocation[0];
+            int currentFragment = readingLocation[1];
+            mReaderAdapter.setContent(mPratilipi, currentChapter);
+            mMyViewPage.setCurrentItem(currentFragment);
+        }
+        super.onResume();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_reader, menu);
         if (mIndexSize < 1) {
@@ -228,6 +244,16 @@ public class ReaderActivity extends AppCompatActivity implements SeekBar.OnSeekB
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //SAVE CURRENT CHAPTER AND FRAGMENT
+        int currentChapter = mReaderAdapter.getCurrentChapter(mMyViewPage.getCurrentItem());
+        int currentFragment = mReaderAdapter.getCurrentFragment(mMyViewPage.getCurrentItem());
+        ShelfUtil.updateReadingLocation(mContext, mPratilipi.getPratilipiId(), currentChapter, currentFragment);
 
     }
 

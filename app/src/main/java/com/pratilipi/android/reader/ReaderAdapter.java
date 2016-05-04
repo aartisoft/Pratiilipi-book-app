@@ -7,7 +7,6 @@ import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -44,21 +43,17 @@ public class ReaderAdapter extends FragmentStatePagerAdapter {
 
     private boolean mFontSizeChangedFlag;
 
-    public ReaderAdapter(FragmentManager fm, Context context, Pratilipi pratilipi, int currentChapter){
+    public ReaderAdapter(FragmentManager fm, Context context){
         super(fm);
         this.mContext = context;
         this.mFragmentManager = fm;
-        this.mPratilipi = pratilipi;
-        this.mCurrentChapter = currentChapter;
         this.mContentMapList = new TreeMap<Integer, String>();
         this.mPageContentList = new ArrayList<>();
         this.mFontSizeChangedFlag = false;
-        getContentFromDb(mCurrentChapter, RANDOM_CHAPTER);
     }
 
     @Override
     public Fragment getItem(int position) {
-        Log.e(LOG_TAG, "getItem is called for Position : " + position);
         String language =
                 mPratilipi.getLanguageName() != null ? mPratilipi.getLanguageName() : mPratilipi.getLanguageId();
         String[] pageContent = mPageContentList.get(position);
@@ -80,6 +75,12 @@ public class ReaderAdapter extends FragmentStatePagerAdapter {
             return POSITION_NONE;
         else
             return super.getItemPosition(object);
+    }
+
+    public void setContent(Pratilipi pratilipi, int currentChapter){
+        this.mPratilipi = pratilipi;
+        this.mCurrentChapter = currentChapter;
+        getContentFromDb(mCurrentChapter, RANDOM_CHAPTER);
     }
 
     public void setFontSizeChangeFlag(boolean isFontSizeChanged){
@@ -121,8 +122,6 @@ public class ReaderAdapter extends FragmentStatePagerAdapter {
         ReaderTextView readerTextView = new ReaderTextView(mContext);
         width = width - 90;
         height = height - 120;
-        Log.e(LOG_TAG, "WIDTH : " + width);
-        Log.e(LOG_TAG, "HEIGHT : " + height);
 
         Pagination pagination = new Pagination(mContext, width, height, readerTextView.getPaint(), 0f, 1f, false);
 
@@ -135,10 +134,10 @@ public class ReaderAdapter extends FragmentStatePagerAdapter {
                     List<CharSequence> pageContentList = pagination.doPagination(content.getTextContent());
                     int i = 0;
                     for (CharSequence sequence : pageContentList) {
-                        String[] temp = {content.getChapterNo(), i + " ", sequence.toString()};
+                        String[] temp = {content.getChapterNo(), i + "", sequence.toString()};
                         //Add page details at end of the list.
                         mPageContentList.add(i, temp);
-                        i = i + 1;
+                        i += 1;
                     }
                     notifyDataSetChanged();
                 }
@@ -152,10 +151,24 @@ public class ReaderAdapter extends FragmentStatePagerAdapter {
                     List<CharSequence> pageContentList = pagination.doPagination(content.getTextContent());
                     int i = 0;
                     for (CharSequence sequence : pageContentList) {
-                        i = i + 1;
-                        String[] temp = {content.getChapterNo(), i + " ", sequence.toString()};
+                        String[] temp = {content.getChapterNo(), i + "", sequence.toString()};
                         //Add page details at end of the list.
                         mPageContentList.add(mPageContentList.size(), temp);
+                        i += 1;
+                    }
+                    notifyDataSetChanged();
+                }
+            }
+            case NEXT_CHAPTER : {
+                for(Content content : contentList) {
+                    //Add fresh fragments at end of the list.
+                    List<CharSequence> pageContentList = pagination.doPagination(content.getTextContent());
+                    int i = 0;
+                    for (CharSequence sequence : pageContentList) {
+                        String[] temp = {content.getChapterNo(), i + "", sequence.toString()};
+                        //Add page details at end of the list.
+                        mPageContentList.add(mPageContentList.size(), temp);
+                        i += 1;
                     }
                     notifyDataSetChanged();
                 }
@@ -179,7 +192,7 @@ public class ReaderAdapter extends FragmentStatePagerAdapter {
         this.mChapterCount = chapterCount;
     }
 
-    public int getVisibleViewIndex(int currentItemIndex){
+    public int getCurrentFragment(int currentItemIndex){
         String[] currentItem = mPageContentList.get(currentItemIndex);
         return Integer.parseInt(currentItem[1]);
     }
