@@ -29,7 +29,6 @@ import java.util.Vector;
 public class ShelfUtil {
 
     private static final String LOG_TAG = ShelfUtil.class.getSimpleName();
-//    private static final String SHELF_ENDPOINT = "http://mark-4p47.www.prod-pratilipi.appspot.com/api.pratilipi/userpratilipi/library";
     private static final String SHELF_ENDPOINT = "http://www.pratilipi.com/api.pratilipi/userpratilipi/library";
 
     private static final String PRATILIPI_ID = "pratilipiId";
@@ -258,7 +257,7 @@ public class ShelfUtil {
         return 0;
     }
 
-    public int updateContentDownloadStatus(Context context, String pratilipi, int downloadStatus){
+    public int updateContentDownloadStatus(Context context, String pratilipiId, int downloadStatus){
         User user = UserUtil.getLoggedInUser(context);
         if(user == null){
             Log.e(LOG_TAG, "Unable to update content status. User is null");
@@ -271,8 +270,77 @@ public class ShelfUtil {
         Uri uri = PratilipiContract.ShelfEntity.CONTENT_URI;
         String selection = PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + "=?"
                 + " AND " + PratilipiContract.ShelfEntity.COLUMN_USER_EMAIL + "=?";
-        String[] selectionArgs = new String[]{pratilipi, user.getEmail()};
+        String[] selectionArgs = new String[]{pratilipiId, user.getEmail()};
 
         return context.getContentResolver().update(uri, values, selection,selectionArgs);
+    }
+
+    /**
+     * @param context
+     * @param pratilipiId
+     * @param currentChapter
+     * @param currentFragment
+     * @return int = number of rows updated
+     * Stores current reader position of a book for the logged in user.
+     */
+    public static int updateReadingLocation(Context context, String pratilipiId, int currentChapter, int currentFragment){
+        Log.i(LOG_TAG, "Storing current reading location");
+        Log.i(LOG_TAG, "Current Chapter : " + currentChapter);
+        Log.i(LOG_TAG, "Current Fragment : " + currentFragment);
+
+        User user = UserUtil.getLoggedInUser(context);
+        if(user == null){
+            Log.w(LOG_TAG, "Unable to update content status. User is null");
+            return 0;
+        }
+
+        ContentValues values = new ContentValues();
+        values.put(PratilipiContract.ShelfEntity.COLUMN_CURRENT_CHAPTER, currentChapter);
+        values.put(PratilipiContract.ShelfEntity.COLUMN_CURRENT_FRAGMENT, currentFragment);
+
+        Uri uri = PratilipiContract.ShelfEntity.CONTENT_URI;
+        String selection = PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + "=?"
+                + " AND " + PratilipiContract.ShelfEntity.COLUMN_USER_EMAIL + "=?";
+        String[] selectionArgs = new String[]{pratilipiId, user.getEmail()};
+
+        return context.getContentResolver().update(uri, values, selection,selectionArgs);
+    }
+
+    /**
+     * @param context
+     * @param pratilipiId
+     * @return  int[] = {currentChapter, currentFragment}
+     * Fetches reading location for current book for logged in user.
+     */
+    public static int[] getReadingLocation(Context context, String pratilipiId){
+        Log.i(LOG_TAG, "Fetching current reading location");
+        User user = UserUtil.getLoggedInUser(context);
+        if(user == null){
+            Log.w(LOG_TAG, "User is not logged in.");
+            return null;
+        }
+
+        Uri uri = PratilipiContract.ShelfEntity.CONTENT_URI;
+        String[] projection = new String[]{PratilipiContract.ShelfEntity.COLUMN_CURRENT_CHAPTER, PratilipiContract.ShelfEntity.COLUMN_CURRENT_FRAGMENT};
+        String selection = PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + "=?"
+                + " AND " + PratilipiContract.ShelfEntity.COLUMN_USER_EMAIL + "=?";
+        String[] selectionArgs = new String[]{pratilipiId, user.getEmail()};
+
+        Cursor cursor = context.getContentResolver().query(
+                uri,
+                projection,
+                selection,
+                selectionArgs,
+                null
+        );
+        if(cursor == null || !cursor.moveToFirst()){
+            Log.w(LOG_TAG, "Previous reading location is not saved");
+        } else{
+            Log.i(LOG_TAG, "Current Chapter : " + cursor.getInt(0));
+            Log.i(LOG_TAG, "Current Fragment : " + cursor.getInt(1));
+            int[] readingLocation = {cursor.getInt(0), cursor.getInt(1)};
+            return readingLocation;
+        }
+        return null;
     }
 }

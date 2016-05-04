@@ -312,6 +312,10 @@ public class PratilipiContract {
         public static final int CONTENT_DOWNLOADED = 1;
         public static final int CONTENT_DOWNLOADING = 2;
 
+        //auto bookmark data.
+        public static final String COLUMN_CURRENT_CHAPTER = "current_page";
+        public static final String COLUMN_CURRENT_FRAGMENT = "current_screen";
+
         public static Uri getShelfEntityUri( String id ){
             return CONTENT_URI.buildUpon().appendPath( id ).build();
         }

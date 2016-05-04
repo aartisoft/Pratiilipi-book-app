@@ -135,6 +135,8 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
                 PratilipiContract.ShelfEntity.COLUMN_CREATION_DATE + " INTEGER NOT NULL, " +
                 PratilipiContract.ShelfEntity.COLUMN_LAST_ACCESSED_DATE + " INTEGER NOT NULL, " +
                 PratilipiContract.ShelfEntity.COLUMN_DOWNLOAD_STATUS + " INTEGER, " +
+                PratilipiContract.ShelfEntity.COLUMN_CURRENT_CHAPTER + " INTEGER, " +
+                PratilipiContract.ShelfEntity.COLUMN_CURRENT_FRAGMENT + " INTEGER, " +
 
                 // Set up the pratilipi_id column as a foreign key to pratilipi table.
                 " FOREIGN KEY (" + PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + ") REFERENCES " +
