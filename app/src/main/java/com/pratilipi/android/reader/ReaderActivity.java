@@ -17,20 +17,35 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.pratilipi.android.pratilipi_and.R;
 import com.pratilipi.android.pratilipi_and.Widget.MyViewPager;
 import com.pratilipi.android.pratilipi_and.datafiles.Pratilipi;
 import com.pratilipi.android.pratilipi_and.util.AppUtil;
 import com.pratilipi.android.pratilipi_and.util.ShelfUtil;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Rahul Ranjan on 2/29/2016.
  */
-public class ReaderActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener  {
+public class ReaderActivity extends AppCompatActivity  {
 
     private static final String LOG_TAG = ReaderActivity.class.getSimpleName();
     public static final String PRATILIPI = "pratilipi";
@@ -39,8 +54,12 @@ public class ReaderActivity extends AppCompatActivity implements SeekBar.OnSeekB
     private Context mContext;
     private ActionBar mActionBar;
     private LinearLayout mSeekBarLayout;
+    private SeekBar mSeekBar;
+    private TextView mSeekBarTextView;
     private ProgressBar mProgressBar;
     private DrawerLayout mDrawerLayout;
+    private ListView mDrawerList;
+    private MyListViewAdapter mDrawerListAdapter;
 
     private MyViewPager mMyViewPage;
     private ReaderAdapter mReaderAdapter;
@@ -52,6 +71,7 @@ public class ReaderActivity extends AppCompatActivity implements SeekBar.OnSeekB
     private int mInternetConnectionErrorCounter;
     private int mSeekBarLayoutPosition;
     private int mIndexSize;
+    private List<String> mTitles;
 
     //Device Details.
     float mDeviceWidth;
@@ -90,6 +110,7 @@ public class ReaderActivity extends AppCompatActivity implements SeekBar.OnSeekB
 
         mPratilipi = (Pratilipi) getIntent().getSerializableExtra(PRATILIPI);
         mParentActivityClassName = getIntent().getStringExtra(PARENT_ACTIVITY_CLASS_NAME);
+        mIndexSize = getChapterCount();
 
         setTitle(mPratilipi.getTitle());
 
@@ -122,18 +143,31 @@ public class ReaderActivity extends AppCompatActivity implements SeekBar.OnSeekB
                     case MotionEvent.ACTION_MOVE: {
                         float delta = Math.abs(startX - event.getX());
                         int currentItem = mMyViewPage.getCurrentItem();
-                        int currentChapter = mReaderAdapter.getCurrentChapter(currentItem);
-                        if (currentItem == 0 && !isSwiping && delta > 10 && event.getX() > startX) {
+                        int viewPagerSize = mMyViewPage.getAdapter().getCount();
+                        if (!isSwiping && delta > 30 && event.getX() > startX) {
                             /**Add previous chapter to start of list when user swipes right
                              * and current item is first item on list
                              * 'isSwiping' is used to prevent multiple times execution of following code.
                              * 'delta' is used to distinguish between swipe and click event.
                              */
                             isSwiping = true;
-                            mReaderAdapter.getContentFromDb(currentChapter-1, ReaderAdapter.PREVIOUS_CHAPTER);
+                            if(currentItem > 0) {
+                                mReaderAdapter.setCurrentChapter(currentItem - 1);
+                                Log.e(LOG_TAG, "SWIPING RIGHT. Current Item / Current Chapter : " + currentItem + "/" + mReaderAdapter.getCurrentChapter());
+//                                setSeekBarTextView();
+                                mReaderAdapter.getPreviousChapter();
+                            }
+                            //TODO : IF 1ST FRAGMENT IS VISIBLE, call getDataFromDb for previous chapter
 
-                        } else if (delta > 1 && event.getX() < startX) {
-//                            Log.i(LOG_TAG, "SWIPING LEFT");
+                        } else if (delta > 30 && !isSwiping && event.getX() < startX) {
+                            isSwiping = true;
+                            if(currentItem < viewPagerSize-1) {
+                                mReaderAdapter.setCurrentChapter(currentItem + 1);
+                                Log.e(LOG_TAG, "SWIPING LEFT. Current Item / Total Size : " + currentItem + "/" + mReaderAdapter.getCurrentChapter());
+//                                setSeekBarTextView();
+                                mReaderAdapter.getNextChapter();
+                            }
+                            //TODO : IF LAST FRAGMENT IS VISIBLE, call getDataFromDb for next chapter
                         }
 
                         //To capture click event.
@@ -158,6 +192,48 @@ public class ReaderActivity extends AppCompatActivity implements SeekBar.OnSeekB
             }
         });
 
+
+        mSeekBar = (SeekBar) findViewById(R.id.seekBar);
+        mSeekBar.setMax(getChapterCount() - 1);
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                //'progress' ranges - from 0 to chapterCount-1.
+                mReaderAdapter.setContent(mPratilipi, getChapterCount(), progress + 1);
+                setSeekBarTextView();
+                mDrawerListAdapter.setSelectedItem(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        mSeekBarTextView = (TextView) findViewById(R.id.seekBar_text);
+
+        //SETTING DRAWER IN READ ACTIVITY.
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.reader_drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.reader_right_drawer);
+        mDrawerList.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
+        setIndexList(); //Setting Index table content
+        //Index item onClickEvent.
+        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                mDrawerListAdapter.setSelectedItem(position);
+                mReaderAdapter.setContent(mPratilipi, mIndexSize, position + 1);
+                mMyViewPage.setCurrentItem(0);  //Set first fragments
+                mSeekBar.setProgress(position); //update seek bar position
+                setSeekBarTextView();   //update seek bar text
+                mDrawerLayout.closeDrawer(Gravity.RIGHT);
+            }
+        });
+
     }
 
     @Nullable
@@ -170,21 +246,52 @@ public class ReaderActivity extends AppCompatActivity implements SeekBar.OnSeekB
     protected void onResume() {
         int[] readingLocation = ShelfUtil.getReadingLocation(mContext, mPratilipi.getPratilipiId());
         if(readingLocation == null){
-            mReaderAdapter.setContent(mPratilipi, 1);
+            mReaderAdapter.setContent(mPratilipi, getChapterCount(), 1);
             mMyViewPage.setCurrentItem(0);
+            mSeekBar.setProgress(0); //Set seek bar position
+            mDrawerListAdapter.setSelectedItem(0);
         } else {
             int currentChapter = readingLocation[0];
             int currentFragment = readingLocation[1];
-            mReaderAdapter.setContent(mPratilipi, currentChapter);
+            mReaderAdapter.setContent(mPratilipi, getChapterCount(), currentChapter);
             mMyViewPage.setCurrentItem(currentFragment);
+            mSeekBar.setProgress(currentChapter - 1); //Set seek bar position
+            mDrawerListAdapter.setSelectedItem(currentChapter - 1);
         }
+        setSeekBarTextView();   //set seek bar text for first time.
+
+        //OnPageChangeListener
+        mMyViewPage.addOnPageChangeListener(new MyViewPager.OnPageChangeListener() {
+            int lastPosition;
+            int currentPosition;
+
+            @Override
+            public void onPageSelected(int position) {
+                //Called when a page is selected.
+                setSeekBarTextView();
+                currentPosition = position;
+                Log.e(LOG_TAG, "Last Position / Current Position : " + lastPosition + " / " + currentPosition);
+            }
+
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                //Called when page is scrolled
+                lastPosition = position;
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                //Called when scroll state of a page is changed
+            }
+        });
+
         super.onResume();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_reader, menu);
-        if (mIndexSize < 1) {
+        if (mIndexSize <= 1) {
             menu.findItem(R.id.action_index).setVisible(false);
 //            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         }
@@ -233,28 +340,13 @@ public class ReaderActivity extends AppCompatActivity implements SeekBar.OnSeekB
     }
 
     @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-
-    }
-
-    @Override
     protected void onPause() {
         super.onPause();
         //SAVE CURRENT CHAPTER AND FRAGMENT
-        int currentChapter = mReaderAdapter.getCurrentChapter(mMyViewPage.getCurrentItem());
+        int currentChapter = mReaderAdapter.getCurrentChapter();
         int currentFragment = mReaderAdapter.getCurrentFragment(mMyViewPage.getCurrentItem());
-        ShelfUtil.updateReadingLocation(mContext, mPratilipi.getPratilipiId(), currentChapter, currentFragment);
-
+        ShelfUtil.createOrUpdateReadingLocation(mContext, mPratilipi.getPratilipiId(), currentChapter, currentFragment);
+        mMyViewPage.clearOnPageChangeListeners();
     }
 
     private void hideActionBar(){
@@ -309,5 +401,52 @@ public class ReaderActivity extends AppCompatActivity implements SeekBar.OnSeekB
         int currentChapter = mReaderAdapter.setCurrentChapter(currentItemIndex);
 
         //TODO : UPDATE SEEK BAR AND INDEX TABLE SELECTED ITEM.
+    }
+
+    private void setSeekBarTextView(){
+        int chapterCount = getChapterCount();
+        int currentChapter = mReaderAdapter.getCurrentChapter();
+        String text = "Chapter " + currentChapter + " of " + chapterCount;
+        mSeekBarTextView.setText(text);
+    }
+
+    private int getChapterCount(){
+        String indexString = mPratilipi.getIndex();
+        int chapterCount = 0;
+        if(indexString == null)
+            return 1;
+
+        try{
+            JSONArray indexArray = new JSONArray(indexString);
+            Log.i(LOG_TAG, "Array Length : " + indexArray.length());
+            chapterCount = indexArray.length();
+        } catch(JSONException e){
+            e.printStackTrace();
+        }
+        return chapterCount;
+    }
+
+    private void setIndexList(){
+
+        //Setting Reader Content Table
+        Gson gson = new GsonBuilder().create();
+        JsonArray indexArr = null;
+        String indexString = mPratilipi.getIndex();
+        if(indexString != null)
+            indexArr = gson.fromJson(indexString, JsonElement.class).getAsJsonArray();
+        mTitles = new ArrayList<>();
+        if (null != indexArr) {
+            mIndexSize = indexArr.size();
+            for (int i = 0; i < mIndexSize; i++) {
+                JsonObject jsonObject = indexArr.get(i).getAsJsonObject();
+                String title = jsonObject.get("title").toString();
+
+                mTitles.add(i, title.substring(1, title.length() - 1));
+            }
+        }
+
+        mDrawerListAdapter = new MyListViewAdapter(this, mTitles);
+        mDrawerList.setAdapter(mDrawerListAdapter);
+
     }
 }

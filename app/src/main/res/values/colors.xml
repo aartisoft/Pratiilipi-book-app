@@ -13,4 +13,8 @@
     <color name="pratilipi_teal">#009688</color>
     <color name="pratilipi_red">#E53935</color>
 
+    //Drawer list item background colors
+    <color name="pressed_color">#DCDCDC</color>
+    <color name="default_color">#ffffff</color>
+
 </resources>
