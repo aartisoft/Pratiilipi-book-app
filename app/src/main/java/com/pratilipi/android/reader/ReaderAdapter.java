@@ -7,6 +7,7 @@ import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -34,22 +35,30 @@ public class ReaderAdapter extends FragmentStatePagerAdapter {
 
     private Context mContext;
     private Map<Integer, String> mContentMapList;
-    private List<String[]> mPageContentList;    //{screenNumber, chapterNumber, text}
+    private List<Content> mContentList;
+    private List<String[]> mPageContentList;    //{chapterNumber, fragmentNumber, text, boolean}
     private FragmentManager mFragmentManager;
     private Pratilipi mPratilipi;
+    private List<String> mTitles;
 
     private int mCurrentChapter;
     private int mChapterCount;
 
-    private boolean mFontSizeChangedFlag;
+    private boolean mFragmentContentChanged;
+    private boolean mFetchingNextChapter;
+    private boolean mFetchingPreviousChapter;
+    private int mPreviousChapterFragmentCount;
 
-    public ReaderAdapter(FragmentManager fm, Context context){
+    public ReaderAdapter(FragmentManager fm, Context context, List<String> titles){
         super(fm);
+        Log.e(LOG_TAG, "ReaderAdapter initialized");
         this.mContext = context;
         this.mFragmentManager = fm;
+        this.mTitles = titles;
+        this.mContentList = new ArrayList<>();
         this.mContentMapList = new TreeMap<Integer, String>();
         this.mPageContentList = new ArrayList<>();
-        this.mFontSizeChangedFlag = false;
+        this.mFragmentContentChanged = false;
     }
 
     @Override
@@ -57,12 +66,17 @@ public class ReaderAdapter extends FragmentStatePagerAdapter {
         String language =
                 mPratilipi.getLanguageName() != null ? mPratilipi.getLanguageName() : mPratilipi.getLanguageId();
         String[] pageContent = mPageContentList.get(position);
-
-        return ReaderFragment.newInstance(language, pageContent[2]);
+        int chapterNumber = Integer.parseInt(pageContent[0]);
+        int fragmentNo = Integer.parseInt(pageContent[1]);
+        if(fragmentNo == 0)
+            return ReaderFragment.newInstance(language, pageContent[2], mTitles.get(chapterNumber-1), true);
+        else
+            return ReaderFragment.newInstance(language, pageContent[2], mTitles.get(chapterNumber-1), false);
     }
 
     @Override
     public int getCount() {
+//        Log.e(LOG_TAG, "Count of Items in Adapter : " + mPageContentList.size());
         return mPageContentList.size();
     }
 
@@ -71,38 +85,29 @@ public class ReaderAdapter extends FragmentStatePagerAdapter {
         /**
          * Returns POSITION_NONE when font size is changed
          */
-        if(mFontSizeChangedFlag)
+        if(mFragmentContentChanged)
             return POSITION_NONE;
         else
             return super.getItemPosition(object);
     }
 
-    public void setContent(Pratilipi pratilipi, int currentChapter){
+    public void setContent(Pratilipi pratilipi, int chapterCount, int currentChapter){
         this.mPratilipi = pratilipi;
+        this.mChapterCount = chapterCount;
         this.mCurrentChapter = currentChapter;
+        this.mFragmentContentChanged = true;
         getContentFromDb(mCurrentChapter, RANDOM_CHAPTER);
     }
+
+
 
     public void setFontSizeChangeFlag(boolean isFontSizeChanged){
-        this.mFontSizeChangedFlag = isFontSizeChanged;
+        this.mFragmentContentChanged = isFontSizeChanged;
         mPageContentList.clear();
-        getContentFromDb(mCurrentChapter, RANDOM_CHAPTER);
+//        getContentFromDb(mCurrentChapter, RANDOM_CHAPTER);
+        performPagination(mContentList, RANDOM_CHAPTER);
         notifyDataSetChanged();
-        this.mFontSizeChangedFlag = false;
-    }
-
-    public void addChapter(Content content, int chapterType){
-        switch (chapterType){
-            case RANDOM_CHAPTER:
-                mContentMapList.clear();
-        }
-
-        mContentMapList.put(Integer.valueOf(content.getChapterNo()), content.getTextContent());
-        //Perform pagination for added content
-        List<Content> tempList = new ArrayList<>();
-        tempList.add(content);
-        performPagination(tempList, chapterType);
-        notifyDataSetChanged();
+        this.mFragmentContentChanged = false;
     }
 
     public void performPagination(List<Content> contentList, int chapterType){
@@ -127,11 +132,15 @@ public class ReaderAdapter extends FragmentStatePagerAdapter {
 
         switch (chapterType){
             case PREVIOUS_CHAPTER : {
+                Content tempContent = new Content();
                 for(Content content : contentList) {
                     /**
                      * Add page contents returned by Pagination class at start of 
                      */
+                    tempContent = content;
+                    Log.i(LOG_TAG, "Performing Pagination. Previous Chapter");
                     List<CharSequence> pageContentList = pagination.doPagination(content.getTextContent());
+                    mPreviousChapterFragmentCount = pageContentList.size();
                     int i = 0;
                     for (CharSequence sequence : pageContentList) {
                         String[] temp = {content.getChapterNo(), i + "", sequence.toString()};
@@ -141,13 +150,19 @@ public class ReaderAdapter extends FragmentStatePagerAdapter {
                     }
                     notifyDataSetChanged();
                 }
+                Log.i(LOG_TAG, "performPagination. Number of fragments for previous Chapter : " + mPreviousChapterFragmentCount);
+                mContentList.add(0, tempContent);
+                break;
             }
             case RANDOM_CHAPTER : {
+                mPageContentList.clear();
+                List<Content> tempList = new ArrayList<>();
                 for(Content content : contentList) {
                     /**
                      * Clear existing pages and add fresh fragments.
                      */
-                    mPageContentList.clear();
+                    tempList.add(content);
+                    Log.i(LOG_TAG, "Perform Pagination. Random chapter");
                     List<CharSequence> pageContentList = pagination.doPagination(content.getTextContent());
                     int i = 0;
                     for (CharSequence sequence : pageContentList) {
@@ -158,10 +173,15 @@ public class ReaderAdapter extends FragmentStatePagerAdapter {
                     }
                     notifyDataSetChanged();
                 }
+                mContentList = tempList;
+                break;
             }
             case NEXT_CHAPTER : {
+                Content tempContent = new Content();
                 for(Content content : contentList) {
                     //Add fresh fragments at end of the list.
+                    tempContent = content;
+                    Log.i(LOG_TAG, "Perform Pagination. Next Chapter");
                     List<CharSequence> pageContentList = pagination.doPagination(content.getTextContent());
                     int i = 0;
                     for (CharSequence sequence : pageContentList) {
@@ -172,6 +192,8 @@ public class ReaderAdapter extends FragmentStatePagerAdapter {
                     }
                     notifyDataSetChanged();
                 }
+                mContentList.add(mContentList.size(), tempContent);
+                break;
             }
         }
 
@@ -183,9 +205,8 @@ public class ReaderAdapter extends FragmentStatePagerAdapter {
         return mCurrentChapter;
     }
 
-    public int getCurrentChapter(int currentItemIndex){
-        String[] currentItem = mPageContentList.get(currentItemIndex);
-        return Integer.parseInt(currentItem[0]);
+    public int getCurrentChapter(){
+        return mCurrentChapter;
     }
 
     public void setChapterCount(int chapterCount){
@@ -200,27 +221,62 @@ public class ReaderAdapter extends FragmentStatePagerAdapter {
     public void getContentFromDb(int chapterNo, int chapterType){
         ContentUtil contentUtil = new ContentUtil();
         Cursor cursor = contentUtil.getContentfromDb(mContext, mPratilipi, chapterNo, null);
-        if(!cursor.moveToFirst())
+        if(!cursor.moveToFirst()) {
+            Log.i(LOG_TAG, "Content not found in local DB. Making server call");
             getContentFromServer(contentUtil, chapterNo, chapterType);
+        }
         else {
             //PAGINATION AND FRAGMENT VIEW CREATION.
+            Log.i(LOG_TAG, "Content is found in local DB");
             List<Content> contentList = contentUtil.createContentList(cursor);
             cursor.close();
             performPagination(contentList, chapterType);
+            mFetchingNextChapter = false;
+            mFetchingPreviousChapter = false;
         }
     }
 
-    private void getPreviousChapter(){
+    public void getPreviousChapter(){
+        mPreviousChapterFragmentCount = 0;
+        if(mCurrentChapter > 1 && !mFetchingPreviousChapter) {
+            String[] temp = mPageContentList.get(0);
+            int smallestChapter = Integer.valueOf(temp[0]);
+            if(smallestChapter == mCurrentChapter) {
+                Log.e(LOG_TAG, "Fetching previous chapter. Chapter Number : " + (mCurrentChapter-1));
+                mFetchingPreviousChapter = true;
+                ContentUtil contentUtil = new ContentUtil();
+                Cursor cursor = contentUtil.getContentfromDb(mContext, mPratilipi, mCurrentChapter-1, null);
+                Log.e(LOG_TAG, "getPreviousChapter. Data fetched from db");
+                if(cursor == null){
+                    Log.e(LOG_TAG, "Cursor returned is null");
+                    getContentFromServer(contentUtil, mCurrentChapter - 1, PREVIOUS_CHAPTER);
+                } else if(!cursor.moveToFirst()) {
+                    Log.e(LOG_TAG, "Cursor is empty");
+                    getContentFromServer(contentUtil, mCurrentChapter - 1, PREVIOUS_CHAPTER);
+                }
+            }
+        }
+    }
+
+    public int setPreviousChapter(){
         if(mCurrentChapter > 1)
-            getContentFromDb(mCurrentChapter - 1, PREVIOUS_CHAPTER);
+            getContentFromDb(mCurrentChapter-1, PREVIOUS_CHAPTER);
+        return mPreviousChapterFragmentCount;
     }
 
-    private void getNextChapter(){
-        if(mCurrentChapter < mChapterCount)
-            getContentFromDb(mCurrentChapter + 1, NEXT_CHAPTER);
+    public void getNextChapter(){
+        if(mCurrentChapter < mChapterCount && !mFetchingNextChapter) {
+            String[] temp = mPageContentList.get(mPageContentList.size()-1);
+            int largestChapter = Integer.valueOf(temp[0]);
+            if(mCurrentChapter == largestChapter) {
+                Log.i(LOG_TAG, "Fetching next chapter");
+                mFetchingNextChapter = true;
+                getContentFromDb(mCurrentChapter + 1, NEXT_CHAPTER);
+            }
+        }
     }
 
-    private void getContentFromServer(ContentUtil contentUtil, final int chapterNo, final int chapterType){
+    public void getContentFromServer(ContentUtil contentUtil, final int chapterNo, final int chapterType){
         if(!AppUtil.isOnline(mContext)) {
             Toast.makeText(mContext, "Device is not connected to internet", Toast.LENGTH_SHORT).show();
             return;
@@ -230,8 +286,10 @@ public class ReaderAdapter extends FragmentStatePagerAdapter {
             @Override
             public void done(boolean isSuccessful, String data) {
                 if (isSuccessful) {
-                    //TODO : FETCH DATA FROM LOCAL DB, INITIATE PAGINATION AND FRAGMENT CREATION.
-                    getContentFromDb(chapterNo, chapterType);
+                    Log.i(LOG_TAG, "Async task callback received");
+                    //FETCH DATA FROM LOCAL DB, INITIATE PAGINATION AND FRAGMENT CREATION.
+                    if(chapterType != PREVIOUS_CHAPTER)
+                        getContentFromDb(chapterNo, chapterType);
                 } else{
                     Toast.makeText(mContext, "Error while fetching content from server. Try again later", Toast.LENGTH_SHORT).show();
                 }

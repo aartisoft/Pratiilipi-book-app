@@ -6,10 +6,12 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.pratilipi.android.pratilipi_and.R;
 import com.pratilipi.android.pratilipi_and.util.AppUtil;
@@ -22,19 +24,28 @@ public class ReaderFragment extends Fragment {
     private static final String LOG_TAG = ReaderFragment.class.getSimpleName();
     public static final String CONTENT_STRING = "contentString";
     public static final String LANGUAGE = "language";
+    public static final String CHAPTER_TITLE = "title";
+    public static final String IS_FIRST_FRAGMENT = "isFirstFragment";
 
     private Activity mActivity;
     private LinearLayout mLayout;
+    private TextView mTitleTextView;
+    private LinearLayout mTextViewLayout;
     private ReaderTextView mTextView;
     private String mLanguage;
     private CharSequence mContentString;
 
+    private String mChapterTitle;
+    private boolean mIsFirstFragment;
 
-    public static ReaderFragment newInstance(String language, String contentString){
+
+    public static ReaderFragment newInstance(String language, String contentString, String chapterTitle, boolean isFirstFragment){
         ReaderFragment fragment = new ReaderFragment();
         Bundle args = new Bundle();
         args.putString(LANGUAGE, language);
         args.putString(CONTENT_STRING, contentString);
+        args.putString(CHAPTER_TITLE, chapterTitle);
+        args.putString(IS_FIRST_FRAGMENT, String.valueOf(isFirstFragment));
 
         fragment.setArguments(args);
 
@@ -46,6 +57,8 @@ public class ReaderFragment extends Fragment {
         super.setArguments(args);
         mLanguage = args.getString(LANGUAGE);
         mContentString = args.getString(CONTENT_STRING);
+        mChapterTitle = args.getString(CHAPTER_TITLE);
+        mIsFirstFragment = Boolean.parseBoolean(args.getString(IS_FIRST_FRAGMENT));
     }
 
 
@@ -60,6 +73,14 @@ public class ReaderFragment extends Fragment {
 
         mTextView = (ReaderTextView) mLayout.findViewById(R.id.reader_fragment_content_textview);
         if(mTextView != null) {
+            if(mIsFirstFragment){
+                mTitleTextView = (TextView) mLayout.findViewById(R.id.reader_fragment_title_textview);
+                mTitleTextView.setText(mChapterTitle);
+                mTitleTextView.setVisibility(View.VISIBLE);
+
+                mTextViewLayout = (LinearLayout) mLayout.findViewById(R.id.reader_fragment_content_layout);
+                mTextViewLayout.setGravity(Gravity.BOTTOM);
+            }
             setFont(mLanguage);
             setFontSize();
             mTextView.setText(mContentString);
