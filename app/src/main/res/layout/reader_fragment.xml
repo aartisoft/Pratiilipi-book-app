@@ -2,7 +2,6 @@
     android:id="@+id/reader_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="bottom"
     android:paddingTop="15dp"
     android:paddingBottom="15dp"
     android:orientation="vertical" >
@@ -15,12 +14,29 @@
         android:textStyle="bold"
         android:gravity="center" />
 
-    <com.pratilipi.android.reader.ReaderTextView
-        android:id="@+id/reader_fragment_content_textview"
+    <TextView
+        android:id="@+id/reader_fragment_title_textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingRight="15dp"
-        android:paddingLeft="15dp"
+        android:textStyle="bold"
+        android:textSize="@dimen/abc_text_size_large_material"
+        android:gravity="center"
+        android:paddingTop="20dp"
         android:visibility="gone"/>
+
+    <LinearLayout
+        android:id="@+id/reader_fragment_content_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <com.pratilipi.android.reader.ReaderTextView
+            android:id="@+id/reader_fragment_content_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingRight="15dp"
+            android:paddingLeft="15dp"
+            android:visibility="gone"/>
+    </LinearLayout>
 
 </LinearLayout>
