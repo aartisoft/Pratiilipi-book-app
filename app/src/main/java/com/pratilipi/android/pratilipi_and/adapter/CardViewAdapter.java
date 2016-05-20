@@ -9,11 +9,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.NetworkImageView;
-import com.pratilipi.android.pratilipi_and.AppController;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.pratilipi.android.pratilipi_and.DetailActivity;
 import com.pratilipi.android.pratilipi_and.R;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
@@ -34,12 +34,10 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.DataVi
 
     private List<Homescreen> mHomescreenList;
     private ViewGroup mViewGroup;
-    private ImageLoader mImageLoader;
 
     public CardViewAdapter(){
         Log.e(LOG_TAG, "CardViewAdapter constructor called");
         this.mHomescreenList = new ArrayList<>();
-        mImageLoader = new AppController().getInstance().getImageLoader();
         this.notifyDataSetChanged();
     }
 
@@ -71,10 +69,24 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.DataVi
                 coverUrl = coverUrl + "&" + "width=150";
             else
                 coverUrl = coverUrl + "?" + "width=150";
-            dateViewHolder.bookCover.setImageUrl(coverUrl, mImageLoader);
+            Glide
+                    .with(context)
+                    .load(coverUrl)
+                    .placeholder(R.drawable.ic_default_image_120)   //Shows image while loading original image
+                    .error(R.drawable.ic_default_image_120)     //Shows image after loading original image fails
+                    .diskCacheStrategy(DiskCacheStrategy.RESULT)    //Cache only result version
+                    .skipMemoryCache(true)      //Skip memory cache
+                    .into(dateViewHolder.bookCover);
         } else
             //TODO : Remove this when Shelf and mobileInit API calls are made to Android module.
-            dateViewHolder.bookCover.setImageUrl("http:" + homescreenObject.getCoverImageUrl(), mImageLoader);
+            Glide
+                    .with(context)
+                    .load("http:" + homescreenObject.getCoverImageUrl())
+                    .placeholder(R.drawable.ic_default_image_120)   //Shows image while loading original image
+                    .error(R.drawable.ic_default_image_120)     //Shows image after loading original image fails
+                    .diskCacheStrategy(DiskCacheStrategy.RESULT)    //Cache only result version
+                    .skipMemoryCache(true)      //Skip memory cache
+                    .into(dateViewHolder.bookCover);
 
         if( homescreenObject.getPrice() == 0f) {
             dateViewHolder.freeButton.setText("FREE!");
@@ -102,7 +114,7 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.DataVi
     public class DataViewHolder extends RecyclerView.ViewHolder{
 
         CardView mHomeCardView;
-        NetworkImageView bookCover;
+        ImageView bookCover;
 //        RatingBar mRatingBar;
         TextView bookTitle;
 //        TextView authorName;
@@ -114,7 +126,7 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.DataVi
             super(itemView);
 
             mHomeCardView = (CardView)itemView.findViewById(R.id.home_card_view);
-            bookCover = (NetworkImageView)itemView.findViewById(R.id.card_layout_cover_imageview);
+            bookCover = (ImageView)itemView.findViewById(R.id.card_layout_cover_imageview);
 //            mRatingBar = (RatingBar)itemView.findViewById(R.id.averageRatingRatingBar);
             bookTitle = (TextView)itemView.findViewById(R.id.card_layout_title_textview);
 //            authorName = (TextView)itemView.findViewById(R.id.overlay_author_name);

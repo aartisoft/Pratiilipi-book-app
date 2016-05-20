@@ -14,9 +14,8 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
-import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.NetworkImageView;
-import com.pratilipi.android.pratilipi_and.AppController;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.pratilipi.android.pratilipi_and.DetailActivity;
 import com.pratilipi.android.pratilipi_and.R;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
@@ -35,8 +34,6 @@ public class CardListViewAdapter extends RecyclerView.Adapter<CardListViewAdapte
 
     private List<Pratilipi> mPratilipiList;
     private ViewGroup mViewGroup;
-
-    ImageLoader imageLoader = AppController.getInstance().getImageLoader();
 
     public CardListViewAdapter(){
         mPratilipiList = new ArrayList<>();
@@ -76,10 +73,24 @@ public class CardListViewAdapter extends RecyclerView.Adapter<CardListViewAdapte
                 coverUrl = coverUrl + "&" + "width=150";
             else
                 coverUrl = coverUrl + "?" + "width=150";
-            holder.bookCover.setImageUrl(coverUrl, imageLoader);
+            Glide
+                    .with(context)
+                    .load(coverUrl)
+                    .placeholder(R.drawable.ic_default_image_120)   //Shows image while loading original image
+                    .error(R.drawable.ic_default_image_120)     //Shows image after loading original image fails
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)    //Cache only result version
+                    .skipMemoryCache(true)      //Skip memory cache
+                    .into(holder.bookCover);
         } else
             //TODO : Remove this when Shelf and mobileInit API calls are made to Android module.
-            holder.bookCover.setImageUrl("http:" + pratilipi.getCoverImageUrl(), imageLoader);
+            Glide
+                    .with(context)
+                    .load("http:" + pratilipi.getCoverImageUrl())
+                    .placeholder(R.drawable.ic_default_image_120)   //Shows image while loading original image
+                    .error(R.drawable.ic_default_image_120)     //Shows image after loading original image fails
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)    //Cache only result version
+                    .skipMemoryCache(true)      //Skip memory cache
+                    .into(holder.bookCover);
 
         holder.ratingBar.setRating(pratilipi.getAverageRating());
         if( pratilipi.getPrice() == 0 )
@@ -115,7 +126,7 @@ public class CardListViewAdapter extends RecyclerView.Adapter<CardListViewAdapte
         CardView cardView;
         TextView bookTitle;
         TextView authorName;
-        NetworkImageView bookCover;
+        ImageView bookCover;
         RatingBar ratingBar;
         TextView ratingCount;
 //        TextView averageRating;
@@ -128,7 +139,7 @@ public class CardListViewAdapter extends RecyclerView.Adapter<CardListViewAdapte
             cardView = (CardView)itemView.findViewById(R.id.card_list_cardview);
             bookTitle = (TextView)itemView.findViewById(R.id.card_list_title_textview);
             authorName = (TextView)itemView.findViewById(R.id.card_list_author_name_textview);
-            bookCover = (NetworkImageView)itemView.findViewById(R.id.card_list_cover_imageview);
+            bookCover = (ImageView)itemView.findViewById(R.id.card_list_cover_imageview);
             ratingBar = (RatingBar)itemView.findViewById(R.id.card_list_rating);
             ratingCount = (TextView)itemView.findViewById(R.id.card_list_rating_count_textview);
 //            averageRating = (TextView)itemView.findViewById(R.id.averageRatingTextView);

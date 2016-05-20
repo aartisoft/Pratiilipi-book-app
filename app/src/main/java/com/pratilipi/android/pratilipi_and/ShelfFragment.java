@@ -69,7 +69,7 @@ public class ShelfFragment extends Fragment implements LoaderManager.LoaderCallb
         shelfSignIn.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
         shelfSignUp.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
 
-        mShelfAdapter = new ShelfAdapter();
+        mShelfAdapter = new ShelfAdapter(getActivity());
 
         RecyclerView recyclerView  = ( RecyclerView ) rootView.findViewById( R.id.shelf_recyclerview );
         recyclerView.setHasFixedSize(true);

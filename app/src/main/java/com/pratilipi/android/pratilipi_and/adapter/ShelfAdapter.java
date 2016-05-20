@@ -20,13 +20,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.NetworkImageView;
-import com.pratilipi.android.pratilipi_and.AppController;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.pratilipi.android.pratilipi_and.DetailActivity;
 import com.pratilipi.android.pratilipi_and.GetCallback;
 import com.pratilipi.android.pratilipi_and.R;
@@ -58,7 +58,6 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
     private Context mContext;
     private List<Pratilipi> mPratilipiList;
     private ViewGroup mViewGroup;
-    private ImageLoader mImageLoader;
     private Integer mChapterCount;
     private Integer mChapterNumber;
     private JSONArray mIndexJsonArray;
@@ -68,9 +67,9 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
     private final String DELETE_CONTENT = "Delete Content";
     private final String ABOUT = "About";
 
-    public ShelfAdapter(){
+    public ShelfAdapter(Context context){
+        this.mContext = context;
         mPratilipiList = new ArrayList<>();
-        mImageLoader = AppController.getInstance().getImageLoader();
         this.notifyDataSetChanged();
     }
 
@@ -106,7 +105,14 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
         holder.authorName.setTypeface(typeFace);
         holder.bookTitle.setText(pratilipi.getTitle());
         holder.authorName.setText(pratilipi.getAuthorName());
-        holder.bookCover.setImageUrl("http:" + pratilipi.getCoverImageUrl(), mImageLoader);
+        Glide
+                .with(mContext)
+                .load("http:" + pratilipi.getCoverImageUrl())
+                .placeholder(R.drawable.ic_default_image_120)   //Shows image while loading original image
+                .error(R.drawable.ic_default_image_120)     //Shows image after loading original image fails
+                .diskCacheStrategy(DiskCacheStrategy.RESULT)    //Cache only result version
+                .skipMemoryCache(true)      //Skip memory cache
+                .into(holder.bookCover);
         holder.ratingBar.setRating(pratilipi.getAverageRating());
 
         holder.cardView.setOnClickListener(new View.OnClickListener() {
@@ -251,7 +257,7 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
         CardView cardView;
         TextView bookTitle;
         TextView authorName;
-        NetworkImageView bookCover;
+        ImageView bookCover;
         RatingBar ratingBar;
         MySpinner dropdown;
 //        TextView ratingCount;
@@ -264,7 +270,7 @@ public class ShelfAdapter extends RecyclerView.Adapter<ShelfAdapter.DataViewHold
             cardView = (CardView)itemView.findViewById(R.id.shelf_cardview);
             bookTitle = (TextView)itemView.findViewById(R.id.shelf_title_textview);
             authorName = (TextView)itemView.findViewById(R.id.shelf_author_name_textview);
-            bookCover = (NetworkImageView)itemView.findViewById(R.id.shelf_cover_imageview);
+            bookCover = (ImageView)itemView.findViewById(R.id.shelf_cover_imageview);
             ratingBar = (RatingBar)itemView.findViewById(R.id.shelf_rating);
 //            ratingCount = (TextView)itemView.findViewById(R.id.card_list_rating_count_textview);
 //            averageRating = (TextView)itemView.findViewById(R.id.averageRatingTextView);

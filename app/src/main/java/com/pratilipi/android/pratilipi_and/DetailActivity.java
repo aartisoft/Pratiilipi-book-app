@@ -14,12 +14,13 @@ import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.NetworkImageView;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.pratilipi.android.pratilipi_and.data.PratilipiContract;
 import com.pratilipi.android.pratilipi_and.datafiles.Pratilipi;
 import com.pratilipi.android.pratilipi_and.datafiles.User;
@@ -74,8 +75,7 @@ public class DetailActivity extends AppCompatActivity {
 
         mPratilipiId = mPratilipi.getPratilipiId();
 
-        ImageLoader imageLoader = AppController.getInstance().getImageLoader();
-        NetworkImageView imageView = (NetworkImageView) findViewById(R.id.detail_cover_image);
+        ImageView imageView = (ImageView) findViewById(R.id.detail_cover_image);
         //Hack to handle 2 different types of Url returned by different APIs.
         if(mPratilipi.getCoverImageUrl().contains("http:")) {
             String coverUrl = mPratilipi.getCoverImageUrl();
@@ -83,10 +83,22 @@ public class DetailActivity extends AppCompatActivity {
                 coverUrl = coverUrl + "&" + "width=150";
             else
                 coverUrl = coverUrl + "?" + "width=150";
-            imageView.setImageUrl(coverUrl, imageLoader);
+            Glide.with(this)
+                    .load(coverUrl)
+                    .placeholder(R.drawable.ic_default_image_120)   //Shows image while loading original image
+                    .error(R.drawable.ic_default_image_120)     //Shows image after loading original image fails
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)    //Cache only result version
+                    .skipMemoryCache(true)      //Skip memory cache
+                    .into(imageView);
         } else
             //TODO : Remove this when Shelf and mobileInit API calls are made to Android module.
-            imageView.setImageUrl("http:" + mPratilipi.getCoverImageUrl(), imageLoader);
+            Glide.with(this)
+                    .load("http:" + mPratilipi.getCoverImageUrl())
+                    .placeholder(R.drawable.ic_default_image_120)   //Shows image while loading original image
+                    .error(R.drawable.ic_default_image_120)     //Shows image after loading original image fails
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)    //Cache only result version
+                    .skipMemoryCache(true)      //Skip memory cache
+                    .into(imageView);
 
         TextView title = (TextView) findViewById(R.id.detail_title_textview);
         title.setTypeface(typeFace);

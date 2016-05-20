@@ -24,7 +24,7 @@ tools:context="com.pratilipi.android.pratilipi_and.DetailActivity">
                 android:layout_height="wrap_content"
                 android:layout_gravity="fill_horizontal">
 
-                <com.android.volley.toolbox.NetworkImageView
+                <ImageView
                     android:id="@+id/detail_cover_image"
                     android:layout_width="100dp"
                     android:layout_height="match_parent"
