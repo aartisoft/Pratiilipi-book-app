@@ -357,6 +357,7 @@ public class UserUtil {
         } else
             user = null;
 
+        cursor.close();
         return user;
     }
 

@@ -103,12 +103,14 @@ public class ContentUtil {
             String content = "";
             try{
                 JSONArray contentArray = object.getJSONArray(PAGELET_LIST);
-                for(int i = 0;i < contentArray.length(); ++i){
+                int contentArrayLength = contentArray.length();
+                for(int i = 0;i < contentArrayLength; ++i){
                     JSONObject jsonObject = contentArray.getJSONObject(i);
                     content = content + jsonObject.getString("data");
                     if(i < contentArray.length()-1)
-                        content = content + "</br>";
+                        content = content + "\n";
                 }
+                Log.i(LOG_TAG, "Content String prepared");
             }catch(JSONException e){
                 Log.e(LOG_TAG, "JSON Exception occurred");
                 e.printStackTrace();
@@ -119,21 +121,26 @@ public class ContentUtil {
 //            Log.e(LOG_TAG, "Content String : " + content);
             Uri uri = PratilipiContract.ContentEntity.getPratilipiContentByChapterUri(pratilipiId, chapterNumber);
             Cursor cursor = context.getContentResolver().query(uri, CONTENT_COLUMN, null, null, null);
-//            Log.e(LOG_TAG, "Cursor length : " + cursor.getCount());
             if (cursor != null && cursor.moveToFirst()) {
-                //USED WHEN ONE CHAPTER IS CONTAINED IN MORE THAN 1 PAGE.
-//                Log.e(LOG_TAG, "DB entry already exist");
-                String existingContent = cursor.getString(cursor.getColumnIndex(PratilipiContract.ContentEntity.COLUMN_TEXT_CONTENT));
-                String updatedContent = existingContent + "</br>" + content.trim();
-                ContentValues values = new ContentValues();
-                values.put(PratilipiContract.ContentEntity.COLUMN_TEXT_CONTENT, updatedContent);
-                String selection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=? AND "
-                                    + PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER + "=?";
-                String[] selectionArgs = new String[]{pratilipiId, chapterNumber};
-                int rowsUpdated = context.getContentResolver().update(PratilipiContract.ContentEntity.CONTENT_URI, values, selection, selectionArgs);
-                if(rowsUpdated > 0)
-                    return true;
-
+                /**
+                 * Used when chapter contain more than 1 page. Currently is not valid as all chapters
+                 * are considered to have only 1 page.
+                 */
+//                Log.i(LOG_TAG, "DB entry already exist");
+//                if(pageNumber != null) {
+//                    Log.e(LOG_TAG, "Fetched page is not present in db");
+//                    String existingContent = cursor.getString(cursor.getColumnIndex(PratilipiContract.ContentEntity.COLUMN_TEXT_CONTENT));
+//                    String updatedContent = existingContent + "</br>" + content.trim();
+//                    ContentValues values = new ContentValues();
+//                    values.put(PratilipiContract.ContentEntity.COLUMN_TEXT_CONTENT, updatedContent);
+//                    String selection = PratilipiContract.ContentEntity.COLUMN_PRATILIPI_ID + "=? AND "
+//                            + PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER + "=?";
+//                    String[] selectionArgs = new String[]{pratilipiId, chapterNumber};
+//                    int rowsUpdated = context.getContentResolver().update(PratilipiContract.ContentEntity.CONTENT_URI, values, selection, selectionArgs);
+//                    if (rowsUpdated > 0) {
+//                        return true;
+//                    }
+//                }
             } else {
                 //INSERT
 //                Log.e(LOG_TAG, "No DB entry exists");
@@ -142,9 +149,11 @@ public class ContentUtil {
                 values.put(PratilipiContract.ContentEntity.COLUMN_CHAPTER_NUMBER, chapterNumber);
                 values.put(PratilipiContract.ContentEntity.COLUMN_TEXT_CONTENT, content.trim());
                 returnUri = context.getContentResolver().insert(PratilipiContract.ContentEntity.CONTENT_URI, values);
+                Log.i(LOG_TAG, "is content inserted : " + (returnUri != null));
                 if(returnUri != null)
                     return true;
             }
+            cursor.close();
         } else if(pageNumber != null){
 
             byte[] content = null;
@@ -175,6 +184,7 @@ public class ContentUtil {
                 if (returnUri != null)
                     return true;
             }
+            cursor.close();
         }
         return false;
     }
@@ -248,7 +258,6 @@ public class ContentUtil {
                 null,
                 null
         );
-
         return cursor;
 
 //        if(cursor == null || !cursor.moveToFirst()){
@@ -388,7 +397,7 @@ public class ContentUtil {
 
         @Override
         protected String doInBackground(Void... params) {
-            Log.e(LOG_TAG, "doInBackground() function");
+            Log.i(LOG_TAG, "doInBackground() function");
             HashMap<String, String> param = new HashMap<>();
             param.put(PAGE_NUMBER, String.valueOf(mCurrentPage));
             param.put(PRATILIPI_ID, mPratilipiId);
@@ -401,13 +410,14 @@ public class ContentUtil {
         @Override
         protected void onPostExecute(String responseString) {
             mPostExecuteFunctionCounter++;
-            Log.e(LOG_TAG, "onPostExecute function. Current Page : " + mCurrentPage);
+            Log.i(LOG_TAG, "onPostExecute function. Current Page : " + mCurrentPage);
             if(mIsSuccessful) {
                 //UPDATE DATABASE
                 try{
                     JSONObject json = new JSONObject(responseString);
-                    if(json.has(PAGE_CONTENT))
+                    if(json.has(PAGE_CONTENT)) {
                         insert(mContext, json.getJSONObject(PAGE_CONTENT), mPratilipiId, mChapterNo, null);
+                    }
 
                 } catch (JSONException e){
                     e.printStackTrace();

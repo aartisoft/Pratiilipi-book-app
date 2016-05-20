@@ -123,7 +123,7 @@ public class AppUtil {
 
     public static float getReaderFontSize(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String readerFontSize = prefs.getString(READER_FONT_SIZE, "30");
+        String readerFontSize = prefs.getString(READER_FONT_SIZE, "60");
         return Float.valueOf(readerFontSize);
     }
 
