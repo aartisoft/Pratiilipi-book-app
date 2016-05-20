@@ -236,6 +236,7 @@ public class PratilipiContract {
         public static final String COLUMN_TITLE = "title";
         public static final String COLUMN_TITLE_EN = "title_en";
         public static final String COLUMN_TYPE = "type";
+        public static final String COLUMN_PAGE_URL = "page_url";
         public static final String COLUMN_COVER_IMAGE_URL = "cover_image_url";
         public static final String COLUMN_LANGUAGE_ID = "language_id";
         public static final String COLUMN_LANGUAGE_NAME = "language_name";

@@ -1,5 +1,15 @@
 package com.pratilipi.android.pratilipi_and.datafiles;
 
+import android.util.Log;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.Serializable;
 
 /**
@@ -26,6 +36,7 @@ public class Pratilipi implements Serializable {
     private int currentChapter;
     private int pageCount;
     private int currentPage;
+    private String pageUrl;
     private String coverImageUrl;
     private String genreList;
     private int creationDate;
@@ -106,6 +117,10 @@ public class Pratilipi implements Serializable {
 
     public int getCurrentPage() {
         return currentPage;
+    }
+
+    public String getPageUrl(){
+        return pageUrl;
     }
 
     public String getCoverImageUrl() {
@@ -198,6 +213,20 @@ public class Pratilipi implements Serializable {
         this.currentPage = currentPage;
     }
 
+    public void setPageUrl(String pageUrl){
+        //New website url format : hindi.pratilipi.com/pageUrl
+        String name;
+        if(isValidJSONObject(languageName)) {
+            Gson gson = new GsonBuilder().create();
+            JsonObject object = gson.fromJson(languageName, JsonElement.class).getAsJsonObject();
+            name = object.get("nameEn").toString();
+        } else
+            name = languageName;
+        Log.e("Pratilipi datafile", "Language Object : " + name);
+        //substring is taken to remove double inverted quotes.
+        this.pageUrl = name.substring(1, name.length()-1).toLowerCase() + ".pratilipi.com" + pageUrl;
+    }
+
     public void setCoverImageUrl(String coverImageUrl) {
         this.coverImageUrl = coverImageUrl;
     }
@@ -217,4 +246,14 @@ public class Pratilipi implements Serializable {
 //    public void setDownloadStatus(int downloadStatus){
 //        this.downloadStatus = downloadStatus;
 //    }
+
+    private boolean isValidJSONObject(String language){
+        try {
+            new JSONObject(language);
+        } catch (JSONException ex) {
+            //Not a valid JSON object
+            return false;
+        }
+        return true;
+    }
 }

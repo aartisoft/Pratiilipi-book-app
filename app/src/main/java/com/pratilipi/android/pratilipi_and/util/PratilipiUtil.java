@@ -60,6 +60,7 @@ public class PratilipiUtil {
     private static final String PRATILIPI_AVERAGE_RATING = "averageRating";
 //    private static final String PRATILIPI_PRICE = "price";
 //    private static final String PRATILIPI_DISCOUNTED_PRICE = "discountedPrice";
+    private static final String PRATILIPI_PAGE_URL = "pageUrl";
     private static final String PRATILIPI_COVER_IMAGE_URL = "coverImageUrl";
 //    private static final String PRATILIPI_GENRE_LIST = "genreNameList";
 //    private static final String PRATILIPI_CATEGORY_LIST = "categoryNameList";
@@ -147,6 +148,10 @@ public class PratilipiUtil {
 
                 if(pratilipiObject.has(PRATILIPI_AVERAGE_RATING))
                     values.put(PratilipiContract.PratilipiEntity.COLUMN_AVERAGE_RATING, pratilipiObject.getInt(PRATILIPI_AVERAGE_RATING));
+
+                if(pratilipiObject.has(PRATILIPI_PAGE_URL))
+                    values.put(PratilipiContract.PratilipiEntity.COLUMN_PAGE_URL, pratilipiObject.getString(PRATILIPI_PAGE_URL));
+
                 if(pratilipiObject.has(PRATILIPI_COVER_IMAGE_URL))
                     values.put(PratilipiContract.PratilipiEntity.COLUMN_COVER_IMAGE_URL, pratilipiObject.getString(PRATILIPI_COVER_IMAGE_URL));
                 values.put(PratilipiContract.PratilipiEntity.COLUMN_CREATION_DATE, AppUtil.getCurrentJulianDay());
@@ -252,6 +257,9 @@ public class PratilipiUtil {
                 values.put(PratilipiContract.PratilipiEntity.COLUMN_AVERAGE_RATING, averageRating);
             }
 
+            if(pratilipiObject.has(PRATILIPI_PAGE_URL))
+                values.put(PratilipiContract.PratilipiEntity.COLUMN_PAGE_URL, pratilipiObject.getString(PRATILIPI_PAGE_URL));
+
             if(pratilipiObject.has(PRATILIPI_COVER_IMAGE_URL))
                 values.put(PratilipiContract.PratilipiEntity.COLUMN_COVER_IMAGE_URL, pratilipiObject.getString(PRATILIPI_COVER_IMAGE_URL));
             values.put(PratilipiContract.PratilipiEntity.COLUMN_CREATION_DATE, AppUtil.getCurrentJulianDay());
@@ -291,6 +299,8 @@ public class PratilipiUtil {
             pratilipi.setContentType(pratilipiObject.getString(PRATILIPI_CONTENT_TYPE));
             pratilipi.setRatingCount(pratilipiObject.getLong(PRATILIPI_RATING_COUNT));
             pratilipi.setRatingCount(pratilipiObject.getLong(PRATILIPI_AVERAGE_RATING));
+
+            pratilipi.setPageUrl(pratilipiObject.getString(PRATILIPI_PAGE_URL));
 
             pratilipi.setCoverImageUrl(pratilipiObject.getString(PRATILIPI_COVER_IMAGE_URL));
         } catch ( JSONException e ){
@@ -337,6 +347,7 @@ public class PratilipiUtil {
             pratilipi.setPageCount(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_PAGE_COUNT)));
             pratilipi.setCurrentPage(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_CURRENT_PAGE)));
             pratilipi.setCoverImageUrl(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_COVER_IMAGE_URL)));
+            pratilipi.setPageUrl(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_PAGE_URL)));
             pratilipi.setGenreList(c.getString(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_GENRE_NAME_LIST)));
             pratilipi.setCreationDate(c.getInt(c.getColumnIndex(PratilipiContract.PratilipiEntity.COLUMN_CREATION_DATE)));
 
