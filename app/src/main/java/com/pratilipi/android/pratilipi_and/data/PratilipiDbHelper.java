@@ -14,12 +14,16 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
 
     static final String DATABASE_NAME = "pratilipi.db";
 
+    private SQLiteDatabase mSqLiteDatabase;
+
     public PratilipiDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
+
+        mSqLiteDatabase = sqLiteDatabase;
 
         final String SQL_CREATE_CATEGORY_TABLE = "CREATE TABLE " + PratilipiContract.CategoriesEntity.TABLE_NAME + " (" +
 
@@ -97,6 +101,7 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
                 PratilipiContract.PratilipiEntity.COLUMN_TITLE + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_TITLE_EN + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_TYPE + " TEXT, " +
+                PratilipiContract.PratilipiEntity.COLUMN_PAGE_URL + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_COVER_IMAGE_URL + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_ID + " TEXT, " +
                 PratilipiContract.PratilipiEntity.COLUMN_LANGUAGE_NAME + " TEXT, " +
@@ -130,10 +135,10 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
 
                 PratilipiContract.ShelfEntity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
 
-                PratilipiContract.ShelfEntity.COLUMN_USER_EMAIL + " TEXT NOT NULL, " +
+                PratilipiContract.ShelfEntity.COLUMN_USER_EMAIL + " TEXT, " +
                 PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + " TEXT NOT NULL, " +
                 PratilipiContract.ShelfEntity.COLUMN_CREATION_DATE + " INTEGER NOT NULL, " +
-                PratilipiContract.ShelfEntity.COLUMN_LAST_ACCESSED_DATE + " INTEGER NOT NULL, " +
+                PratilipiContract.ShelfEntity.COLUMN_LAST_ACCESSED_DATE + " INTEGER, " +
                 PratilipiContract.ShelfEntity.COLUMN_DOWNLOAD_STATUS + " INTEGER, " +
                 PratilipiContract.ShelfEntity.COLUMN_CURRENT_CHAPTER + " INTEGER, " +
                 PratilipiContract.ShelfEntity.COLUMN_CURRENT_FRAGMENT + " INTEGER, " +
@@ -198,5 +203,13 @@ public class PratilipiDbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.UserEntity.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PratilipiContract.CursorEntity.TABLE_NAME);
         onCreate(sqLiteDatabase);
+    }
+
+    @Override
+    public synchronized void close() {
+        if(mSqLiteDatabase != null){
+            mSqLiteDatabase.close();
+            super.close();
+        }
     }
 }

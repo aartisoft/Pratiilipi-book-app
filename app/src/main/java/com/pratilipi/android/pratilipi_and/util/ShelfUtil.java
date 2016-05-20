@@ -283,27 +283,30 @@ public class ShelfUtil {
      * @return int = number of rows updated
      * Stores current reader position of a book for the logged in user.
      */
-    public static int updateReadingLocation(Context context, String pratilipiId, int currentChapter, int currentFragment){
+    public static void createOrUpdateReadingLocation(Context context, String pratilipiId, int currentChapter, int currentFragment){
         Log.i(LOG_TAG, "Storing current reading location");
         Log.i(LOG_TAG, "Current Chapter : " + currentChapter);
         Log.i(LOG_TAG, "Current Fragment : " + currentFragment);
-
-        User user = UserUtil.getLoggedInUser(context);
-        if(user == null){
-            Log.w(LOG_TAG, "Unable to update content status. User is null");
-            return 0;
-        }
 
         ContentValues values = new ContentValues();
         values.put(PratilipiContract.ShelfEntity.COLUMN_CURRENT_CHAPTER, currentChapter);
         values.put(PratilipiContract.ShelfEntity.COLUMN_CURRENT_FRAGMENT, currentFragment);
 
         Uri uri = PratilipiContract.ShelfEntity.CONTENT_URI;
-        String selection = PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + "=?"
-                + " AND " + PratilipiContract.ShelfEntity.COLUMN_USER_EMAIL + "=?";
-        String[] selectionArgs = new String[]{pratilipiId, user.getEmail()};
+        String selection = PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + "=?";
+        String[] selectionArgs = new String[]{pratilipiId};
 
-        return context.getContentResolver().update(uri, values, selection,selectionArgs);
+        Cursor cursor = context.getContentResolver().query(uri, null, selection, selectionArgs, null);
+        if(cursor == null || !cursor.moveToFirst()){
+            Log.i(LOG_TAG, "Reading location inserted");
+            values.put(PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID, pratilipiId);
+            values.put(PratilipiContract.ShelfEntity.COLUMN_CREATION_DATE, AppUtil.getCurrentJulianDay());
+            context.getContentResolver().insert(uri, values);
+        } else{
+            Log.i(LOG_TAG, "Reading location updated");
+            context.getContentResolver().update(uri, values, selection,selectionArgs);
+        }
+        cursor.close();
     }
 
     /**
@@ -314,17 +317,11 @@ public class ShelfUtil {
      */
     public static int[] getReadingLocation(Context context, String pratilipiId){
         Log.i(LOG_TAG, "Fetching current reading location");
-        User user = UserUtil.getLoggedInUser(context);
-        if(user == null){
-            Log.w(LOG_TAG, "User is not logged in.");
-            return null;
-        }
 
         Uri uri = PratilipiContract.ShelfEntity.CONTENT_URI;
         String[] projection = new String[]{PratilipiContract.ShelfEntity.COLUMN_CURRENT_CHAPTER, PratilipiContract.ShelfEntity.COLUMN_CURRENT_FRAGMENT};
-        String selection = PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + "=?"
-                + " AND " + PratilipiContract.ShelfEntity.COLUMN_USER_EMAIL + "=?";
-        String[] selectionArgs = new String[]{pratilipiId, user.getEmail()};
+        String selection = PratilipiContract.ShelfEntity.COLUMN_PRATILIPI_ID + "=?";
+        String[] selectionArgs = new String[]{pratilipiId};
 
         Cursor cursor = context.getContentResolver().query(
                 uri,
